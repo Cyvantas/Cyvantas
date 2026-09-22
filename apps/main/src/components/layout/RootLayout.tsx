@@ -2,7 +2,6 @@ import type { ReactNode } from "react";
 import { MotionConfig } from "motion/react";
 import { Background } from "../background/Background";
 import { SkipLink } from "../ui/SkipLink";
-import { Container } from "../ui/Container";
 import { Navbar } from "./Navbar";
 import { Footer } from "./Footer";
 
@@ -20,8 +19,9 @@ export function RootLayout({ children }: { children?: ReactNode }) {
       <div className="relative flex min-h-dvh flex-col">
         <Navbar />
 
+        {/* Pages compose their own <Section>s (each owns its Container + padding). */}
         <main id="main-content" tabIndex={-1} className="flex-1 outline-none">
-          <Container className="py-[var(--section-pad)]">{children}</Container>
+          {children}
         </main>
 
         <Footer />

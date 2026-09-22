@@ -1,0 +1,3 @@
+# CYVANTAS — https://cyvantas.in
+User-agent: *
+Allow: /

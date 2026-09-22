@@ -31,17 +31,57 @@ export function MobileMenu({ open, onClose, returnFocusRef }: MobileMenuProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const firstLinkRef = useRef<HTMLAnchorElement>(null);
 
-  // Escape closes; lock body scroll while open; manage focus on open/close.
+  // Keep the latest onClose without making it an effect dependency, so the
+  // effects below run only when `open` actually changes — not on every render.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // Lock body scroll only while the menu is open; always restore on close and
+  // on unmount. Depends on `open` alone so setup/cleanup pair deterministically.
+  useEffect(() => {
+    if (!open) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  // Escape closes; Tab is trapped within the panel; manage focus on open/close.
   useEffect(() => {
     if (!open) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== "Tab") return;
+
+      const panel = panelRef.current;
+      if (!panel) return;
+      const focusable = panel.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+
+      if (e.shiftKey) {
+        if (active === first || !panel.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !panel.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
-
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
 
     firstLinkRef.current?.focus();
 
@@ -49,10 +89,9 @@ export function MobileMenu({ open, onClose, returnFocusRef }: MobileMenuProps) {
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = overflow;
       returnFocusEl?.focus();
     };
-  }, [open, onClose, returnFocusRef]);
+  }, [open, returnFocusRef]);
 
   return (
     <AnimatePresence>

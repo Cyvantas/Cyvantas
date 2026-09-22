@@ -203,3 +203,37 @@
     border-width: 0;
   }
 }
+
+/* ============================================================
+   Hero attack-surface visualization — decorative flow along the
+   active cyan spokes and a soft pulse on the entry-point node.
+   Both are collapsed by the global prefers-reduced-motion guard.
+   ============================================================ */
+.hero-flow {
+  stroke-dasharray: 4 8;
+  animation: hero-flow-dash 2.4s linear infinite;
+}
+
+@keyframes hero-flow-dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.hero-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hero-pulse-scale 2.6s var(--ease-standard) infinite;
+}
+
+@keyframes hero-pulse-scale {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.55;
+    transform: scale(1.8);
+  }
+}

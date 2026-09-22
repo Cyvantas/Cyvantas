@@ -35,3 +35,39 @@ export const LAB_NAV = {
   label: "Security Lab",
   href: SITE.labUrl,
 } as const;
+
+export interface FooterLink {
+  label: string;
+  href: string;
+  /** External links open in a new tab with rel=noopener. */
+  external?: boolean;
+}
+
+/**
+ * Footer "Navigation" column. Services/Research/About/Contact resolve to their
+ * real routes so the links work from every page; Projects has no dedicated
+ * route, so it targets the homepage section (`/#projects`) and scrolls there
+ * after navigating home. All are internal — rendered with a router <Link>.
+ */
+export const FOOTER_NAV: FooterLink[] = [
+  { label: "Services", href: "/services" },
+  { label: "Research", href: "/research" },
+  { label: "Projects", href: "/#projects" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+
+/**
+ * Footer "Legal" column. Policy pages live on the existing site origin
+ * (real Blogger pages); centralized here so they can be repointed to React
+ * routes once those pages are built.
+ */
+export const LEGAL_NAV: FooterLink[] = [
+  { label: "Privacy Policy", href: `${SITE.url}/p/privacy-policy.html`, external: true },
+  { label: "Terms of Use", href: `${SITE.url}/p/terms.html`, external: true },
+  {
+    label: "Responsible Disclosure",
+    href: `${SITE.url}/p/responsible-disclosure.html`,
+    external: true,
+  },
+];

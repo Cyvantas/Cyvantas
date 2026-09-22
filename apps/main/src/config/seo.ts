@@ -5,8 +5,14 @@
  * could not be verified are flagged for later confirmation, not guessed.
  */
 
-/** Discovered in the Blogger theme; asset existence UNVERIFIED (ARCHITECTURE.md §4.2). */
-export const OG_IMAGE = "https://cyvantas.in/assets/cyvantas-og.jpg";
+import { SITE } from "./site";
+import { FOUNDER } from "../content/home";
+
+/**
+ * Local, on-brand Open Graph card served from the app origin
+ * (public/assets/cyvantas-og.jpg). Absolute URL as required by OG/Twitter.
+ */
+export const OG_IMAGE = `${SITE.url}/assets/cyvantas-og.jpg`;
 
 /** Personal handle from the Blogger theme; company handle UNVERIFIED (ARCHITECTURE.md §4.5). */
 export const TWITTER_SITE = "@Prajeesh_kc";
@@ -59,3 +65,39 @@ export const ROUTE_SEO = {
     description: "The page you are looking for could not be found.",
   },
 } satisfies Record<string, RouteSeo>;
+
+/**
+ * Site-level JSON-LD (Organization + WebSite). Built only from verified facts
+ * already present on the site — no reviews, ratings, awards, clients,
+ * certifications or statistics. Serialized once on the homepage by <Seo>.
+ */
+export function buildSiteJsonLd() {
+  const orgId = `${SITE.url}/#organization`;
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": orgId,
+        name: SITE.name,
+        url: SITE.url,
+        email: SITE.contactEmail,
+        description: HOME_DESCRIPTION,
+        logo: `${SITE.url}/favicon.svg`,
+        image: OG_IMAGE,
+        founder: { "@type": "Person", name: SITE.founder },
+        address: { "@type": "PostalAddress", addressCountry: "IN" },
+        sameAs: FOUNDER.socials.map((s) => s.href),
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${SITE.url}/#website`,
+        name: SITE.name,
+        url: SITE.url,
+        description: HOME_DESCRIPTION,
+        inLanguage: SITE.locale.replace("_", "-"),
+        publisher: { "@id": orgId },
+      },
+    ],
+  };
+}
