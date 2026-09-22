@@ -1,0 +1,2105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html>
+<html b:defaultwidgetversion='2' b:layoutsVersion='3' b:responsive='true' lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
+<head>
+<meta charset='UTF-8'/>
+<meta content='width=device-width, initial-scale=1.0' name='viewport'/>
+
+<meta content='dark' name='color-scheme'/>
+<b:if cond='data:view.isHomepage'><meta content='home' name='cyv-view'/>
+<b:elseif cond='data:view.isPost'/><meta content='post' name='cyv-view'/>
+<b:elseif cond='data:view.isPage'/><meta content='page' name='cyv-view'/>
+<b:elseif cond='data:view.isError'/><meta content='error' name='cyv-view'/>
+<b:else/><meta content='list' name='cyv-view'/>
+</b:if>
+<script>
+//<![CDATA[
+(function(){var r=document.documentElement;r.className+=' js';var m=document.querySelector('meta[name="cyv-view"]');if(m){r.setAttribute('data-view',m.getAttribute('content'));}})();
+//]]>
+</script>
+
+<!-- ============================== SEO (dynamic per page type) ============================== -->
+<b:if cond='data:view.isHomepage'>
+<title>CYVANTAS | Cybersecurity, VAPT &amp; Penetration Testing Services</title>
+<meta content='CYVANTAS is a cybersecurity company helping organizations discover vulnerabilities, understand their attack surface, and build stronger defenses through VAPT, red teaming, cloud, API and application security testing.' name='description'/>
+<b:elseif cond='data:view.isPost'/>
+<title><data:blog.pageName/> | CYVANTAS</title>
+<b:if cond='data:blog.metaDescription != &quot;&quot;'>
+<meta expr:content='data:blog.metaDescription' name='description'/>
+<b:else/>
+<b:if cond='data:post.snippet'>
+<meta expr:content='data:post.snippet' name='description'/>
+<b:else/>
+<meta expr:content='data:blog.pageName + &quot; — security research from CYVANTAS.&quot;' name='description'/>
+</b:if>
+</b:if>
+<b:elseif cond='data:view.isLabelSearch'/>
+<title><data:view.search.label/> Research | CYVANTAS</title>
+<meta expr:content='&quot;CYVANTAS security research and writing on &quot; + data:view.search.label + &quot;.&quot;' name='description'/>
+<b:elseif cond='data:view.isSearch'/>
+<title>Search results for &quot;<data:view.search.query/>&quot; | CYVANTAS</title>
+<meta content='Search results across CYVANTAS security research and writing.' name='description'/>
+<b:elseif cond='data:view.isArchive'/>
+<title>Research Archive | CYVANTAS</title>
+<meta content='Browse CYVANTAS security research by month and year.' name='description'/>
+<b:elseif cond='data:view.isError'/>
+<title>Page Not Found | CYVANTAS</title>
+<meta content='This page could not be found on CYVANTAS.' name='description'/>
+<b:elseif cond='data:view.isPage'/>
+<title><data:blog.pageName/> | CYVANTAS</title>
+<meta expr:content='data:blog.pageName + &quot; — CYVANTAS.&quot;' name='description'/>
+<b:else/>
+<title><data:blog.pageTitle/></title>
+<meta content='CYVANTAS is a cybersecurity company and security research publication.' name='description'/>
+</b:if>
+
+<link expr:href='data:view.url.canonical' rel='canonical'/>
+<b:if cond='data:view.isSearch or data:view.isArchive or data:view.isError'>
+<meta content='noindex, follow' name='robots'/>
+<b:else/>
+<meta content='index, follow, max-image-preview:large' name='robots'/>
+</b:if>
+<meta content='CYVANTAS' name='author'/>
+<meta content='#060A10' name='theme-color'/>
+
+<!-- Open Graph -->
+<b:if cond='data:view.isPost'>
+<meta content='article' property='og:type'/>
+<b:else/>
+<meta content='website' property='og:type'/>
+</b:if>
+<meta content='CYVANTAS' property='og:site_name'/>
+<b:if cond='data:view.isPost'>
+<meta expr:content='data:blog.pageName' property='og:title'/>
+<b:else/>
+<meta content='CYVANTAS | Security Beyond The Surface' property='og:title'/>
+</b:if>
+<b:if cond='data:view.isPost'>
+<b:if cond='data:blog.metaDescription != &quot;&quot;'>
+<meta expr:content='data:blog.metaDescription' property='og:description'/>
+<b:else/>
+<meta expr:content='data:post.snippet' property='og:description'/>
+</b:if>
+<b:else/>
+<meta content='CYVANTAS helps organizations discover vulnerabilities, understand their attack surface, and build stronger cyber defenses through offensive security testing.' property='og:description'/>
+</b:if>
+<meta expr:content='data:view.url.canonical' property='og:url'/>
+<b:if cond='data:view.isPost and data:post.featuredImage'>
+<meta expr:content='data:post.featuredImage' property='og:image'/>
+<b:else/>
+<meta content='https://cyvantas.in/assets/cyvantas-og.jpg' property='og:image'/>
+</b:if>
+<meta content='en_IN' property='og:locale'/>
+<b:if cond='data:view.isPost'>
+<meta expr:content='data:post.date.iso8601' property='article:published_time'/>
+<meta expr:content='data:post.lastUpdated.iso8601' property='article:modified_time'/>
+<b:loop index='li' values='data:post.labels' var='label'><b:if cond='data:li == 0'><meta expr:content='data:label.name' property='article:section'/></b:if></b:loop>
+</b:if>
+
+<!-- Twitter / X -->
+<meta content='summary_large_image' name='twitter:card'/>
+<meta content='@Prajeesh_kc' name='twitter:site'/>
+<b:if cond='data:view.isPost'>
+<meta expr:content='data:blog.pageName' name='twitter:title'/>
+<b:else/>
+<meta content='CYVANTAS | Security Beyond The Surface' name='twitter:title'/>
+</b:if>
+<b:if cond='data:view.isPost'>
+<b:if cond='data:blog.metaDescription != &quot;&quot;'>
+<meta expr:content='data:blog.metaDescription' name='twitter:description'/>
+<b:else/>
+<meta expr:content='data:post.snippet' name='twitter:description'/>
+</b:if>
+<b:else/>
+<meta content='Cybersecurity assessment, VAPT, red teaming and offensive security services from CYVANTAS.' name='twitter:description'/>
+</b:if>
+<b:if cond='data:view.isPost and data:post.featuredImage'>
+<meta expr:content='data:post.featuredImage' name='twitter:image'/>
+<b:else/>
+<meta content='https://cyvantas.in/assets/cyvantas-og.jpg' name='twitter:image'/>
+</b:if>
+
+<!-- Structured data: Organization + WebSite (with sitelinks search box) -->
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;Organization&quot;,
+  &quot;name&quot;: &quot;CYVANTAS&quot;,
+  &quot;url&quot;: &quot;https://cyvantas.in/&quot;,
+  &quot;email&quot;: &quot;cyvantas@gmail.com&quot;,
+  &quot;slogan&quot;: &quot;Security beyond the surface.&quot;,
+  &quot;description&quot;: &quot;CYVANTAS is an offensive-security focused cybersecurity organization and security research publication.&quot;,
+  &quot;knowsAbout&quot;: [&quot;Penetration testing&quot;,&quot;Vulnerability assessment&quot;,&quot;Application security&quot;,&quot;API security&quot;,&quot;Cloud security&quot;,&quot;Red teaming&quot;,&quot;Threat intelligence&quot;],
+  &quot;founder&quot;: {
+    &quot;@type&quot;: &quot;Person&quot;,
+    &quot;name&quot;: &quot;Prajeesh KC&quot;,
+    &quot;sameAs&quot;: [
+      &quot;https://github.com/kcprajeesh&quot;,
+      &quot;https://instagram.com/Prajeesh_kc&quot;,
+      &quot;https://x.com/Prajeesh_kc&quot;
+    ]
+  },
+  &quot;sameAs&quot;: [
+    &quot;https://github.com/kcprajeesh&quot;,
+    &quot;https://instagram.com/Prajeesh_kc&quot;,
+    &quot;https://x.com/Prajeesh_kc&quot;
+  ]
+}
+</script>
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;WebSite&quot;,
+  &quot;name&quot;: &quot;CYVANTAS&quot;,
+  &quot;url&quot;: &quot;https://cyvantas.in/&quot;,
+  &quot;potentialAction&quot;: {
+    &quot;@type&quot;: &quot;SearchAction&quot;,
+    &quot;target&quot;: &quot;https://cyvantas.in/search?q={search_term_string}&quot;,
+    &quot;query-input&quot;: &quot;required name=search_term_string&quot;
+  }
+}
+</script>
+
+<b:if cond='data:view.isHomepage'>
+<!-- Structured data: Services (homepage only) -->
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;ItemList&quot;,
+  &quot;itemListElement&quot;: [
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:1,&quot;name&quot;:&quot;Vulnerability Assessment and Penetration Testing&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:2,&quot;name&quot;:&quot;Web Application Security Testing&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:3,&quot;name&quot;:&quot;API Security Testing&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:4,&quot;name&quot;:&quot;Network Security Assessment&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:5,&quot;name&quot;:&quot;Mobile Application Security&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:6,&quot;name&quot;:&quot;Cloud Security Assessment&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:7,&quot;name&quot;:&quot;Red Teaming and Adversary Simulation&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:8,&quot;name&quot;:&quot;Security Configuration Review&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:9,&quot;name&quot;:&quot;OSINT and Threat Intelligence&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:10,&quot;name&quot;:&quot;Cybersecurity Consulting&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:11,&quot;name&quot;:&quot;Security Automation&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;},
+    {&quot;@type&quot;:&quot;Service&quot;,&quot;position&quot;:12,&quot;name&quot;:&quot;Security Awareness and Best Practices&quot;,&quot;provider&quot;:{&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;},&quot;areaServed&quot;:&quot;IN&quot;}
+  ]
+}
+</script>
+</b:if>
+
+<b:if cond='data:view.isPost'>
+<!-- Structured data: Article -->
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;Article&quot;,
+  &quot;headline&quot;: <data:post.title.jsonEscaped/>,
+  &quot;description&quot;: &quot;<b:eval expr='data:post.snippet ? data:post.snippet.jsonEscaped : data:blog.pageName.jsonEscaped'/>&quot;,
+  &quot;image&quot;: [<b:if cond='data:post.featuredImage'>&quot;<data:post.featuredImage.jsonEscaped/>&quot;<b:else/>&quot;https://cyvantas.in/assets/cyvantas-og.jpg&quot;</b:if>],
+  &quot;datePublished&quot;: &quot;<data:post.date.iso8601.jsonEscaped/>&quot;,
+  &quot;dateModified&quot;: &quot;<data:post.lastUpdated.iso8601.jsonEscaped/>&quot;,
+  &quot;author&quot;: {&quot;@type&quot;:&quot;Person&quot;,&quot;name&quot;: &quot;<data:post.author.name.jsonEscaped/>&quot;},
+  &quot;publisher&quot;: {&quot;@type&quot;:&quot;Organization&quot;,&quot;name&quot;:&quot;CYVANTAS&quot;,&quot;logo&quot;:{&quot;@type&quot;:&quot;ImageObject&quot;,&quot;url&quot;:&quot;https://cyvantas.in/assets/cyvantas-og.jpg&quot;}},
+  &quot;mainEntityOfPage&quot;: {&quot;@type&quot;:&quot;WebPage&quot;,&quot;@id&quot;: &quot;<data:post.url.canonical.jsonEscaped/>&quot;},
+  &quot;keywords&quot;: &quot;<b:loop index='i' values='data:post.labels' var='label'><b:if cond='data:i != 0'>, </b:if><data:label.name.jsonEscaped/></b:loop>&quot;
+}
+</script>
+<!-- Structured data: Breadcrumbs -->
+<script type='application/ld+json'>
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;BreadcrumbList&quot;,
+  &quot;itemListElement&quot;: [
+    {&quot;@type&quot;:&quot;ListItem&quot;,&quot;position&quot;:1,&quot;name&quot;:&quot;Home&quot;,&quot;item&quot;: &quot;<data:blog.homepageUrl.jsonEscaped/>&quot;},
+    {&quot;@type&quot;:&quot;ListItem&quot;,&quot;position&quot;:2,&quot;name&quot;:&quot;Research&quot;,&quot;item&quot;: &quot;<b:eval expr='(data:blog.homepageUrl + &quot;#research&quot;).jsonEscaped'/>&quot;},
+    {&quot;@type&quot;:&quot;ListItem&quot;,&quot;position&quot;:3,&quot;name&quot;: &quot;<data:post.title.jsonEscaped/>&quot;,&quot;item&quot;: &quot;<data:post.url.canonical.jsonEscaped/>&quot;}
+  ]
+}
+</script>
+</b:if>
+
+
+<!-- Icons, feed, fonts -->
+<link href='data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20200%20200%27%3E%3Crect%20width=%27200%27%20height=%27200%27%20rx=%2740%27%20fill=%27%23060A10%27/%3E%3Cpolygon%20points=%27100,24%20168,64%20168,136%20100,176%2032,136%2032,64%27%20fill=%27none%27%20stroke=%27%232A3A4D%27%20stroke-width=%273%27/%3E%3Cpath%20d=%27M52,75%20L100,46%20L148,75%20L148,125%20L100,154%20L52,125%27%20fill=%27none%27%20stroke=%27%232FD6EA%27%20stroke-width=%279%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27/%3E%3Cpath%20d=%27M78,85%20L100,126%20L122,85%27%20fill=%27none%27%20stroke=%27%23fff%27%20stroke-width=%279%27%20stroke-linecap=%27round%27%20stroke-linejoin=%27round%27/%3E%3Ccircle%20cx=%27100%27%20cy=%2765%27%20r=%276%27%20fill=%27%232FD6EA%27/%3E%3C/svg%3E' rel='icon' type='image/svg+xml'/>
+<link expr:href='data:blog.homepageUrl + &quot;feeds/posts/default&quot;' expr:title='data:blog.title + &quot; — Research&quot;' rel='alternate' type='application/atom+xml'/>
+<meta content='object-src &apos;none&apos;; base-uri &apos;self&apos;' http-equiv='Content-Security-Policy'/>
+<meta content='strict-origin-when-cross-origin' name='referrer'/>
+<link href='https://fonts.googleapis.com' rel='preconnect'/>
+<link crossorigin='crossorigin' href='https://fonts.gstatic.com' rel='preconnect'/>
+<link href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap' media='print' onload='this.media=&quot;all&quot;' rel='stylesheet'/>
+<noscript><link href='https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap' rel='stylesheet'/></noscript>
+
+<b:skin><![CDATA[
+/* CYVANTAS — Offensive Intelligence & Cybersecurity | unified design system */
+:root{
+  --bg:#060A10; --panel:#0D1420; --panel-2:#111C2A; --line:#1C2733; --line-2:#141E2A;
+  --text:#E8EDF4; --muted:#8A97A8; --dim:#576474;
+  --cyan:#2FD6EA; --cyan-soft:rgba(47,214,234,.10); --cyan-line:rgba(47,214,234,.35);
+  --green:#38D99A; --green-soft:rgba(56,217,154,.12); --danger:#FF8A8A; --amber:#F2C879;
+  --f-display:'Space Grotesk',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-body:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r-sm:6px; --r-md:10px; --r-lg:14px; --maxw:1200px; --hdr:64px; --gut:clamp(16px,4vw,32px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--hdr) + 16px)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+body{margin:0;background:var(--bg);color:var(--text);font:400 16px/1.65 var(--f-body);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body.menu-open{overflow:hidden}
+h1,h2,h3,h4,h5,p,ul,ol,dl,dd,figure,blockquote{margin:0}
+ul,ol{padding:0;list-style:none}
+img,svg{max-width:100%}
+img{display:block;height:auto}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+::selection{background:var(--cyan);color:#04161A}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px;border-radius:4px}
+.sr-only{position:absolute!important;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.skip-link{position:absolute;left:12px;top:-60px;z-index:3000;background:var(--cyan);color:#04161A;padding:10px 16px;border-radius:var(--r-sm);font-weight:600}
+.skip-link:focus{top:12px}
+.wrap{width:100%;max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.mono{font-family:var(--f-mono)}
+
+/* ---------- type ---------- */
+.eyebrow{font:500 12px/1.4 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);display:flex;align-items:center;gap:10px}
+.eyebrow::before{content:"//";color:var(--dim)}
+.sec{padding:clamp(64px,9vw,112px) 0;position:relative}
+.sec + .sec{border-top:1px solid var(--line-2)}
+.sec-title{font:700 clamp(1.7rem,4.2vw,2.75rem)/1.1 var(--f-display);letter-spacing:-.02em;margin:14px 0 0;max-width:22ch;text-wrap:balance}
+.sec-title.wide{max-width:28ch}
+.sec-sub{color:var(--muted);max-width:62ch;margin-top:16px;font-size:clamp(15px,1.6vw,17px)}
+.sec-head{margin-bottom:clamp(32px,5vw,56px)}
+.chip{display:inline-flex;align-items:center;gap:6px;font:500 11px/1 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border:1px solid var(--line);border-radius:var(--r-sm);color:var(--muted);background:var(--panel)}
+.chip.cyan{color:var(--cyan);border-color:var(--cyan-line);background:var(--cyan-soft)}
+.chip.green{color:var(--green);border-color:rgba(56,217,154,.35);background:var(--green-soft)}
+.chip.sev-critical,.chip.sev-high{color:var(--danger);border-color:rgba(255,138,138,.4);background:rgba(255,138,138,.08)}
+.chip.sev-medium{color:var(--amber);border-color:rgba(242,200,121,.4);background:rgba(242,200,121,.08)}
+.chip.sev-low{color:var(--green);border-color:rgba(56,217,154,.35);background:var(--green-soft)}
+.chip.sev-info{color:var(--cyan);border-color:var(--cyan-line);background:var(--cyan-soft)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 0 rgba(56,217,154,.5);flex:none}
+@media (prefers-reduced-motion:no-preference){.dot{animation:ping 2.4s ease-out infinite}}
+@keyframes ping{70%{box-shadow:0 0 0 7px rgba(56,217,154,0)}100%{box-shadow:0 0 0 0 rgba(56,217,154,0)}}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 20px;border-radius:var(--r-md);font:600 14px/1 var(--f-body);letter-spacing:.01em;border:1px solid transparent;transition:background-color .2s,border-color .2s,color .2s,transform .2s;white-space:nowrap}
+.btn-primary{background:var(--cyan);color:#04161A}
+.btn-primary:hover{background:#63e6f5}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--text)}
+.btn-ghost:hover{border-color:var(--cyan-line);color:var(--cyan);background:var(--cyan-soft)}
+.btn-sm{min-height:38px;padding:0 14px;font-size:13px}
+.btn .ic{width:16px;height:16px}
+.link-mono{font:500 13px/1 var(--f-mono);color:var(--cyan);display:inline-flex;align-items:center;gap:8px;min-height:44px}
+.link-mono:hover{text-decoration:underline;text-underline-offset:4px}
+
+/* ---------- header ---------- */
+.site-header{position:sticky;top:0;z-index:1000;background:rgba(6,10,16,.94);border-bottom:1px solid var(--line-2)}
+@supports (backdrop-filter:blur(10px)){.site-header{background:rgba(6,10,16,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}}
+.site-header.scrolled{border-bottom-color:var(--line)}
+.nav{height:var(--hdr);display:flex;align-items:center;gap:20px}
+.logo{display:inline-flex;align-items:center;gap:10px;flex:none}
+.logo svg{width:34px;height:34px}
+.logo-word{display:flex;flex-direction:column;line-height:1}
+.logo-word b{font:700 17px/1 var(--f-display);letter-spacing:.14em}
+.logo-word small{font:500 9px/1 var(--f-mono);letter-spacing:.16em;color:var(--muted);margin-top:5px;text-transform:uppercase;display:none}
+@media (min-width:420px){.logo-word small{display:block}}
+.nav-links{display:none;align-items:center;gap:2px;margin-left:auto}
+.nav-links a{position:relative;padding:8px 10px;font:500 13.5px/1 var(--f-body);color:var(--muted);transition:color .2s;white-space:nowrap}
+.nav-links a::after{content:"";position:absolute;left:10px;right:10px;bottom:-2px;height:2px;background:var(--cyan);transform:scaleX(0);transform-origin:left;transition:transform .25s}
+.nav-links a:hover,.nav-links a[aria-current]{color:var(--text)}
+.nav-links a[aria-current]::after{transform:scaleX(1)}
+.nav-cta{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-cta .btn{display:none}
+.burger{width:44px;height:44px;border:1px solid var(--line);background:var(--panel);border-radius:var(--r-md);display:inline-flex;flex-direction:column;align-items:center;justify-content:center;gap:5px}
+.burger span{width:18px;height:2px;background:var(--text);transition:transform .25s,opacity .2s}
+.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+@media (min-width:1100px){
+  .nav-links{display:flex}.nav-cta{margin-left:0}.nav-cta .btn{display:inline-flex}.burger{display:none}
+}
+html:not(.js) .burger{display:none}
+html:not(.js) .nav{flex-wrap:wrap;height:auto;padding:10px 0}
+html:not(.js) .nav-links{display:flex;flex-wrap:wrap;margin-left:0;width:100%}
+html:not(.js) .site-header{position:static}
+
+.drawer{position:fixed;inset:0;z-index:999;background:var(--bg);padding:calc(var(--hdr) + 24px) var(--gut) 32px;display:flex;flex-direction:column;overflow-y:auto;visibility:hidden;opacity:0;transform:translateY(-8px);transition:opacity .25s,transform .25s,visibility 0s .25s;
+  background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);background-size:48px 48px}
+.drawer.open{visibility:visible;opacity:1;transform:none;transition:opacity .25s,transform .25s}
+.drawer nav{display:flex;flex-direction:column}
+.drawer nav a{display:flex;align-items:baseline;gap:14px;padding:14px 0;border-bottom:1px solid var(--line);font:600 24px/1.1 var(--f-display)}
+.drawer nav a span{font:500 11px/1 var(--f-mono);color:var(--cyan)}
+.drawer nav a[aria-current]{color:var(--cyan)}
+.drawer .btn{margin-top:28px;min-height:52px;font-size:15px}
+.drawer-meta{margin-top:auto;padding-top:28px;font:500 11px/1.6 var(--f-mono);color:var(--muted);letter-spacing:.06em}
+@media (min-width:1100px){.drawer{display:none}}
+@media (prefers-reduced-motion:reduce){.drawer{transition:none;transform:none}}
+.read-progress{position:fixed;top:var(--hdr);left:0;right:0;height:2px;z-index:1001;background:var(--cyan);transform:scaleX(0);transform-origin:left;pointer-events:none;display:none}
+[data-view="post"] .read-progress{display:block}
+
+/* ---------- reveal ---------- */
+.js .reveal{opacity:0;transform:translateY(14px);transition:opacity .55s ease,transform .55s ease}
+.js .reveal.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.js .reveal{opacity:1;transform:none;transition:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;padding:clamp(40px,7vw,88px) 0 clamp(56px,8vw,104px);overflow:hidden;
+  background:radial-gradient(60% 50% at 78% 30%,rgba(47,214,234,.09),transparent 70%),radial-gradient(40% 40% at 10% 90%,rgba(56,217,154,.05),transparent 70%)}
+.hero::before{content:"";position:absolute;inset:0;background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);background-size:56px 56px;opacity:.55;-webkit-mask-image:radial-gradient(ellipse at 60% 30%,#000 10%,transparent 72%);mask-image:radial-gradient(ellipse at 60% 30%,#000 10%,transparent 72%);pointer-events:none}
+.hero-grid{position:relative;display:grid;gap:clamp(36px,6vw,56px);align-items:center;grid-template-columns:minmax(0,1fr)}
+@media (min-width:980px){.hero-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}}
+.hero-tags{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px 12px;padding:8px 12px;border:1px solid var(--line);border-radius:var(--r-md);background:rgba(13,20,32,.8);font:500 11px/1.3 var(--f-mono);letter-spacing:.1em;text-transform:uppercase}
+.hero-tags .a{color:var(--green);display:inline-flex;align-items:center;gap:8px}
+.hero-tags .b{color:var(--muted)}
+.hero h1{font:700 clamp(2.4rem,11vw,5.4rem)/.95 var(--f-display);letter-spacing:-.035em;text-transform:uppercase;margin:24px 0 0}
+.hero h1 em{font-style:normal;color:var(--cyan)}
+.hero-sub{color:var(--muted);font-size:clamp(16px,1.9vw,19px);max-width:56ch;margin-top:24px}
+.hero-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-top:32px}
+.hero-facts{display:grid;gap:10px;margin-top:40px;padding-top:24px;border-top:1px solid var(--line-2);font:500 11.5px/1.5 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+@media (min-width:640px){.hero-facts{grid-template-columns:repeat(3,auto);justify-content:start;gap:8px 32px}}
+.hero-facts span{display:flex;gap:8px;align-items:flex-start}
+.hero-facts span::before{content:"";width:6px;height:6px;margin-top:6px;background:var(--cyan);transform:rotate(45deg);flex:none}
+
+.ticks{--t:var(--cyan);background:
+  linear-gradient(var(--t),var(--t)) top left/12px 1px no-repeat,linear-gradient(var(--t),var(--t)) top left/1px 12px no-repeat,
+  linear-gradient(var(--t),var(--t)) top right/12px 1px no-repeat,linear-gradient(var(--t),var(--t)) top right/1px 12px no-repeat,
+  linear-gradient(var(--t),var(--t)) bottom left/12px 1px no-repeat,linear-gradient(var(--t),var(--t)) bottom left/1px 12px no-repeat,
+  linear-gradient(var(--t),var(--t)) bottom right/12px 1px no-repeat,linear-gradient(var(--t),var(--t)) bottom right/1px 12px no-repeat,var(--panel)}
+.viz{border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;background:var(--panel)}
+.viz-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line);font:500 10.5px/1.2 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.viz-bar b{color:var(--text);font-weight:500}
+.viz svg{display:block;width:100%;height:auto}
+.viz-legend{display:flex;flex-wrap:wrap;gap:8px 18px;padding:10px 14px;border-top:1px solid var(--line);font:500 10.5px/1.2 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.viz-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:baseline}
+.flow-line{stroke-dasharray:4 7}
+@media (prefers-reduced-motion:no-preference){
+  .flow-line{animation:dash 2.4s linear infinite}
+  .pulse-node{animation:pn 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+}
+@keyframes dash{to{stroke-dashoffset:-22}}
+@keyframes pn{50%{opacity:.35;transform:scale(1.5)}}
+
+/* ---------- snapshot ---------- */
+.snap{padding:0 0 clamp(56px,8vw,96px)}
+.snap-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (min-width:768px){.snap-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}}
+.snap-card{display:flex;flex-direction:column;gap:14px;padding:16px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);transition:border-color .2s,transform .2s,background-color .2s;min-height:112px}
+.snap-card:hover{border-color:var(--cyan-line);background:var(--panel-2);transform:translateY(-2px)}
+.snap-card .top{display:flex;justify-content:space-between;align-items:center;color:var(--cyan)}
+.snap-card .st{display:inline-flex;align-items:center;gap:6px;font:500 10px/1 var(--f-mono);letter-spacing:.1em;color:var(--muted);text-transform:uppercase}
+.snap-card .st .dot{width:6px;height:6px}
+.snap-card strong{font:600 14.5px/1.25 var(--f-display);margin-top:auto}
+.snap-card small{font:500 10.5px/1.3 var(--f-mono);color:var(--muted);letter-spacing:.04em}
+
+/* ---------- about ---------- */
+.about-grid{display:grid;gap:clamp(32px,5vw,64px);align-items:start;grid-template-columns:minmax(0,1fr)}
+@media (min-width:960px){.about-grid{grid-template-columns:minmax(0,7fr) minmax(0,5fr)}}
+.about-copy p{color:var(--muted);margin-top:18px;max-width:62ch}
+.about-list{display:grid;gap:10px;margin-top:26px}
+.about-list li{display:flex;gap:12px;color:var(--text);font-size:15px}
+.about-list li::before{content:"";width:6px;height:6px;margin-top:9px;background:var(--cyan);transform:rotate(45deg);flex:none}
+.philosophy{margin-top:30px;padding:16px 18px;border-left:2px solid var(--cyan);background:var(--cyan-soft);border-radius:0 var(--r-md) var(--r-md) 0;font:600 clamp(16px,2vw,19px)/1.4 var(--f-display)}
+.philosophy span{display:block;font:500 10.5px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--cyan);margin-bottom:8px}
+.spec{border:1px solid var(--line);border-radius:var(--r-lg);padding:6px 20px}
+.spec div{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:15px 0;border-bottom:1px dashed var(--line);align-items:baseline}
+.spec div:last-child{border-bottom:0}
+.spec dt{font:500 11px/1.4 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.spec dd{font:500 15px/1.4 var(--f-body);color:var(--text);overflow-wrap:anywhere}
+.spec dd.g{color:var(--green)}
+@media (max-width:420px){.spec div{grid-template-columns:1fr;gap:4px}}
+
+/* ---------- services ---------- */
+.svc-grid{display:grid;gap:12px;grid-auto-flow:dense}
+@media (min-width:680px){.svc-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.svc.w2{grid-column:span 2}}
+@media (min-width:1040px){.svc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.svc{position:relative;display:flex;flex-direction:column;gap:12px;padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);transition:border-color .25s,background-color .25s,transform .25s;scroll-margin-top:calc(var(--hdr) + 20px)}
+.svc:hover{border-color:var(--cyan-line);background:var(--panel-2);transform:translateY(-2px)}
+.svc-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.svc-id{font:500 11px/1 var(--f-mono);letter-spacing:.1em;color:var(--muted)}
+.svc-icon{width:42px;height:42px;border-radius:var(--r-md);display:grid;place-items:center;color:var(--cyan);background:var(--cyan-soft);border:1px solid var(--cyan-line)}
+.svc h3{font:600 19px/1.2 var(--f-display);letter-spacing:-.01em}
+.svc p{color:var(--muted);font-size:14.5px}
+.svc .obj{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);font-size:13.5px;color:var(--text)}
+.svc .obj b{display:block;font:500 10.5px/1 var(--f-mono);letter-spacing:.12em;color:var(--green);text-transform:uppercase;margin-bottom:7px}
+.svc.feature{background:linear-gradient(135deg,rgba(47,214,234,.07),transparent 55%),var(--panel);border-color:var(--cyan-line)}
+.svc.feature h3{font-size:clamp(21px,2.6vw,26px)}
+.svc.alt{border-top:2px solid var(--green)}
+.svc.alt .svc-icon{color:var(--green);background:var(--green-soft);border-color:rgba(56,217,154,.35)}
+.svc.intel{border-top:2px solid var(--cyan)}
+.more summary{list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;min-height:36px;font:600 13px/1 var(--f-body);color:var(--cyan)}
+.more summary::-webkit-details-marker{display:none}
+.more summary .ic{width:14px;height:14px;transition:transform .2s}
+.more[open] summary .ic{transform:rotate(90deg)}
+.more-body{margin-top:8px;padding:14px;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-md)}
+.more-body b{display:block;font:500 10.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.more-body li{position:relative;padding-left:16px;font-size:13.5px;color:var(--text);margin-top:6px}
+.more-body li::before{content:"›";position:absolute;left:2px;color:var(--cyan)}
+.more-body a{display:inline-block;margin-top:14px;font:600 13px/1 var(--f-body);color:var(--cyan)}
+.more-body a:hover{text-decoration:underline;text-underline-offset:3px}
+
+/* ---------- methodology ---------- */
+.method{background:linear-gradient(180deg,transparent,rgba(13,20,32,.6))}
+.stages{display:grid;gap:12px;counter-reset:st}
+.stage{position:relative;padding:20px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
+.stage-n{display:inline-grid;place-items:center;min-width:44px;height:30px;padding:0 8px;border:1px solid var(--cyan-line);background:var(--cyan-soft);color:var(--cyan);border-radius:var(--r-sm);font:500 12px/1 var(--f-mono);letter-spacing:.06em}
+.stage h3{font:600 18px/1.2 var(--f-display);margin-top:14px;letter-spacing:.06em;text-transform:uppercase}
+.stage p{color:var(--muted);font-size:14px;margin-top:8px}
+.stage .out{display:block;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);font:500 10.5px/1.5 var(--f-mono);letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.stage .out b{color:var(--green);font-weight:500}
+.stage.exploit{border-color:rgba(255,138,138,.35)}
+.stage.exploit .stage-n{color:var(--danger);border-color:rgba(255,138,138,.4);background:rgba(255,138,138,.08)}
+@media (min-width:640px){.stages{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:639px){
+  .stages{gap:0;padding-left:22px;border-left:1px solid var(--line);margin-left:6px}
+  .stage{margin-bottom:12px}
+  .stage::before{content:"";position:absolute;left:-29px;top:26px;width:12px;height:12px;background:var(--bg);border:2px solid var(--cyan);transform:rotate(45deg)}
+}
+@media (min-width:1080px){
+  .stages{grid-template-columns:repeat(6,minmax(0,1fr));gap:0}
+  .stage{border-radius:0;border-right-width:0;padding:22px 18px 20px}
+  .stage:first-child{border-radius:var(--r-lg) 0 0 var(--r-lg)}
+  .stage:last-child{border-radius:0 var(--r-lg) var(--r-lg) 0;border-right-width:1px}
+  .stage:not(:last-child)::after{content:"";position:absolute;right:-7px;top:34px;width:12px;height:12px;background:var(--bg);border-top:1px solid var(--cyan);border-right:1px solid var(--cyan);transform:rotate(45deg);z-index:2}
+  .stage p{font-size:13.5px}
+}
+.disclaimer{display:flex;gap:12px;align-items:flex-start;margin-top:24px;padding:14px 16px;border:1px solid var(--line);border-left:2px solid var(--amber);border-radius:var(--r-md);background:var(--panel);color:var(--muted);font-size:14px}
+.disclaimer .ic{color:var(--amber);margin-top:2px}
+
+/* ---------- attack surface ---------- */
+.surface{display:grid;gap:32px;align-items:start;grid-template-columns:minmax(0,1fr)}
+@media (min-width:960px){.surface{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:56px}.surface .viz{position:sticky;top:calc(var(--hdr) + 24px);order:2}}
+.chain{position:relative}
+.chain::before{content:"";position:absolute;left:19px;top:20px;bottom:20px;width:1px;background:repeating-linear-gradient(var(--cyan-line) 0 4px,transparent 4px 9px)}
+.chain li{position:relative;display:grid;grid-template-columns:40px 1fr;gap:12px;padding:10px 12px 10px 0;border-radius:var(--r-md);transition:background-color .2s}
+.chain li:hover,.chain li.active,.chain li:focus-visible{background:var(--panel)}
+.chain .n{position:relative;z-index:1;width:40px;height:28px;display:grid;place-items:center;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-sm);font:500 11px/1 var(--f-mono);color:var(--muted);margin-top:2px;transition:color .2s,border-color .2s}
+.chain li.active .n,.chain li:hover .n{color:var(--cyan);border-color:var(--cyan-line)}
+.chain strong{display:block;font:600 16px/1.3 var(--f-display)}
+.chain p{color:var(--muted);font-size:13.5px;margin-top:2px}
+.node rect{fill:var(--panel-2);stroke:var(--line);stroke-width:1;transition:stroke .2s,fill .2s}
+.node text{fill:var(--text);font:500 13px var(--f-mono);letter-spacing:.02em}
+.node .ix{fill:var(--muted);font-size:10px}
+.node.active rect{stroke:var(--cyan);fill:#0f2a33}
+.node.active .ix{fill:var(--cyan)}
+
+/* ---------- why ---------- */
+.why-grid{display:grid;gap:12px}
+@media (min-width:720px){.why-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1040px){.why-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.why:nth-child(1),.why:nth-child(2){grid-column:span 3}.why:nth-child(n+3){grid-column:span 2}}
+.why{padding:24px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg)}
+.why .pid{font:500 11px/1 var(--f-mono);letter-spacing:.14em;color:var(--cyan)}
+.why h3{font:600 20px/1.2 var(--f-display);margin-top:14px}
+.why p{color:var(--muted);font-size:14.5px;margin-top:8px}
+.why:nth-child(1){background:linear-gradient(135deg,rgba(47,214,234,.07),transparent 60%),var(--panel)}
+@media (min-width:720px) and (max-width:1039px){.why:nth-child(5){grid-column:span 2}}
+
+/* ---------- research ---------- */
+.research-top{display:flex;flex-wrap:wrap;gap:20px 32px;align-items:flex-end;justify-content:space-between;margin-bottom:28px}
+.search{display:flex;align-items:center;gap:10px;min-height:46px;width:100%;max-width:340px;padding:0 14px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);color:var(--muted)}
+.search:focus-within{border-color:var(--cyan)}
+.search input{flex:1;min-width:0;background:none;border:0;outline:0;color:var(--text);font-size:14px}
+.search input::placeholder{color:var(--muted)}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{display:inline-flex;align-items:center;min-height:32px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r-sm);font:500 12px/1 var(--f-mono);color:var(--muted);letter-spacing:.03em;transition:color .2s,border-color .2s,background-color .2s}
+.tag:hover,.tag.active{color:var(--cyan);border-color:var(--cyan-line);background:var(--cyan-soft)}
+.rs-tags{margin-bottom:32px}
+.post-card{position:relative;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;transition:border-color .25s,transform .25s,background-color .25s}
+.post-card:hover,.post-card:focus-within{border-color:var(--cyan-line);background:var(--panel-2);transform:translateY(-2px)}
+.pc-media{aspect-ratio:16/8;background:radial-gradient(70% 90% at 80% 20%,rgba(47,214,234,.16),transparent 70%),linear-gradient(var(--line-2) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,var(--line-2) 1px,transparent 1px) 0 0/28px 28px,var(--bg);border-bottom:1px solid var(--line);position:relative;overflow:hidden}
+.pc-media img{width:100%;height:100%;object-fit:cover}
+.pc-media.no-img::after{content:"";position:absolute;right:18px;bottom:14px;width:46px;height:46px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' fill='none'%3E%3Cpolygon points='100,24 168,64 168,136 100,176 32,136 32,64' stroke='%232FD6EA' stroke-width='3' opacity='.35'/%3E%3Cpath d='M78,85 L100,126 L122,85' stroke='%232FD6EA' stroke-width='6' stroke-linecap='round' stroke-linejoin='round' opacity='.6'/%3E%3C/svg%3E") center/contain no-repeat}
+.pc-body{display:flex;flex-direction:column;gap:10px;padding:18px 20px 20px;flex:1}
+.pc-flags{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pc-body h3,.pc-body h4{font:600 18px/1.3 var(--f-display);letter-spacing:-.01em}
+.pc-body h3 a::after,.pc-body h4 a::after{content:"";position:absolute;inset:0;z-index:1}
+.pc-body p{color:var(--muted);font-size:14px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pc-foot{margin-top:auto;padding-top:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;font:500 11.5px/1.3 var(--f-mono);color:var(--muted)}
+.pc-foot .go{color:var(--cyan);font-family:var(--f-body);font-weight:600;font-size:13px}
+.featured{display:grid;margin-bottom:16px}
+.featured .pc-media{aspect-ratio:16/9}
+.featured .pc-body h3{font-size:clamp(22px,3vw,30px);line-height:1.15}
+.featured .pc-body p{-webkit-line-clamp:4;font-size:15px}
+@media (min-width:860px){.featured{grid-template-columns:1.05fr 1fr}.featured .pc-media{aspect-ratio:auto;min-height:100%;border-bottom:0;border-right:1px solid var(--line)}.featured .pc-body{padding:32px;justify-content:center}}
+.posts-grid{display:grid;gap:16px}
+@media (min-width:680px){.posts-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1040px){.posts-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.more-row{text-align:center;margin-top:40px}
+.empty{padding:28px;border:1px dashed var(--line);border-radius:var(--r-lg);background:var(--panel)}
+.empty p{color:var(--muted);max-width:60ch}
+.empty .tags{margin-top:16px}
+.lbls{display:none}
+html:not(.js) .lbls{display:flex;flex-wrap:wrap;gap:6px}
+.lbls span{font:500 11px/1 var(--f-mono);color:var(--muted);border:1px solid var(--line);border-radius:var(--r-sm);padding:5px 8px}
+
+/* ---------- frameworks ---------- */
+.fw-grid{display:grid;gap:12px}
+@media (min-width:640px){.fw-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1040px){.fw-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
+.fw{display:flex;flex-direction:column;gap:8px;padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md);transition:border-color .2s,background-color .2s}
+.fw:hover{border-color:var(--cyan-line);background:var(--panel-2)}
+.fw h3{font:600 16px/1.25 var(--f-display)}
+.fw p{color:var(--muted);font-size:13.5px}
+.fw .ext{margin-top:auto;padding-top:8px;font:500 11.5px/1.3 var(--f-mono);color:var(--cyan);display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
+.fw .ext .ic{width:13px;height:13px}
+.owasp{margin-top:20px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel)}
+.owasp summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 18px;min-height:48px;font:600 14.5px/1.3 var(--f-display)}
+.owasp summary::-webkit-details-marker{display:none}
+.owasp summary .ic{transition:transform .2s;color:var(--cyan)}
+.owasp[open] summary .ic{transform:rotate(90deg)}
+.owasp-list{display:grid;gap:1px;background:var(--line);border-top:1px solid var(--line)}
+@media (min-width:720px){.owasp-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.owasp-list li{display:flex;gap:12px;align-items:baseline;padding:11px 18px;background:var(--panel);font-size:14px}
+.owasp-list li b{font:500 11px/1 var(--f-mono);color:var(--cyan);flex:none}
+.fw-note{margin-top:16px;color:var(--muted);font-size:13.5px;max-width:80ch}
+
+/* ---------- projects ---------- */
+.proj-grid{display:grid;gap:12px}
+@media (min-width:720px){.proj-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (min-width:1040px){.proj-grid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.proj{display:flex;flex-direction:column;gap:12px;padding:22px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);transition:border-color .25s,background-color .25s}
+.proj:hover{border-color:var(--cyan-line);background:var(--panel-2)}
+.proj-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.proj h3{font:600 18px/1.25 var(--f-display)}
+.proj p{color:var(--muted);font-size:14px}
+.proj dl{margin-top:auto;padding-top:14px;border-top:1px dashed var(--line);display:grid;gap:8px}
+.proj dl div{display:flex;justify-content:space-between;gap:10px;font:500 11.5px/1.3 var(--f-mono)}
+.proj dt{color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.proj dd{color:var(--text);text-align:right}
+.proj .btn{margin-top:6px}
+.resp{margin-top:24px}
+
+/* ---------- founder ---------- */
+.founder{display:grid;gap:28px;padding:clamp(22px,4vw,40px);border:1px solid var(--line);border-radius:var(--r-lg);grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){.founder{grid-template-columns:200px 1fr;gap:40px;align-items:start}}
+.f-photo{width:132px;aspect-ratio:1;border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--cyan-line);background:var(--panel-2);display:grid;place-items:center;font:700 40px var(--f-display);color:var(--cyan)}
+@media (min-width:760px){.f-photo{width:200px}}
+.f-photo img{width:100%;height:100%;object-fit:cover}
+.founder h3{font:700 clamp(26px,4vw,36px)/1.1 var(--f-display);letter-spacing:-.02em}
+.founder .role{display:block;margin-top:8px;font:500 12px/1.4 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--cyan)}
+.founder p{color:var(--muted);margin-top:16px;max-width:64ch}
+.focus{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.socials{display:flex;flex-wrap:wrap;gap:10px;margin-top:24px}
+.social{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel);font:500 13px/1 var(--f-mono);transition:border-color .2s,color .2s}
+.social:hover{border-color:var(--cyan-line);color:var(--cyan)}
+.social .ic{width:16px;height:16px}
+
+/* ---------- contact ---------- */
+.contact{background:radial-gradient(50% 60% at 15% 20%,rgba(47,214,234,.07),transparent 70%)}
+.contact-grid{display:grid;gap:36px;align-items:start;grid-template-columns:minmax(0,1fr)}
+@media (min-width:960px){.contact-grid{grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:64px}}
+.contact h2{font:700 clamp(2rem,5vw,3.4rem)/1.05 var(--f-display);letter-spacing:-.03em;margin-top:14px}
+.contact-info p{color:var(--muted);margin-top:18px;max-width:52ch}
+.topics{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.c-line{display:flex;align-items:center;gap:12px;margin-top:22px;font:500 15px/1.3 var(--f-mono);overflow-wrap:anywhere}
+.c-line .ic{color:var(--cyan)}
+.c-line a:hover{color:var(--cyan)}
+.priv{margin-top:20px;font-size:13px;color:var(--muted);max-width:52ch}
+.form{display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:clamp(20px,3.5vw,32px);border:1px solid var(--line);border-radius:var(--r-lg)}
+.f-row{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:600px){.f-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.field label{display:block;font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.field label i{font-style:normal;color:var(--cyan)}
+.field input,.field select,.field textarea{width:100%;min-height:46px;padding:11px 14px;background:var(--bg);border:1px solid var(--line);border-radius:var(--r-md);font-size:15px;transition:border-color .2s,box-shadow .2s}
+.field textarea{min-height:140px;resize:vertical}
+.field select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238A97A8' stroke-width='1.6'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:38px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:0;border-color:var(--cyan);box-shadow:0 0 0 3px var(--cyan-soft)}
+.field [aria-invalid="true"]{border-color:var(--danger)}
+.err{display:block;min-height:0;margin-top:6px;font-size:12.5px;color:var(--danger)}
+.hp{position:absolute!important;left:-9999px;width:1px;height:1px;overflow:hidden}
+.form-status{font-size:14px;padding:0;min-height:0}
+.form-status.show{padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--line)}
+.form-status.ok{color:var(--green);border-color:rgba(56,217,154,.4);background:var(--green-soft)}
+.form-status.bad{color:var(--danger);border-color:rgba(255,138,138,.4);background:rgba(255,138,138,.07)}
+.form-status a{text-decoration:underline;text-underline-offset:3px}
+.form .btn{min-height:50px;font-size:15px}
+
+/* ---------- footer ---------- */
+.site-footer{border-top:1px solid var(--line);background:linear-gradient(180deg,var(--bg),#04070c);padding:clamp(44px,6vw,72px) 0 28px}
+.foot{display:grid;gap:36px}
+@media (min-width:900px){.foot{grid-template-columns:minmax(0,1.4fr) repeat(4,minmax(0,1fr))}}
+.foot-brand p{color:var(--muted);font-size:14px;margin-top:16px;max-width:34ch}
+.foot-brand .tagline{font:500 11px/1.5 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);margin-top:14px}
+.foot-cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px 20px}
+@media (min-width:900px){.foot-cols{display:contents}}
+.foot h5{font:500 11px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.foot li a{display:inline-block;padding:6px 0;font-size:14px;color:var(--text);transition:color .2s}
+.foot li a:hover{color:var(--cyan)}
+.foot-bottom{margin-top:44px;padding-top:20px;border-top:1px solid var(--line-2);display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 24px;font:500 12px/1.5 var(--f-mono);color:var(--muted)}
+.foot-note{margin-top:12px;font-size:12.5px;color:var(--muted);max-width:90ch}
+.to-top{position:fixed;right:16px;bottom:16px;z-index:900;width:44px;height:44px;display:grid;place-items:center;border-radius:var(--r-md);background:var(--panel-2);border:1px solid var(--cyan-line);color:var(--cyan);opacity:0;visibility:hidden;transform:translateY(8px);transition:opacity .25s,transform .25s,visibility 0s .25s}
+.to-top.show{opacity:1;visibility:visible;transform:none;transition:opacity .25s,transform .25s}
+.to-top .ic{transform:rotate(-90deg)}
+
+/* ---------- inner pages: breadcrumbs, listing, article ---------- */
+.crumbs{padding:22px 0 0;font:500 12px/1.4 var(--f-mono);color:var(--muted)}
+.crumbs ol{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
+.crumbs li+li::before{content:"/";margin-right:8px;color:var(--dim)}
+.crumbs a:hover{color:var(--cyan)}
+.crumbs [aria-current]{color:var(--text);overflow-wrap:anywhere}
+.page-hero{padding:clamp(28px,5vw,56px) 0 clamp(24px,4vw,40px)}
+.page-hero h1{font:700 clamp(2rem,6vw,3.4rem)/1.05 var(--f-display);letter-spacing:-.03em;margin-top:14px;overflow-wrap:anywhere}
+.page-hero p{color:var(--muted);margin-top:12px;max-width:60ch}
+.layout{display:grid;gap:40px;align-items:start;grid-template-columns:minmax(0,1fr)}
+@media (min-width:1100px){.layout{grid-template-columns:minmax(0,1fr) 300px;gap:56px}}
+.side{display:grid;gap:16px}
+@media (min-width:1100px){.side{position:sticky;top:calc(var(--hdr) + 24px)}}
+.box{padding:18px;background:var(--panel);border:1px solid var(--line);border-radius:var(--r-md)}
+.box h2,.box h5{font:500 11px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.box li a{display:flex;justify-content:space-between;gap:10px;padding:7px 0;font-size:14px;color:var(--text)}
+.box li a:hover{color:var(--cyan)}
+.box .count{font:500 11px/1.6 var(--f-mono);color:var(--muted)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin-top:40px;flex-wrap:wrap}
+.pager a{display:inline-flex;align-items:center;min-height:44px;padding:0 18px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel);font:500 13px/1 var(--f-mono);transition:border-color .2s,color .2s}
+.pager a:hover{border-color:var(--cyan-line);color:var(--cyan)}
+.arch-dock{padding:0 0 64px}
+[data-view="post"] .arch-dock,[data-view="page"] .arch-dock,[data-view="error"] .arch-dock,[data-view="home"] .arch-dock{display:none}
+.arch{border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel)}
+.arch>summary{list-style:none;cursor:pointer;padding:14px 18px;min-height:48px;display:flex;align-items:center;justify-content:space-between;font:500 12px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.arch>summary::-webkit-details-marker{display:none}
+.arch .widget-content{padding:4px 18px 16px}
+.arch ul{list-style:none}.arch ul ul{margin-left:14px}
+.arch a{display:inline-block;padding:5px 0;font-size:14px}
+.arch a:hover{color:var(--cyan)}
+.arch .post-count{margin-left:8px;font:500 11px var(--f-mono);color:var(--muted)}
+
+.article-head{padding:clamp(20px,4vw,40px) 0 8px}
+.article-head h1{font:700 clamp(1.85rem,5vw,3rem)/1.1 var(--f-display);letter-spacing:-.025em;margin-top:16px;overflow-wrap:anywhere;text-wrap:balance}
+.post-cats{display:flex;flex-wrap:wrap;gap:8px}
+.meta{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px;margin-top:24px;padding:16px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+@media (min-width:720px){.meta{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.meta dt{font:500 10.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.meta dd{font:500 14px/1.35 var(--f-body);overflow-wrap:anywhere}
+.advisory{display:none;margin-top:16px;padding:16px;border:1px solid var(--line);border-left:2px solid var(--cyan);border-radius:var(--r-md);background:var(--panel)}
+.advisory.show{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 20px}
+@media (min-width:720px){.advisory.show{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.advisory dt{font:500 10.5px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.advisory dd{font:500 14px/1.3 var(--f-body);overflow-wrap:anywhere}
+.advisory a{color:var(--cyan)}
+.advisory a:hover{text-decoration:underline}
+.hero-img{margin:28px 0 0;border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
+.toc{border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel);margin-top:28px}
+.toc summary{list-style:none;cursor:pointer;padding:14px 16px;min-height:48px;display:flex;align-items:center;justify-content:space-between;font:500 11px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.toc summary::-webkit-details-marker{display:none}
+.toc ol{padding:0 16px 14px;display:grid;gap:2px}
+.toc a{display:block;padding:7px 0;font-size:14px;color:var(--muted)}
+.toc a:hover,.toc a.on{color:var(--cyan)}
+.toc a.h3{padding-left:14px;font-size:13px}
+@media (min-width:1100px){.toc.inline{display:none}}
+.side .toc{margin-top:0;display:none}
+@media (min-width:1100px){.side .toc.has{display:block;max-height:calc(100vh - var(--hdr) - 60px);overflow:auto}}
+
+.prose{font-size:clamp(16px,1.6vw,17.5px);line-height:1.8;color:#D3DAE5;margin-top:32px;overflow-wrap:break-word}
+.prose>*+*{margin-top:1.15em}
+.prose h2{font:700 clamp(1.4rem,3vw,1.8rem)/1.2 var(--f-display);letter-spacing:-.015em;color:var(--text);margin-top:2.2em;padding-top:.6em;border-top:1px solid var(--line-2)}
+.prose h3{font:600 1.25rem/1.3 var(--f-display);color:var(--text);margin-top:1.8em}
+.prose h4{font:600 1.05rem/1.4 var(--f-display);color:var(--text);margin-top:1.5em}
+.prose a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px;text-decoration-thickness:1px}
+.prose a:hover{text-decoration-thickness:2px}
+.prose ul,.prose ol{padding-left:1.4em}
+.prose ul{list-style:disc}.prose ol{list-style:decimal}
+.prose li{margin-top:.5em}.prose li::marker{color:var(--cyan)}
+.prose strong{color:var(--text)}
+.prose img{border-radius:var(--r-md);border:1px solid var(--line);margin:0 auto}
+.prose .separator,.prose .tr-caption-container{clear:both;text-align:center}
+.prose .separator a,.prose a[imageanchor]{margin:0!important;float:none!important;display:block}
+.prose figure{margin:1.6em 0}
+.prose figcaption,.prose .tr-caption{font:500 12.5px/1.5 var(--f-mono);color:var(--muted);text-align:center;margin-top:10px}
+.prose blockquote{padding:14px 18px;border-left:2px solid var(--cyan);background:var(--panel);border-radius:0 var(--r-md) var(--r-md) 0;color:var(--text)}
+.prose hr{border:0;border-top:1px solid var(--line);margin:2.2em 0}
+.prose :not(pre)>code{font:500 .86em var(--f-mono);background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm);padding:.12em .4em;color:#BFEFF5;overflow-wrap:anywhere}
+.prose iframe,.prose video{max-width:100%;border:1px solid var(--line);border-radius:var(--r-md)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:var(--r-md)}
+.tbl table{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+.prose th,.prose td{padding:10px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.prose th{background:var(--panel);font:500 11.5px var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.prose tr:last-child td{border-bottom:0}
+.code{margin:1.6em 0;border:1px solid var(--line);border-radius:var(--r-md);background:#080D15;overflow:hidden}
+.code-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 8px 6px 14px;border-bottom:1px solid var(--line);background:var(--panel);font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.code-copy{min-height:32px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:transparent;color:var(--text);font:500 11.5px/1 var(--f-mono);transition:border-color .2s,color .2s}
+.code-copy:hover{border-color:var(--cyan-line);color:var(--cyan)}
+.prose .code pre{margin:0;padding:16px;overflow:auto;font:400 13.5px/1.7 var(--f-mono);color:#DCE7F0;tab-size:2;white-space:pre}
+.prose .code pre code{font:inherit;background:none;border:0;padding:0;color:inherit}
+.prose pre:not(.in-code){margin:1.6em 0;padding:16px;overflow:auto;border:1px solid var(--line);border-radius:var(--r-md);background:#080D15;font:400 13.5px/1.7 var(--f-mono);white-space:pre}
+.notice{margin-top:40px;padding:18px 20px;border:1px solid var(--line);border-left:2px solid var(--green);border-radius:var(--r-md);background:var(--panel);font-size:14px;color:var(--muted)}
+.notice b{display:block;font:500 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.notice a{color:var(--cyan);text-decoration:underline;text-underline-offset:3px}
+.post-tags{margin-top:28px}
+.share{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:28px;padding-top:20px;border-top:1px solid var(--line-2)}
+.share>span{font:500 11px/1 var(--f-mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-right:6px}
+.share a,.share button{display:inline-flex;align-items:center;min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r-sm);background:var(--panel);font:500 12px/1 var(--f-mono);transition:border-color .2s,color .2s}
+.share a:hover,.share button:hover{border-color:var(--cyan-line);color:var(--cyan)}
+.author{display:flex;gap:16px;align-items:center;margin-top:32px;padding:18px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel)}
+.author .av{width:48px;height:48px;flex:none;display:grid;place-items:center;border-radius:var(--r-md);background:var(--cyan-soft);border:1px solid var(--cyan-line);color:var(--cyan);font:700 16px var(--f-display)}
+.author h5{font:600 16px/1.2 var(--f-display)}
+.author p{color:var(--muted);font-size:13.5px;margin-top:4px}
+.related{margin-top:56px}
+.related h2{font:500 11px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+.related .posts-grid{grid-template-columns:1fr}
+@media (min-width:680px){.related .posts-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.related:empty,.related.none{display:none}
+.post-nav{display:grid;gap:12px;margin-top:40px}
+@media (min-width:640px){.post-nav{grid-template-columns:1fr 1fr}}
+.post-nav a{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--panel);transition:border-color .2s}
+.post-nav a:hover{border-color:var(--cyan-line)}
+.post-nav .d{font:500 11px/1 var(--f-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.post-nav .t{font:600 15px/1.35 var(--f-display)}
+.post-nav .older{text-align:right}
+#comments-wrap{margin-top:52px;padding-top:32px;border-top:1px solid var(--line)}
+#comments-wrap h2{font:500 11px/1 var(--f-mono);letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+#comments-wrap,#comments-wrap *{color:#C7D0DC}
+#comments-wrap a{color:var(--cyan)}
+#comments-wrap ol,#comments-wrap ul{list-style:none}
+#comments-wrap iframe{max-width:100%;border:0}
+.error-page{padding:clamp(72px,14vw,160px) 0;text-align:left}
+.error-page h1{font:700 clamp(2.4rem,9vw,5rem)/1 var(--f-display);letter-spacing:-.03em;text-transform:uppercase;margin-top:18px}
+.error-page p{color:var(--muted);max-width:52ch;margin-top:18px}
+.error-page .hero-actions{margin-top:28px}
+.no-results{color:var(--muted);padding:24px;border:1px dashed var(--line);border-radius:var(--r-md)}
+.lbl-hidden{display:none}
+@media print{.site-header,.drawer,.to-top,.side,.share,.read-progress,.site-footer{display:none!important}body{background:#fff;color:#000}.prose{color:#000}}
+
+.article-main,.layout>*{min-width:0}
+
+.lede{color:var(--muted);font-size:clamp(16px,2vw,19px);margin-top:16px;max-width:64ch}
+.hero-img img{width:100%}
+noscript .fw-note{padding:12px}
+
+]]></b:skin>
+</head>
+
+<body>
+<a class='skip-link' href='#main'>Skip to content</a>
+<svg aria-hidden='true' focusable='false' height='0' style='position:absolute' width='0' xmlns='http://www.w3.org/2000/svg'><defs><linearGradient id='cyvg1' x1='0%' x2='100%' y1='0%' y2='100%'><stop offset='0%' stop-color='#00f2fe'/><stop offset='100%' stop-color='#0284c7'/></linearGradient></defs><symbol id='cyv-mark' viewBox='0 0 200 200'><polygon fill='none' points='100,24 168,64 168,136 100,176 32,136 32,64' stroke='#2A3A4D' stroke-width='2.5'/><path d='M52,75 L100,46 L148,75 L148,125 L100,154 L52,125' fill='none' stroke='url(#cyvg1)' stroke-linecap='round' stroke-linejoin='round' stroke-width='6'/><path d='M78,85 L100,126 L122,85' fill='none' stroke='#ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='6'/><circle cx='100' cy='65' fill='#00f2fe' r='4.5'/><circle cx='100' cy='126' fill='#00f2fe' r='3'/></symbol><symbol id='i-target' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9'/><circle cx='12' cy='12' r='5'/><circle cx='12' cy='12' fill='currentColor' r='1.2' stroke='none'/></symbol><symbol id='i-globe' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9'/><path d='M3 12h18M12 3c2.8 2.6 4.2 5.8 4.2 9s-1.4 6.4-4.2 9c-2.8-2.6-4.2-5.8-4.2-9s1.4-6.4 4.2-9z'/></symbol><symbol id='i-plug' viewBox='0 0 24 24'><path d='M9 2v5M15 2v5M7 7h10v4a5 5 0 01-10 0V7z'/><path d='M12 16v6'/></symbol><symbol id='i-network' viewBox='0 0 24 24'><circle cx='5' cy='6' r='2.2'/><circle cx='19' cy='6' r='2.2'/><circle cx='12' cy='18' r='2.2'/><path d='M7 7l3.5 9M17 7l-3.5 9M7.2 6h9.6'/></symbol><symbol id='i-phone' viewBox='0 0 24 24'><rect height='20' rx='2' width='10' x='7' y='2'/><path d='M11 18h2'/></symbol><symbol id='i-cloud' viewBox='0 0 24 24'><path d='M7 18a4.5 4.5 0 010-9 5.5 5.5 0 0110.7 1.7A3.8 3.8 0 0117.5 18H7z'/></symbol><symbol id='i-crosshair' viewBox='0 0 24 24'><circle cx='12' cy='12' r='8'/><path d='M12 2v4M12 18v4M2 12h4M18 12h4'/></symbol><symbol id='i-sliders' viewBox='0 0 24 24'><path d='M4 6h10M18 6h2M4 12h4M12 12h8M4 18h13M21 18h0'/><circle cx='16' cy='6' r='2'/><circle cx='9' cy='12' r='2'/><circle cx='18' cy='18' r='2'/></symbol><symbol id='i-eye' viewBox='0 0 24 24'><path d='M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z'/><circle cx='12' cy='12' r='3'/></symbol><symbol id='i-chat' viewBox='0 0 24 24'><path d='M4 4h16v12H8l-4 4V4z'/></symbol><symbol id='i-gear' viewBox='0 0 24 24'><circle cx='12' cy='12' r='3'/><path d='M19.4 13.5a7.9 7.9 0 000-3l2-1.6-2-3.4-2.4.7a7.9 7.9 0 00-2.6-1.5L14 2h-4l-.4 2.7a7.9 7.9 0 00-2.6 1.5l-2.4-.7-2 3.4 2 1.6a7.9 7.9 0 000 3l-2 1.6 2 3.4 2.4-.7c.8.7 1.6 1.2 2.6 1.5L10 22h4l.4-2.7c1-.3 1.8-.8 2.6-1.5l2.4.7 2-3.4-2-1.6z'/></symbol><symbol id='i-book' viewBox='0 0 24 24'><path d='M4 4.5A2.5 2.5 0 016.5 2H20v17H6.5A2.5 2.5 0 004 21.5v-17z'/><path d='M4 19.5A2.5 2.5 0 016.5 17H20'/></symbol><symbol id='i-key' viewBox='0 0 24 24'><circle cx='8' cy='15' r='4'/><path d='M10.5 12.5L20 3M16 7l3 3M13 10l2 2'/></symbol><symbol id='i-search' viewBox='0 0 24 24'><circle cx='11' cy='11' r='7'/><path d='M21 21l-4.35-4.35'/></symbol><symbol id='i-chev' viewBox='0 0 24 24'><path d='M9 6l6 6-6 6'/></symbol><symbol id='i-ext' viewBox='0 0 24 24'><path d='M7 17L17 7M8 7h9v9'/></symbol><symbol id='i-code' viewBox='0 0 24 24'><path d='M8 8l-4 4 4 4M16 8l4 4-4 4'/></symbol><symbol id='i-mail' viewBox='0 0 24 24'><rect height='14' rx='2' width='18' x='3' y='5'/><path d='M3 7l9 6 9-6'/></symbol><symbol id='i-globe2' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9'/><path d='M3 12h18M12 3c2.8 2.6 4.2 5.8 4.2 9s-1.4 6.4-4.2 9c-2.8-2.6-4.2-5.8-4.2-9s1.4-6.4 4.2-9z'/></symbol><symbol id='i-alert' viewBox='0 0 24 24'><path d='M12 3l10 18H2L12 3z'/><path d='M12 10v5M12 18h.01'/></symbol></svg>
+<header class='site-header'>
+  <div class='wrap'>
+    <nav aria-label='Primary' class='nav'>
+      <a aria-label='CYVANTAS home' class='logo' expr:href='data:blog.homepageUrl'><svg aria-hidden='true' focusable='false' viewBox='0 0 200 200'><use href='#cyv-mark'/></svg><span class='logo-word'><b>CYVANTAS</b><small>Offensive Intelligence</small></span></a>
+      <div class='nav-links'><a data-nav='home' expr:href='data:blog.homepageUrl'>Home</a><a data-nav='about' expr:href='data:blog.homepageUrl + &quot;#about&quot;'>About</a><a data-nav='services' expr:href='data:blog.homepageUrl + &quot;#services&quot;'>Services</a><a data-nav='methodology' expr:href='data:blog.homepageUrl + &quot;#methodology&quot;'>Methodology</a><a data-nav='attack-surface' expr:href='data:blog.homepageUrl + &quot;#attack-surface&quot;'>Attack Surface</a><a data-nav='research' expr:href='data:blog.homepageUrl + &quot;#research&quot;'>Research</a><a data-nav='projects' expr:href='data:blog.homepageUrl + &quot;#projects&quot;'>Projects</a><a data-nav='founder' expr:href='data:blog.homepageUrl + &quot;#founder&quot;'>Founder</a><a data-nav='contact' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>Contact</a></div>
+      <div class='nav-cta'>
+        <a class='btn btn-primary btn-sm' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>Get Security Assessment</a>
+        <button aria-controls='drawer' aria-expanded='false' aria-label='Open menu' class='burger' id='burger' type='button'><span/><span/><span/></button>
+      </div>
+    </nav>
+  </div>
+</header>
+<div aria-hidden='true' class='read-progress' id='readProgress'/>
+<div class='drawer' id='drawer'>
+  <nav aria-label='Mobile'><a data-nav='home' expr:href='data:blog.homepageUrl'><span>01</span>Home</a><a data-nav='about' expr:href='data:blog.homepageUrl + &quot;#about&quot;'><span>02</span>About</a><a data-nav='services' expr:href='data:blog.homepageUrl + &quot;#services&quot;'><span>03</span>Services</a><a data-nav='methodology' expr:href='data:blog.homepageUrl + &quot;#methodology&quot;'><span>04</span>Methodology</a><a data-nav='attack-surface' expr:href='data:blog.homepageUrl + &quot;#attack-surface&quot;'><span>05</span>Attack Surface</a><a data-nav='research' expr:href='data:blog.homepageUrl + &quot;#research&quot;'><span>06</span>Research</a><a data-nav='projects' expr:href='data:blog.homepageUrl + &quot;#projects&quot;'><span>07</span>Projects</a><a data-nav='founder' expr:href='data:blog.homepageUrl + &quot;#founder&quot;'><span>08</span>Founder</a><a data-nav='contact' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'><span>09</span>Contact</a></nav>
+  <a class='btn btn-primary' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>Get Security Assessment</a>
+  <div class='drawer-meta'>OFFENSIVE INTELLIGENCE // SECURITY RESEARCH<br/>cyvantas@gmail.com</div>
+</div>
+<div aria-live='polite' class='sr-only' id='liveMsg' role='status'/>
+
+<main id='main'>
+
+
+<b:if cond='data:view.isHomepage'>
+<section class='hero' id='home'>
+  <div class='wrap hero-grid'>
+    <div>
+      <div class='hero-tags reveal'><span class='a'><span class='dot'/>Security research active</span><span class='b'>Offensive security &amp; VAPT</span></div>
+      <h1 class='reveal'>Security<br/>beyond the<br/><em>surface.</em></h1>
+      <p class='hero-sub reveal'>CYVANTAS helps organizations uncover vulnerabilities, understand their real attack surface, and build stronger defenses through offensive security, penetration testing, vulnerability research, and adversarial intelligence.</p>
+      <div class='hero-actions reveal'>
+        <a class='btn btn-primary' expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>Get Security Assessment</a>
+        <a class='btn btn-ghost' href='#services'>Explore Services</a>
+        <a class='link-mono' href='https://github.com/kcprajeesh' rel='noopener noreferrer' target='_blank'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-code'/></svg>github/kcprajeesh<span class='sr-only'> (opens in a new tab)</span></a>
+      </div>
+      <div class='hero-facts reveal'><span>Six-stage methodology</span><span>Evidence-driven findings</span><span>Authorized-scope testing only</span></div>
+    </div>
+    <figure class='viz ticks reveal' style='margin:0'>
+      <div class='viz-bar'><b>Attack-surface model</b><span>Illustrative</span></div>
+      <svg aria-labelledby='hvt' role='img' viewBox='-40 0 520 400' xmlns='http://www.w3.org/2000/svg'><title id='hvt'>Illustrative model of an organization&#39;s attack surface: web, API, cloud, network, mobile, identity and OSINT nodes connected to a central target.</title><circle cx='220' cy='200' fill='none' r='150' stroke='#1C2733' stroke-dasharray='2 6'/><circle cx='220' cy='200' fill='none' r='96' stroke='#141E2A'/><line stroke='#1C2733' stroke-width='1' x1='220' x2='352' y1='58' y2='112'/><line stroke='#1C2733' stroke-width='1' x1='352' x2='384' y1='112' y2='244'/><line stroke='#1C2733' stroke-width='1' x1='384' x2='296' y1='244' y2='346'/><line stroke='#1C2733' stroke-width='1' x1='296' x2='144' y1='346' y2='346'/><line stroke='#1C2733' stroke-width='1' x1='144' x2='56' y1='346' y2='244'/><line stroke='#1C2733' stroke-width='1' x1='56' x2='88' y1='244' y2='112'/><line stroke='#1C2733' stroke-width='1' x1='88' x2='220' y1='112' y2='58'/><line stroke='#2A3A4D' stroke-width='1' x1='220' x2='220' y1='200' y2='58'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='220' x2='352' y1='200' y2='112'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='220' x2='384' y1='200' y2='244'/><line stroke='#2A3A4D' stroke-width='1' x1='220' x2='296' y1='200' y2='346'/><line stroke='#2A3A4D' stroke-width='1' x1='220' x2='144' y1='200' y2='346'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='220' x2='56' y1='200' y2='244'/><line stroke='#2A3A4D' stroke-width='1' x1='220' x2='88' y1='200' y2='112'/><polygon fill='#0D1420' points='220.0,166.0 249.4,183.0 249.4,217.0 220.0,234.0 190.6,217.0 190.6,183.0' stroke='#2FD6EA' stroke-width='1.5'/><path d='M206,192 L220,214 L234,192' fill='none' stroke='#E8EDF4' stroke-linecap='round' stroke-linejoin='round' stroke-width='3'/><circle cx='220' cy='180' fill='#2FD6EA' r='3'/><text fill='#8A97A8' font-family='JetBrains Mono,monospace' font-size='10' letter-spacing='1.4' text-anchor='middle' x='220' y='252'>TARGET ORG</text><circle cx='220' cy='58' fill='#060A10' r='6' stroke='#2FD6EA' stroke-width='1.5'/><circle cx='220' cy='58' fill='#576474' r='2'/><text fill='#E8EDF4' font-family='JetBrains Mono,monospace' font-size='11.5' letter-spacing='1' text-anchor='middle' x='220' y='44'>WEB</text><circle cx='352' cy='112' fill='#060A10' r='6' stroke='#2FD6EA' stroke-width='1.5'/><circle cx='352' cy='112' fill='#2FD6EA' r='2'/><text fill='#E8EDF4' font-family='JetBrains Mono,monospace' font-size='11.5' letter-spacing='1' text-anchor='start' x='368' y='116'>API</text><circle cx='384' cy='244' fill='#060A10' r='6' stroke='#2FD6EA' stroke-width='1.5'/><circle cx='384' cy='244' fill='#2FD6EA' r='2'/><text fill='#E8EDF4' font-family='JetBrains Mono,monospace' font-size='11.5' letter-spacing='1' text-anchor='start' x='400' y='248'>CLOUD</text><circle cx='296' cy='346' fill='#060A10' r='6' stroke='#2FD6EA' stroke-width='1.5'/><circle cx='296' cy='346' fill='#576474' r='2'/><text fill='#E8EDF4' font-family='JetBrains Mono,monospace' font-size='11.5' letter-spacing='1' text-anchor='start' x='312' y='350'>NETWORK</text><circle cx='144' cy='346' fill='#060A10' r='6' stroke='#2FD6EA' stroke-width='1.5'/><circle cx='144' cy='346' fill='#576474' r='2'/><text fill='#E8EDF4' font-family='JetBrains Mono,monospace' font-size='11.5' letter-spacing='1' text-anchor='end' x='128' y='350'>MOBILE</text><circle cx='56' cy='244' fill='#060A10' r='6' stroke='#2FD6EA' stroke-width='1.5'/><circle class='pulse-node' cx='56' cy='244' fill='#38D99A' r='3'/><text fill='#E8EDF4' font-family='JetBrains Mono,monospace' font-size='11.5' letter-spacing='1' text-anchor='end' x='40' y='248'>IDENTITY</text><circle cx='88' cy='112' fill='#060A10' r='6' stroke='#2FD6EA' stroke-width='1.5'/><circle cx='88' cy='112' fill='#576474' r='2'/><text fill='#E8EDF4' font-family='JetBrains Mono,monospace' font-size='11.5' letter-spacing='1' text-anchor='end' x='72' y='116'>OSINT</text></svg>
+      <figcaption class='viz-legend'><span><i style='background:#2FD6EA'/>Asset</span><span><i style='background:#38D99A'/>Entry point</span><span><i style='background:#576474'/>Cross-link</span></figcaption>
+    </figure>
+  </div>
+</section>
+
+<section aria-label='Security coverage snapshot' class='snap' id='snapshot'>
+  <div class='wrap'><div class='snap-grid'><a class='snap-card reveal' href='#svc-vapt'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-target'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>VAPT</strong><small>Assessment</small></a><a class='snap-card reveal' href='#svc-web'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-globe'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>Web Security</strong><small>Applications</small></a><a class='snap-card reveal' href='#svc-api'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-plug'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>API Security</strong><small>REST &#183; GraphQL</small></a><a class='snap-card reveal' href='#svc-cloud'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-cloud'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>Cloud Security</strong><small>IAM &#183; Storage &#183; Network</small></a><a class='snap-card reveal' href='#svc-mobile'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-phone'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>Mobile Security</strong><small>Android &#183; iOS</small></a><a class='snap-card reveal' href='#svc-network'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-network'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>Network Security</strong><small>Internal &#183; External</small></a><a class='snap-card reveal' href='#svc-red'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-crosshair'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>Red Teaming</strong><small>Adversary simulation</small></a><a class='snap-card reveal' href='#svc-osint'><div class='top'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-eye'/></svg><span class='st'><span class='dot'/>Offered</span></div><strong>Threat Intelligence</strong><small>OSINT &#183; Exposure</small></a></div></div>
+</section>
+
+<section class='sec' id='about'>
+  <div class='wrap about-grid'>
+    <div class='about-copy'>
+      <div class='eyebrow reveal'>About CYVANTAS</div>
+      <h2 class='sec-title wide reveal'>A cybersecurity brand built around one question: where are you actually exposed?</h2>
+      <p class='reveal'>CYVANTAS is an offensive-security-focused cybersecurity organization. We work from the attacker&#39;s perspective to give organizations a realistic view of their risk, then translate that view into practical steps toward a stronger security posture.</p>
+      <ul class='about-list reveal'>
+        <li>Finding real attack paths, not just isolated issues</li>
+        <li>Understanding exposure across applications, APIs, cloud and identity</li>
+        <li>Validating vulnerabilities to remove false positives</li>
+        <li>Reducing attack surface with concrete remediation steps</li>
+        <li>Producing actionable security intelligence for engineering teams</li>
+      </ul>
+      <div class='philosophy reveal'><span>Philosophy</span>&#8220;Find it. Understand it. Secure it.&#8221;</div>
+    </div>
+    <dl class='spec ticks reveal'>
+      <div><dt>Focus</dt><dd>Offensive Security</dd></div>
+      <div><dt>Specialization</dt><dd>VAPT / Application Security</dd></div>
+      <div><dt>Research</dt><dd>Vulnerability Research</dd></div>
+      <div><dt>Approach</dt><dd>Evidence Driven</dd></div>
+      <div><dt>Mission</dt><dd>Reduce Real-World Exposure</dd></div>
+      <div><dt>Based in</dt><dd>India</dd></div>
+      <div><dt>Contact</dt><dd class='g'>cyvantas@gmail.com</dd></div>
+    </dl>
+  </div>
+</section>
+
+<section class='sec' id='services'>
+  <div class='wrap'>
+    <div class='sec-head'>
+      <div class='eyebrow reveal'>Services</div>
+      <h2 class='sec-title wide reveal'>Security services scoped around a clear objective</h2>
+      <p class='sec-sub reveal'>Every engagement starts from an objective, from initial discovery to verified remediation, and is performed only within an agreed, authorized scope.</p>
+    </div>
+    <div class='svc-grid'><article class='svc w2 feature reveal' id='svc-vapt'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-target'/></svg></span><span class='svc-id'>SVC-01 // ASSESS</span></div><h3>Vulnerability Assessment &amp; Penetration Testing</h3><p>Simulated attacks against your systems to uncover exploitable vulnerabilities before adversaries do.</p><div class='obj'><b>Objective</b>Identify and validate exploitable weaknesses</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Asset and exposure discovery</li><li>Manual testing that goes beyond scanner output</li><li>Validated findings with remediation guidance</li></ul><a data-service='Vulnerability Assessment &amp; Penetration Testing' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-web'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-globe'/></svg></span><span class='svc-id'>SVC-02 // ASSESS</span></div><h3>Web Application Security Testing</h3><p>In-depth testing of web applications for logic flaws and common vulnerability classes.</p><div class='obj'><b>Objective</b>Harden applications against real-world exploitation</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Authentication and session handling</li><li>Access-control and business-logic flaws</li><li>Injection and client-side vulnerability classes</li></ul><a data-service='Web Application Security' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-api'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-plug'/></svg></span><span class='svc-id'>SVC-03 // ASSESS</span></div><h3>API Security Testing</h3><p>Assessment of REST, GraphQL, and internal APIs for authentication and data-exposure flaws.</p><div class='obj'><b>Objective</b>Close gaps in API access control and data handling</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Authentication and object-level authorization</li><li>Excessive data exposure and mass assignment</li><li>Input handling and abuse resistance</li></ul><a data-service='API Security Testing' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-network'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-network'/></svg></span><span class='svc-id'>SVC-04 // ASSESS</span></div><h3>Network Security Assessment</h3><p>Evaluation of internal and external network architecture, segmentation, and exposed services.</p><div class='obj'><b>Objective</b>Reduce the network&#39;s exploitable attack surface</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>External exposure and service enumeration</li><li>Segmentation and internal trust</li><li>Protocol and configuration weaknesses</li></ul><a data-service='Network Security Assessment' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-mobile'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-phone'/></svg></span><span class='svc-id'>SVC-05 // ASSESS</span></div><h3>Mobile Application Security</h3><p>Static and dynamic analysis of Android and iOS applications and their backends.</p><div class='obj'><b>Objective</b>Secure mobile clients against reverse engineering and data leakage</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Android and iOS static and dynamic analysis</li><li>Local storage and transport security</li><li>Backend API interaction</li></ul><a data-service='Mobile Application Security' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-cloud'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-cloud'/></svg></span><span class='svc-id'>SVC-06 // ASSESS</span></div><h3>Cloud Security Assessment</h3><p>Review of cloud infrastructure configuration across identity, storage, and network controls.</p><div class='obj'><b>Objective</b>Eliminate cloud misconfigurations before attackers find them</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Identity and privilege paths</li><li>Storage exposure and network controls</li><li>Configuration against hardening baselines</li></ul><a data-service='Cloud Security Assessment' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc w2 alt reveal' id='svc-red'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-crosshair'/></svg></span><span class='svc-id'>SVC-07 // ENGAGE</span></div><h3>Red Teaming &amp; Adversary Simulation</h3><p>Objective-driven simulated attacks that mirror real adversary tradecraft.</p><div class='obj'><b>Objective</b>Test detection and response under realistic conditions</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Objective-based attack scenarios</li><li>Adversary tradecraft within an agreed scope</li><li>Detection and response observations</li></ul><a data-service='Red Teaming &amp; Adversary Simulation' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-config'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-sliders'/></svg></span><span class='svc-id'>SVC-08 // ASSESS</span></div><h3>Security Configuration Review</h3><p>Manual review of system, application, and device configurations against hardening baselines.</p><div class='obj'><b>Objective</b>Close configuration gaps automated scans miss</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Operating system, application and device settings</li><li>Comparison against hardening baselines</li><li>Prioritized hardening guidance</li></ul><a data-service='Security Configuration Review' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc w2 intel reveal' id='svc-osint'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-eye'/></svg></span><span class='svc-id'>SVC-09 // INTEL</span></div><h3>OSINT &amp; Threat Intelligence</h3><p>Mapping of publicly exposed information and organizational digital footprint.</p><div class='obj'><b>Objective</b>Understand what adversaries can see before they act</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Exposed domains, subdomains and services</li><li>Publicly available information about the organization</li><li>An adversary&#39;s-eye view of your footprint</li></ul><a data-service='OSINT &amp; Threat Intelligence' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-consult'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chat'/></svg></span><span class='svc-id'>SVC-10 // ADVISE</span></div><h3>Cybersecurity Consulting</h3><p>Strategic guidance on security posture, roadmaps, and risk prioritization.</p><div class='obj'><b>Objective</b>Align security investment with actual risk</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Security posture review</li><li>Risk prioritization and roadmap</li><li>Secure design guidance</li></ul><a data-service='Cybersecurity Consulting' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-auto'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-gear'/></svg></span><span class='svc-id'>SVC-11 // BUILD</span></div><h3>Security Automation</h3><p>Custom tooling and scripts to streamline recurring security workflows.</p><div class='obj'><b>Objective</b>Make security testing faster and more consistent</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Custom scripts and tooling</li><li>Repeatable testing workflows</li><li>Automating recurring security tasks</li></ul><a data-service='Security Automation' href='#contact'>Discuss this service &#8594;</a></div></details></article><article class='svc  reveal' id='svc-aware'><div class='svc-top'><span class='svc-icon'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-book'/></svg></span><span class='svc-id'>SVC-12 // ADVISE</span></div><h3>Security Awareness &amp; Best Practices</h3><p>Practical guidance and training to build security-conscious habits across teams.</p><div class='obj'><b>Objective</b>Reduce human-factor risk across the organization</div><details class='more'><summary><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg>Learn more</summary><div class='more-body'><b>Typical coverage</b><ul><li>Practical, role-relevant guidance</li><li>Secure everyday habits for teams</li><li>Best-practice briefings</li></ul><a data-service='Security Awareness &amp; Best Practices' href='#contact'>Discuss this service &#8594;</a></div></details></article></div>
+  </div>
+</section>
+
+<section class='sec method' id='methodology'>
+  <div class='wrap'>
+    <div class='sec-head'>
+      <div class='eyebrow reveal'>Methodology</div>
+      <h2 class='sec-title wide reveal'>A six-stage operational security workflow</h2>
+      <p class='sec-sub reveal'>Security testing should do more than find weaknesses. It should tell you exactly how to fix them. Every CYVANTAS engagement follows the same process.</p>
+    </div>
+    <ol class='stages'><li class='stage reveal'><span class='stage-n'>01</span><h3>Discover</h3><p>Identify assets, applications, infrastructure and attack surface.</p><span class='out'><b>Output</b> Asset &amp; exposure inventory</span></li><li class='stage reveal'><span class='stage-n'>02</span><h3>Map</h3><p>Understand technologies, trust boundaries, exposed services and potential attack paths.</p><span class='out'><b>Output</b> Attack-path hypotheses</span></li><li class='stage reveal'><span class='stage-n'>03</span><h3>Test</h3><p>Perform controlled offensive security testing.</p><span class='out'><b>Output</b> Candidate findings</span></li><li class='stage reveal'><span class='stage-n'>04</span><h3>Validate</h3><p>Confirm vulnerabilities and eliminate false positives.</p><span class='out'><b>Output</b> Confirmed findings</span></li><li class='stage exploit reveal'><span class='stage-n'>05</span><h3>Exploit</h3><p>Where authorized, demonstrate realistic impact safely.</p><span class='out'><b>Output</b> Evidence of impact</span></li><li class='stage reveal'><span class='stage-n'>06</span><h3>Remediate</h3><p>Provide actionable remediation guidance and validation.</p><span class='out'><b>Output</b> Fix guidance &amp; retest</span></li></ol>
+    <p class='disclaimer reveal'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-alert'/></svg><span>Responsible testing: assessments are performed only against systems and assets that are explicitly authorized and in scope. Exploitation is limited to safe, agreed demonstrations of impact.</span></p>
+  </div>
+</section>
+
+<section class='sec' id='attack-surface'>
+  <div class='wrap'>
+    <div class='sec-head'>
+      <div class='eyebrow reveal'>Attack surface</div>
+      <h2 class='sec-title wide reveal'>Vulnerabilities live in an interconnected attack surface</h2>
+      <p class='sec-sub reveal'>A weakness rarely matters in isolation. What matters is the path an attacker can chain from the internet to something you care about. Hover or focus a layer to trace it.</p>
+    </div>
+    <div class='surface'>
+      <figure class='viz ticks reveal' style='margin:0'>
+        <div class='viz-bar'><b>Layered exposure map</b><span>Conceptual</span></div>
+        <svg aria-labelledby='svt' role='img' viewBox='0 0 440 528' xmlns='http://www.w3.org/2000/svg'><title id='svt'>Layered attack-surface diagram from the internet down to third-party dependencies, with cross-links between layers.</title><path d='M274 96 C 360 96, 360 320, 274 320' fill='none' stroke='#2A3A4D' stroke-dasharray='3 4' stroke-width='1.2'/><circle cx='274' cy='96' fill='#576474' r='2.5'/><circle cx='274' cy='320' fill='#576474' r='2.5'/><path d='M274 152 C 332 152, 332 264, 274 264' fill='none' stroke='#2A3A4D' stroke-dasharray='3 4' stroke-width='1.2'/><circle cx='274' cy='152' fill='#576474' r='2.5'/><circle cx='274' cy='264' fill='#576474' r='2.5'/><path d='M274 208 C 360 208, 360 432, 274 432' fill='none' stroke='#2A3A4D' stroke-dasharray='3 4' stroke-width='1.2'/><circle cx='274' cy='208' fill='#576474' r='2.5'/><circle cx='274' cy='432' fill='#576474' r='2.5'/><path d='M274 264 C 360 264, 360 488, 274 488' fill='none' stroke='#2A3A4D' stroke-dasharray='3 4' stroke-width='1.2'/><circle cx='274' cy='264' fill='#576474' r='2.5'/><circle cx='274' cy='488' fill='#576474' r='2.5'/><path d='M274 376 C 318 376, 318 432, 274 432' fill='none' stroke='#2A3A4D' stroke-dasharray='3 4' stroke-width='1.2'/><circle cx='274' cy='376' fill='#576474' r='2.5'/><circle cx='274' cy='432' fill='#576474' r='2.5'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='58' y2='78'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='114' y2='134'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='170' y2='190'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='226' y2='246'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='282' y2='302'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='338' y2='358'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='394' y2='414'/><line class='flow-line' stroke='#2FD6EA' stroke-width='1.5' x1='149' x2='149' y1='450' y2='470'/><g class='node' data-node='internet'><rect height='36' rx='6' width='250' x='24' y='22'/><text class='ix' x='36' y='44'>01</text><text x='64' y='44'>Internet</text></g><g class='node' data-node='domains'><rect height='36' rx='6' width='250' x='24' y='78'/><text class='ix' x='36' y='100'>02</text><text x='64' y='100'>Domains</text></g><g class='node' data-node='subdomains'><rect height='36' rx='6' width='250' x='24' y='134'/><text class='ix' x='36' y='156'>03</text><text x='64' y='156'>Subdomains</text></g><g class='node' data-node='webapps'><rect height='36' rx='6' width='250' x='24' y='190'/><text class='ix' x='36' y='212'>04</text><text x='64' y='212'>Web Applications</text></g><g class='node' data-node='apis'><rect height='36' rx='6' width='250' x='24' y='246'/><text class='ix' x='36' y='268'>05</text><text x='64' y='268'>APIs</text></g><g class='node' data-node='cloud'><rect height='36' rx='6' width='250' x='24' y='302'/><text class='ix' x='36' y='324'>06</text><text x='64' y='324'>Cloud Infrastructure</text></g><g class='node' data-node='endpoints'><rect height='36' rx='6' width='250' x='24' y='358'/><text class='ix' x='36' y='380'>07</text><text x='64' y='380'>Endpoints</text></g><g class='node' data-node='identity'><rect height='36' rx='6' width='250' x='24' y='414'/><text class='ix' x='36' y='436'>08</text><text x='64' y='436'>Identity</text></g><g class='node' data-node='third'><rect height='36' rx='6' width='250' x='24' y='470'/><text class='ix' x='36' y='492'>09</text><text x='64' y='492'>Third-Party Dependencies</text></g><text fill='#8A97A8' font-family='JetBrains Mono,monospace' font-size='10' letter-spacing='1.2' text-anchor='end' x='436' y='44'>CROSS-LINKS</text></svg>
+      </figure>
+      <ol class='chain reveal'><li data-node='internet' tabindex='0'><span class='n'>01</span><div><strong>Internet</strong><p>Everything reachable from the outside.</p></div></li><li data-node='domains' tabindex='0'><span class='n'>02</span><div><strong>Domains</strong><p>Registered names, DNS records and ownership.</p></div></li><li data-node='subdomains' tabindex='0'><span class='n'>03</span><div><strong>Subdomains</strong><p>Forgotten, staging and takeover-prone hosts.</p></div></li><li data-node='webapps' tabindex='0'><span class='n'>04</span><div><strong>Web Applications</strong><p>Logic, sessions and access control.</p></div></li><li data-node='apis' tabindex='0'><span class='n'>05</span><div><strong>APIs</strong><p>Authentication, authorization and data exposure.</p></div></li><li data-node='cloud' tabindex='0'><span class='n'>06</span><div><strong>Cloud Infrastructure</strong><p>Identity policies, storage and network rules.</p></div></li><li data-node='endpoints' tabindex='0'><span class='n'>07</span><div><strong>Endpoints</strong><p>Exposed services, devices and mobile clients.</p></div></li><li data-node='identity' tabindex='0'><span class='n'>08</span><div><strong>Identity</strong><p>Accounts, tokens, SSO and privilege paths.</p></div></li><li data-node='third' tabindex='0'><span class='n'>09</span><div><strong>Third-Party Dependencies</strong><p>Vendors, libraries and integrations you inherit.</p></div></li></ol>
+    </div>
+  </div>
+</section>
+
+<section class='sec' id='why'>
+  <div class='wrap'>
+    <div class='sec-head'>
+      <div class='eyebrow reveal'>Why CYVANTAS</div>
+      <h2 class='sec-title wide reveal'>Built on an offensive-security mindset</h2>
+    </div>
+    <div class='why-grid'><div class='why reveal'><span class='pid'>P-01</span><h3>Evidence Driven</h3><p>Findings should be supported by technical evidence &#8212; reproducible steps and proof, not scanner output alone.</p></div><div class='why reveal'><span class='pid'>P-02</span><h3>Attack-Path Thinking</h3><p>Don&#39;t look at vulnerabilities in isolation. Chained together, small weaknesses become real routes into a system.</p></div><div class='why reveal'><span class='pid'>P-03</span><h3>Real-World Validation</h3><p>Prioritize understanding actual security impact over theoretical severity.</p></div><div class='why reveal'><span class='pid'>P-04</span><h3>Research Mindset</h3><p>Continuously investigate emerging vulnerabilities and attack techniques.</p></div><div class='why reveal'><span class='pid'>P-05</span><h3>Actionable Reporting</h3><p>Security reports should help engineering teams fix problems, with clear priorities and steps.</p></div></div>
+  </div>
+</section>
+</b:if>
+
+<!-- ============================== BLOG WIDGET: research feed / listings / post / pages / 404 ============================== -->
+
+<b:section id='content' maxwidgets='1' showaddelement='no'>
+  <b:widget id='Blog1' locked='false' title='Blog Posts' type='Blog' version='2' visible='true'>
+    <b:widget-settings>
+      <b:widget-setting name='showDateHeader'>false</b:widget-setting>
+      <b:widget-setting name='style.textcolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='showShareButtons'>false</b:widget-setting>
+      <b:widget-setting name='showCommentLink'>true</b:widget-setting>
+      <b:widget-setting name='style.urlcolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='showAuthor'>true</b:widget-setting>
+      <b:widget-setting name='style.linkcolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='style.unittype'>TextAndImage</b:widget-setting>
+      <b:widget-setting name='style.bgcolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='reactionsLabel'/>
+      <b:widget-setting name='showAuthorProfile'>false</b:widget-setting>
+      <b:widget-setting name='style.layout'>1x1</b:widget-setting>
+      <b:widget-setting name='showLabels'>true</b:widget-setting>
+      <b:widget-setting name='showLocation'>true</b:widget-setting>
+      <b:widget-setting name='showTimestamp'>true</b:widget-setting>
+      <b:widget-setting name='postsPerAd'>1</b:widget-setting>
+      <b:widget-setting name='showBacklinks'>false</b:widget-setting>
+      <b:widget-setting name='style.bordercolor'>#ffffff</b:widget-setting>
+      <b:widget-setting name='showInlineAds'>false</b:widget-setting>
+      <b:widget-setting name='showReactions'>false</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+<b:if cond='data:view.isMultipleItems'>
+
+  <b:if cond='data:view.isHomepage'>
+  <!-- ===== HOMEPAGE: research & writing ===== -->
+  <section class='sec' id='research'>
+    <div class='wrap'>
+      <div class='research-top'>
+        <div>
+          <div class='eyebrow reveal'>Research</div>
+          <h2 class='sec-title reveal'>Research &amp; Writing</h2>
+          <p class='sec-sub reveal'>Vulnerability research, writeups, advisories and technical articles. New posts appear here automatically.</p>
+        </div>
+        <form action='/search' class='reveal' method='get' role='search' style='width:100%;max-width:340px'>
+          <label class='sr-only' for='sq-home'>Search research</label>
+          <div class='search'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-search'/></svg><input id='sq-home' name='q' placeholder='Search research…' type='search'/></div>
+        </form>
+      </div>
+      <b:if cond='data:blog.allLabels'>
+      <div aria-label='Research categories' class='tags rs-tags' role='list'>
+        <a class='tag active' expr:href='data:blog.homepageUrl + &quot;#research&quot;' role='listitem'>All</a>
+        <b:loop values='data:blog.allLabels' var='label'><a class='tag' expr:href='data:label.url' role='listitem'><data:label.name/></a></b:loop>
+      </div>
+      </b:if>
+      <b:if cond='data:posts'>
+      <b:loop index='i' values='data:posts' var='post'><b:if cond='data:i == 0'><article class='post-card featured reveal' data-labels='1'><b:if cond='data:post.featuredImage'><div class='pc-media'><img alt='' decoding='async' expr:src='data:post.featuredImage' loading='lazy'/></div><b:else/><div class='pc-media no-img'/></b:if><div class='pc-body'><div class='pc-flags'><ul class='lbls'><b:loop values='data:post.labels' var='label'><li><data:label.name/></li></b:loop></ul></div><h3><a expr:href='data:post.url'><data:post.title/></a></h3><p><data:post.snippet/></p><div class='pc-foot'><time expr:datetime='data:post.date.iso8601'><data:post.date/></time><span aria-hidden='true' class='go'>Read research &#8594;</span></div></div></article></b:if></b:loop>
+      <div class='posts-grid'>
+        <b:loop index='i' values='data:posts' var='post'><b:if cond='data:i &gt; 0 and data:i &lt; 7'><article class='post-card reveal' data-labels='1'><b:if cond='data:post.featuredImage'><div class='pc-media'><img alt='' decoding='async' expr:src='data:post.featuredImage' loading='lazy'/></div><b:else/><div class='pc-media no-img'/></b:if><div class='pc-body'><div class='pc-flags'><ul class='lbls'><b:loop values='data:post.labels' var='label'><li><data:label.name/></li></b:loop></ul></div><h3><a expr:href='data:post.url'><data:post.title/></a></h3><p><data:post.snippet/></p><div class='pc-foot'><time expr:datetime='data:post.date.iso8601'><data:post.date/></time><span aria-hidden='true' class='go'>Read research &#8594;</span></div></div></article></b:if></b:loop>
+      </div>
+      <div class='more-row'><a class='btn btn-ghost' expr:href='data:blog.searchUrl + &quot;/label/Vulnerability%20Research&quot;'>Browse vulnerability research</a></div>
+      <b:else/>
+      <div class='empty reveal'>
+        <p>No research has been published yet. Articles, advisories and writeups will appear here as soon as they are posted. Planned categories:</p>
+        <div class='tags'><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/Vulnerability%20Research&quot;'>Vulnerability Research</a><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/Web%20Security&quot;'>Web Security</a><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/API%20Security&quot;'>API Security</a><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/Cloud%20Security&quot;'>Cloud Security</a><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/Mobile%20Security&quot;'>Mobile Security</a><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/Offensive%20Security&quot;'>Offensive Security</a><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/Threat%20Intelligence&quot;'>Threat Intelligence</a><a class='tag' expr:href='data:blog.searchUrl + &quot;/label/Tools&quot;'>Tools</a></div>
+      </div>
+      </b:if>
+    </div>
+  </section>
+
+  <b:else/>
+  <!-- ===== LABEL / SEARCH / ARCHIVE LISTING ===== -->
+  <nav aria-label='Breadcrumb' class='crumbs'><div class='wrap'><ol><li><a expr:href='data:blog.homepageUrl'>Home</a></li><li><a expr:href='data:blog.homepageUrl + &quot;#research&quot;'>Research</a></li><b:if cond='data:view.isLabelSearch'><li aria-current='page'><data:view.search.label/></li></b:if><b:if cond='data:view.isSearch and !data:view.isLabelSearch'><li aria-current='page'>Search</li></b:if><b:if cond='data:view.isArchive'><li aria-current='page'>Archive</li></b:if></ol></div></nav>
+  <section class='page-hero'>
+    <div class='wrap'>
+      <b:if cond='data:view.isLabelSearch'>
+      <div class='eyebrow'>Category</div><h1><data:view.search.label/></h1><p>Security research and writing filed under &#8220;<data:view.search.label/>&#8221;.</p>
+      <b:elseif cond='data:view.isSearch'/>
+      <div class='eyebrow'>Search</div><h1>Search results</h1><p>Showing results for &#8220;<data:view.search.query/>&#8221;.</p>
+      <b:elseif cond='data:view.isArchive'/>
+      <div class='eyebrow'>Archive</div><h1>Research archive</h1><p>Browsing research by date.</p>
+      </b:if>
+    </div>
+  </section>
+  <section style='padding-bottom:64px'>
+    <div class='wrap layout'>
+      <div>
+        <b:if cond='data:posts'>
+        <div class='posts-grid'><b:loop values='data:posts' var='post'><article class='post-card reveal' data-labels='1'><b:if cond='data:post.featuredImage'><div class='pc-media'><img alt='' decoding='async' expr:src='data:post.featuredImage' loading='lazy'/></div><b:else/><div class='pc-media no-img'/></b:if><div class='pc-body'><div class='pc-flags'><ul class='lbls'><b:loop values='data:post.labels' var='label'><li><data:label.name/></li></b:loop></ul></div><h3><a expr:href='data:post.url'><data:post.title/></a></h3><p><data:post.snippet/></p><div class='pc-foot'><time expr:datetime='data:post.date.iso8601'><data:post.date/></time><span aria-hidden='true' class='go'>Read research &#8594;</span></div></div></article></b:loop></div>
+        <b:else/>
+        <p class='no-results'>No articles found. Try a different search or browse research by category.</p>
+        </b:if>
+        <div class='pager'>
+          <b:if cond='data:newerPageUrl'><a expr:href='data:newerPageUrl' rel='prev'>&#8592; Newer</a></b:if>
+          <b:if cond='data:olderPageUrl'><a expr:href='data:olderPageUrl' rel='next'>Older &#8594;</a></b:if>
+        </div>
+      </div>
+      <aside aria-label='Research navigation' class='side'><div class='box'><h2>Search research</h2><form action='/search' method='get' role='search'><label class='sr-only' for='sq-list'>Search research</label><div class='search'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-search'/></svg><input id='sq-list' name='q' placeholder='Search research…' type='search'/></div></form></div><b:if cond='data:blog.allLabels'><div class='box'><h2>Categories</h2><ul><b:loop values='data:blog.allLabels' var='label'><li><a expr:href='data:label.url'><span><data:label.name/></span><span class='count'><data:label.count/></span></a></li></b:loop></ul></div></b:if></aside>
+    </div>
+  </section>
+  </b:if>
+
+<b:elseif cond='data:view.isPost'/>
+<!-- ===== SINGLE ARTICLE ===== -->
+<nav aria-label='Breadcrumb' class='crumbs'><div class='wrap'><ol><li><a expr:href='data:blog.homepageUrl'>Home</a></li><li><a expr:href='data:blog.homepageUrl + &quot;#research&quot;'>Research</a></li><b:loop index='li' values='data:post.labels' var='label'><b:if cond='data:li == 0'><li><a expr:href='data:label.url'><data:label.name/></a></li></b:if></b:loop><li aria-current='page'><data:post.title/></li></ol></div></nav>
+<article class='article-shell'>
+  <div class='wrap layout'>
+    <div class='article-main'>
+      <header class='article-head'>
+        <div class='post-cats' id='postCats'><b:loop values='data:post.labels' var='label'><a class='chip' expr:href='data:label.url'><data:label.name/></a></b:loop></div>
+        <h1><data:post.title/></h1>
+        <b:if cond='data:blog.metaDescription != &quot;&quot;'><p class='lede'><data:blog.metaDescription/></p></b:if>
+        <dl class='meta'>
+          <div><dt>Author</dt><dd><data:post.author.name/></dd></div>
+          <div><dt>Published</dt><dd><time expr:datetime='data:post.date.iso8601'><data:post.date/></time></dd></div>
+          <div><dt>Updated</dt><dd><time expr:data-iso='data:post.lastUpdated.iso8601' expr:data-pub='data:post.date.iso8601' id='updated'>&#8212;</time></dd></div>
+          <div><dt>Reading time</dt><dd id='readTime'>&#8212;</dd></div>
+        </dl>
+        <dl class='advisory' id='advisory'/>
+      </header>
+
+      <b:if cond='data:post.featuredImage'>
+      <figure class='hero-img'><img alt='' decoding='async' expr:src='data:post.featuredImage'/></figure>
+      </b:if>
+
+      <details class='toc inline' hidden='hidden' id='tocInline' open='open'><summary>On this page</summary><ol/></details>
+
+      <div class='prose' id='postContent'><data:post.body/></div>
+
+      <aside aria-label='Responsible disclosure' class='notice'>
+        <b>Responsible disclosure</b>
+        Research is published for educational and defensive purposes, and vulnerabilities are reported to affected vendors before publication where applicable. Never test systems without explicit authorization. Found an issue affecting CYVANTAS? See <a expr:href='data:blog.homepageUrl + &quot;p/responsible-disclosure.html&quot;'>Responsible Disclosure</a>.
+      </aside>
+
+      <b:if cond='data:post.labels'>
+      <div aria-label='Tags' class='tags post-tags'><b:loop values='data:post.labels' var='label'><a class='tag' expr:href='data:label.url'><data:label.name/></a></b:loop></div>
+      </b:if>
+
+      <div class='share'>
+        <span>Share</span>
+        <a expr:href='&quot;https://twitter.com/intent/tweet?url=&quot; + data:post.url + &quot;&amp;text=&quot; + data:post.title' rel='noopener noreferrer' target='_blank'>X<span class='sr-only'> (opens in a new tab)</span></a>
+        <a expr:href='&quot;https://www.linkedin.com/sharing/share-offsite/?url=&quot; + data:post.url' rel='noopener noreferrer' target='_blank'>LinkedIn<span class='sr-only'> (opens in a new tab)</span></a>
+        <button expr:data-url='data:post.url' id='copyLink' type='button'>Copy link</button>
+      </div>
+
+      <div class='author'>
+        <div aria-hidden='true' class='av'>CY</div>
+        <div><h5><data:post.author.name/></h5><p>Security research and technical writing for CYVANTAS.</p></div>
+      </div>
+
+      <section aria-label='Related research' class='related' id='related'>
+        <h2>Related research</h2>
+        <div class='posts-grid' id='relatedGrid'/>
+      </section>
+
+      <nav aria-label='Article navigation' class='post-nav'>
+        <b:if cond='data:newerPageUrl'><a expr:href='data:newerPageUrl' rel='prev'><span class='d'>&#8592; Newer</span><span class='t'><data:newerPageTitle/></span></a><b:else/><span/></b:if>
+        <b:if cond='data:olderPageUrl'><a class='older' expr:href='data:olderPageUrl' rel='next'><span class='d'>Older &#8594;</span><span class='t'><data:olderPageTitle/></span></a></b:if>
+      </nav>
+
+      <div id='comments-wrap'>
+        <h2>Discussion</h2>
+        <b:include data='post' name='comments'/>
+      </div>
+    </div>
+
+    <aside aria-label='Article sidebar' class='side'>
+      <details class='toc' id='tocSide' open='open'><summary>On this page</summary><ol/></details>
+<div class='box'><h2>Search research</h2><form action='/search' method='get' role='search'><label class='sr-only' for='sq-post'>Search research</label><div class='search'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-search'/></svg><input id='sq-post' name='q' placeholder='Search research…' type='search'/></div></form></div><b:if cond='data:blog.allLabels'><div class='box'><h2>Categories</h2><ul><b:loop values='data:blog.allLabels' var='label'><li><a expr:href='data:label.url'><span><data:label.name/></span><span class='count'><data:label.count/></span></a></li></b:loop></ul></div></b:if>
+    </aside>
+  </div>
+</article>
+
+<b:elseif cond='data:view.isPage'/>
+<!-- ===== STATIC PAGE (Privacy / Terms / Responsible Disclosure) =====
+     Blogger does not implicitly bind data:post on Page views; data:posts holds exactly one item here. -->
+<b:loop values='data:posts' var='post'>
+<nav aria-label='Breadcrumb' class='crumbs'><div class='wrap'><ol><li><a expr:href='data:blog.homepageUrl'>Home</a></li><li aria-current='page'><data:post.title/></li></ol></div></nav>
+<article class='article-shell'>
+  <div class='wrap' style='max-width:800px;padding-bottom:72px'>
+    <header class='article-head'><h1><data:post.title/></h1></header>
+    <div class='prose'><data:post.body/></div>
+  </div>
+</article>
+</b:loop>
+
+<b:elseif cond='data:view.isError'/>
+<!-- ===== 404 ===== -->
+<section class='error-page'>
+  <div class='wrap'>
+    <div class='eyebrow'>Error 404</div>
+    <h1>Signal lost.</h1>
+    <p>The resource you&#39;re looking for could not be located. It may have moved, been renamed, or never existed on this server.</p>
+    <div class='hero-actions'>
+      <a class='btn btn-primary' expr:href='data:blog.homepageUrl'>Return home</a>
+      <a class='btn btn-ghost' expr:href='data:blog.homepageUrl + &quot;#research&quot;'>Explore research</a>
+    </div>
+  </div>
+</section>
+</b:if>
+
+    </b:includable>
+    <b:includable id='aboutPostAuthor'>
+  <div class='author-name'>
+    <a class='g-profile' expr:href='data:post.author.profileUrl' rel='author' title='author profile'>
+      <span>
+        <data:post.author.name/>
+      </span>
+    </a>
+  </div>
+  <div>
+    <span class='author-desc'>
+      <data:post.author.aboutMe/>
+    </span>
+  </div>
+</b:includable>
+    <b:includable id='addComments'>
+  <a expr:href='data:post.commentsUrl' expr:onclick='data:post.commentsUrlOnclick'>
+    <b:message name='messages.postAComment'/>
+  </a>
+</b:includable>
+    <b:includable id='commentAuthorAvatar'>
+  <div class='avatar-image-container'>
+    <img class='author-avatar' expr:src='data:comment.authorAvatarSrc' height='35' width='35'/>
+  </div>
+</b:includable>
+    <b:includable id='commentDeleteIcon' var='comment'>
+  <span expr:class='&quot;item-control &quot; + data:comment.adminClass'>
+    <b:if cond='data:showCmtPopup'>
+      <div class='goog-toggle-button'>
+        <div class='goog-inline-block comment-action-icon'/>
+      </div>
+    <b:else/>
+      <a class='comment-delete' expr:href='data:comment.deleteUrl' expr:title='data:messages.deleteComment'>
+        <img src='https://resources.blogblog.com/img/icon_delete13.gif'/>
+      </a>
+    </b:if>
+  </span>
+</b:includable>
+    <b:includable id='commentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+    <b:includable id='commentFormIframeSrc' var='post'>
+  <a expr:href='data:post.commentFormIframeSrc' id='comment-editor-src'/>
+</b:includable>
+    <b:includable id='commentItem' var='comment'>
+  <div class='comment' expr:id='&quot;c&quot; + data:comment.id'>
+    <b:include cond='data:blog.enabledCommentProfileImages' name='commentAuthorAvatar'/>
+
+    <div class='comment-block'>
+      <div class='comment-author'>
+        <b:if cond='data:comment.authorUrl'>
+          <b:message name='messages.authorSaidWithLink'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+            <b:param expr:value='data:comment.authorUrl' name='authorUrl'/>
+          </b:message>
+        <b:else/>
+          <b:message name='messages.authorSaid'>
+            <b:param expr:value='data:comment.author' name='authorName'/>
+          </b:message>
+        </b:if>
+      </div>
+      <div expr:class='&quot;comment-body&quot; + (data:comment.isDeleted ? &quot; deleted&quot; : &quot;&quot;)'>
+        <data:comment.body/>
+      </div>
+      <div class='comment-footer'>
+        <span class='comment-timestamp'>
+          <a expr:href='data:comment.url' title='comment permalink'>
+            <data:comment.timestamp/>
+          </a>
+          <b:include data='comment' name='commentDeleteIcon'/>
+        </span>
+      </div>
+    </div>
+  </div>
+</b:includable>
+    <b:includable id='commentList' var='comments'>
+  <div id='comments-block'>
+    <b:loop values='data:comments' var='comment'>
+      <b:include data='comment' name='commentItem'/>
+    </b:loop>
+  </div>
+</b:includable>
+    <b:includable id='commentPicker' var='post'>
+  <b:if cond='data:post.showThreadedComments'>
+    <b:include data='post' name='threadedComments'/>
+  <b:else/>
+    <b:include data='post' name='comments'/>
+  </b:if>
+</b:includable>
+    <b:includable id='comments' var='post'>
+  <section expr:class='&quot;comments&quot; + (data:post.embedCommentForm ? &quot; embed&quot; : &quot;&quot;)' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+    <a name='comments'/>
+    <b:if cond='data:post.allowComments'>
+
+      <b:include name='commentsTitle'/>
+
+      <div expr:id='data:widget.instanceId + &quot;_comments-block-wrapper&quot;'>
+        <b:include cond='data:post.comments' data='post.comments' name='commentList'/>
+      </div>
+
+      <b:if cond='data:post.commentPagingRequired'>
+        <div class='paging-control-container'>
+          <b:if cond='data:post.hasOlderLinks'>
+            <a expr:class='data:post.oldLinkClass' expr:href='data:post.oldestLinkUrl'>
+              <data:messages.oldest/>
+            </a>
+            <a expr:class='data:post.oldLinkClass' expr:href='data:post.olderLinkUrl'>
+              <data:messages.older/>
+            </a>
+          </b:if>
+
+          <span class='comment-range-text'>
+            <data:post.commentRangeText/>
+          </span>
+
+          <b:if cond='data:post.hasNewerLinks'>
+            <a expr:class='data:post.newLinkClass' expr:href='data:post.newerLinkUrl'>
+              <data:messages.newer/>
+            </a>
+            <a expr:class='data:post.newLinkClass' expr:href='data:post.newestLinkUrl'>
+              <data:messages.newest/>
+            </a>
+          </b:if>
+        </div>
+      </b:if>
+
+      <div class='footer'>
+        <b:if cond='data:post.embedCommentForm'>
+          <b:if cond='data:post.allowNewComments'>
+            <b:include data='post' name='commentForm'/>
+          <b:else/>
+            <data:post.noNewCommentsText/>
+          </b:if>
+        <b:else/>
+          <b:if cond='data:post.allowComments'>
+            <b:include data='post' name='addComments'/>
+          </b:if>
+        </b:if>
+      </div>
+    </b:if>
+    <b:if cond='data:showCmtPopup'>
+      <div id='comment-popup'>
+        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+        </iframe>
+      </div>
+    </b:if>
+  </section>
+</b:includable>
+    <b:includable id='commentsTitle'>
+  <h3 class='title'><data:messages.comments/></h3>
+</b:includable>
+    <b:includable id='feedLinks'>
+  <b:if cond='!data:view.isPost'> <!-- Blog feed links -->
+    <b:if cond='data:feedLinks'>
+      <div class='blog-feeds'>
+        <b:include data='feedLinks' name='feedLinksBody'/>
+      </div>
+    </b:if>
+  <b:else/> <!--Post feed links -->
+    <div class='post-feeds'>
+      <b:loop values='data:posts' var='post'>
+        <b:if cond='data:post.allowComments and data:post.feedLinks'>
+          <b:include data='post.feedLinks' name='feedLinksBody'/>
+        </b:if>
+      </b:loop>
+    </div>
+  </b:if>
+</b:includable>
+    <b:includable id='feedLinksBody' var='links'>
+  <div class='feed-links'>
+  <data:messages.subscribeTo/>
+  <b:loop values='data:links' var='f'>
+     <a class='feed-link' expr:href='data:f.url' expr:type='data:f.mimeType' target='_blank'><data:f.name/> (<data:f.feedType/>)</a>
+  </b:loop>
+  </div>
+</b:includable>
+    <b:includable id='homePageLink'>
+  <a class='home-link' expr:href='data:blog.homepageUrl'>
+    <data:messages.home/>
+  </a>
+</b:includable>
+    <b:includable id='iframeComments' var='post'>
+  <!-- G+ comments, no longer available. The includable is retained for backwards-compatibility. -->
+</b:includable>
+    <b:includable id='inlineAd' var='post'>
+  <b:if cond='!data:view.isPreview'>
+    <b:if cond='data:this.adCode or data:this.adClientId or data:blog.adsenseClientId'>
+      <!-- Ad -->
+      <div class='inline-ad'>
+        <b:if cond='data:this.adCode != &quot;&quot;'>
+          <data:this.adCode/>
+        <b:else/>
+          <b:include cond='data:this.adClientId or data:blog.adsenseClientId' name='defaultAdUnit'/>
+        </b:if>
+      </div>
+    </b:if>
+  <b:else/>
+    <div class='inline-ad'>
+      <div class='inline-ad-placeholder'>
+        <span><b:message name='messages.adsGoHere'/></span>
+      </div>
+    </div>
+  </b:if>
+</b:includable>
+    <b:includable id='nextPageLink'>
+  <a class='blog-pager-older-link' expr:href='data:olderPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-older-link&quot;' expr:title='data:messages.olderPosts'>
+    <data:messages.olderPosts/>
+  </a>
+</b:includable>
+    <b:includable id='post' var='post'>
+  <div class='post'>
+    <b:include data='post' name='postMeta'/>
+    <b:include data='post' name='postTitle'/>
+    <b:include name='headerByline'/>
+    <b:if cond='data:view.isSingleItem'>
+      <b:include data='post' name='postBody'/>
+    <b:else/>
+      <b:include data='post' name='postBodySnippet'/>
+      <b:include data='post' name='postJumpLink'/>
+    </b:if>
+    <b:include data='post' name='postFooter'/>
+  </div>
+</b:includable>
+    <b:includable id='postBody' var='post'>
+  <!-- If metaDescription is empty, use the post body as the schema.org description too, for G+/FB snippeting. -->
+  <div class='post-body entry-content float-container' expr:id='&quot;post-body-&quot; + data:post.id'>
+    <data:post.body/>
+  </div>
+</b:includable>
+    <b:includable id='postBodySnippet' var='post'>
+  <b:include data='post' name='postBody'/>
+</b:includable>
+    <b:includable id='postCommentsAndAd' var='post'>
+  <article class='post-outer-container'>
+    <!-- Post title and body -->
+    <div class='post-outer'>
+      <b:include data='post' name='post'/>
+    </div>
+
+    <!-- Comments -->
+    <b:include cond='data:view.isSingleItem' data='post' name='commentPicker'/>
+
+    <!-- Show ad inside post container, after comments, if single item. -->
+    <b:include cond='data:view.isSingleItem and data:post.includeAd' data='post' name='inlineAd'/>
+  </article>
+
+  <!-- Show ad outside post container (between posts) for feed pages. -->
+  <b:include cond='data:view.isMultipleItems and data:post.includeAd' data='post' name='inlineAd'/>
+</b:includable>
+    <b:includable id='postCommentsLink'>
+  <b:if cond='data:view.isMultipleItems'>
+    <span class='byline post-comment-link container'>
+      <b:include cond='data:post.commentSource != 1' name='commentsLink'/>
+    </span>
+  </b:if>
+</b:includable>
+    <b:includable id='postFooter' var='post'>
+  <div class='post-footer'>
+    <b:include name='footerBylines'/>
+    <b:include data='post' name='postFooterAuthorProfile'/>
+  </div>
+</b:includable>
+    <b:includable id='postFooterAuthorProfile' var='post'>
+  <b:if cond='data:post.author.aboutMe and data:view.isPost'>
+    <div class='author-profile'>
+      <b:if cond='data:post.author.authorPhoto.url'>
+        <img class='author-image' expr:src='data:post.author.authorPhoto.url' width='50px'/>
+        <div class='author-about'>
+          <b:include data='post' name='aboutPostAuthor'/>
+        </div>
+      <b:else/>
+        <b:include data='post' name='aboutPostAuthor'/>
+      </b:if>
+    </div>
+  </b:if>
+</b:includable>
+    <b:includable id='postHeader' var='post'>
+  <b:include name='headerByline'/>
+</b:includable>
+    <b:includable id='postMeta' var='post'>
+  <b:include data='post' name='postMetadataJSON'/>
+</b:includable>
+    <b:includable id='postPagination'>
+  <div class='blog-pager container' id='blog-pager'>
+    <b:include cond='data:newerPageUrl' name='previousPageLink'/>
+    <b:include cond='data:olderPageUrl' name='nextPageLink'/>
+    <b:include cond='data:view.url != data:blog.homepageUrl' name='homePageLink'/>
+  </div>
+</b:includable>
+    <b:includable id='postTitle' var='post'>
+  <a expr:name='data:post.id'/>
+  <b:if cond='data:post.title != &quot;&quot;'>
+    <h3 class='post-title entry-title'>
+      <b:if cond='data:post.link or (data:post.url and data:view.url != data:post.url)'>
+        <a expr:href='data:post.link ?: data:post.url'><data:post.title/></a>
+      <b:else/>
+        <data:post.title/>
+      </b:if>
+    </h3>
+  </b:if>
+</b:includable>
+    <b:includable id='previousPageLink'>
+  <a class='blog-pager-newer-link' expr:href='data:newerPageUrl' expr:id='data:widget.instanceId + &quot;_blog-pager-newer-link&quot;' expr:title='data:messages.newerPosts'>
+    <data:messages.newerPosts/>
+  </a>
+</b:includable>
+    <b:includable id='threadedCommentForm' var='post'>
+  <div class='comment-form'>
+    <a name='comment-form'/>
+    <h4 id='comment-post-message'><data:messages.postAComment/></h4>
+    <b:if cond='data:this.messages.blogComment != &quot;&quot;'>
+      <p><data:this.messages.blogComment/></p>
+    </b:if>
+    <b:include data='post' name='commentFormIframeSrc'/>
+    <iframe allowtransparency='allowtransparency' class='blogger-iframe-colorize blogger-comment-from-post' expr:height='data:cmtIframeInitialHeight ?: &quot;90px&quot;' frameborder='0' id='comment-editor' name='comment-editor' src='' width='100%'/>
+    <data:post.cmtfpIframe/>
+    <script type='text/javascript'>
+      BLOG_CMT_createIframe(&#39;<data:post.appRpcRelayPath/>&#39;);
+    </script>
+  </div>
+</b:includable>
+    <b:includable id='threadedCommentJs' var='post'>
+  <script async='async' expr:src='data:post.commentSrc' type='text/javascript'/>
+  <b:template-script inline='true' name='threaded_comments'/>
+  <script type='text/javascript'>
+    blogger.widgets.blog.initThreadedComments(
+        <data:post.commentJso/>,
+        <data:post.commentMsgs/>,
+        <data:post.commentConfig/>);
+  </script>
+</b:includable>
+    <b:includable id='threadedComments' var='post'>
+  <section class='comments threaded' expr:data-embed='data:post.embedCommentForm' expr:data-num-comments='data:post.numberOfComments' id='comments'>
+    <a name='comments'/>
+
+    <b:include name='commentsTitle'/>
+
+    <div class='comments-content'>
+      <b:if cond='data:post.embedCommentForm'>
+        <b:include data='post' name='threadedCommentJs'/>
+      </b:if>
+      <div id='comment-holder'>
+         <data:post.commentHtml/>
+      </div>
+    </div>
+
+    <p class='comment-footer'>
+      <b:if cond='data:post.allowNewComments'>
+        <b:include data='post' name='threadedCommentForm'/>
+      <b:else/>
+        <data:post.noNewCommentsText/>
+      </b:if>
+      <b:if cond='data:post.showManageComments'>
+        <b:include data='post' name='manageComments'/>
+      </b:if>
+    </p>
+
+    <b:if cond='data:showCmtPopup'>
+      <div id='comment-popup'>
+        <iframe allowtransparency='allowtransparency' frameborder='0' id='comment-actions' name='comment-actions' scrolling='no'>
+        </iframe>
+      </div>
+    </b:if>
+  </section>
+</b:includable>
+    <b:includable id='tooltipCss'>
+  <!-- LINT.IfChange -->
+  <style>
+    .post-body a.b-tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip {
+      display: block !important;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translate(-20%, 1px);
+      visibility: hidden;
+      opacity: 0;
+      z-index: 1;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .post-body a.b-tooltip-container .b-tooltip iframe {
+      width: 200px;
+      height: 198px;
+      max-width: none;
+      border: none;
+      border-radius: 20px;
+      box-shadow: 1px 1px 3px 1px rgba(0, 0, 0, 0.2);
+    }
+
+    @media (hover: hover) {
+      .post-body a.b-tooltip-container:hover .b-tooltip {
+        visibility: visible;
+        opacity: 1;
+      }
+    }
+  </style>
+  <!-- LINT.ThenChange(//depot/google3/java/com/google/blogger/b2/layouts/widgets/v2-style.css) -->
+</b:includable>
+  </b:widget>
+</b:section>
+
+<b:if cond='data:view.isHomepage'>
+<section class='sec' id='frameworks'>
+  <div class='wrap'>
+    <div class='sec-head'>
+      <div class='eyebrow reveal'>Frameworks &amp; references</div>
+      <h2 class='sec-title wide reveal'>The standards we test against</h2>
+      <p class='sec-sub reveal'>CYVANTAS uses established industry frameworks as a reference baseline for testing and reporting. These are external resources published by their respective organizations.</p>
+    </div>
+    <span id='resources'/>
+    <div class='fw-grid'><a class='fw reveal' href='https://owasp.org/www-project-top-ten/' rel='noopener noreferrer' target='_blank'><h3>OWASP Top 10</h3><p>Community-driven awareness document for the most critical web application security risks.</p><span class='ext'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg>owasp.org<span class='sr-only'> (opens in a new tab)</span></span></a><a class='fw reveal' href='https://owasp.org/API-Security/' rel='noopener noreferrer' target='_blank'><h3>OWASP API Security</h3><p>The top API-specific security risks and how to test for them.</p><span class='ext'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg>owasp.org/API-Security<span class='sr-only'> (opens in a new tab)</span></span></a><a class='fw reveal' href='https://www.nist.gov/cyberframework' rel='noopener noreferrer' target='_blank'><h3>NIST Cybersecurity Framework</h3><p>Guidance for understanding, assessing and improving cybersecurity risk management.</p><span class='ext'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg>nist.gov/cyberframework<span class='sr-only'> (opens in a new tab)</span></span></a><a class='fw reveal' href='https://attack.mitre.org/' rel='noopener noreferrer' target='_blank'><h3>MITRE ATT&amp;CK</h3><p>A knowledge base of real-world adversary tactics and techniques.</p><span class='ext'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg>attack.mitre.org<span class='sr-only'> (opens in a new tab)</span></span></a><a class='fw reveal' href='https://nvd.nist.gov/' rel='noopener noreferrer' target='_blank'><h3>CVE / NVD</h3><p>The CVE program and the National Vulnerability Database of public vulnerability records.</p><span class='ext'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg>nvd.nist.gov<span class='sr-only'> (opens in a new tab)</span></span></a></div>
+    <details class='owasp reveal'><summary>OWASP Top 10:2025 categories<svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg></summary><ul class='owasp-list'><li><b>A01</b><span>Broken Access Control</span></li><li><b>A02</b><span>Security Misconfiguration</span></li><li><b>A03</b><span>Software Supply Chain Failures</span></li><li><b>A04</b><span>Cryptographic Failures</span></li><li><b>A05</b><span>Injection</span></li><li><b>A06</b><span>Insecure Design</span></li><li><b>A07</b><span>Authentication Failures</span></li><li><b>A08</b><span>Software or Data Integrity Failures</span></li><li><b>A09</b><span>Security Logging &amp; Alerting Failures</span></li><li><b>A10</b><span>Mishandling of Exceptional Conditions</span></li></ul></details>
+    <p class='fw-note'>Referencing a framework does not imply certification by, or affiliation with, the organizations that publish them.</p>
+  </div>
+</section>
+
+<section class='sec' id='projects'>
+  <div class='wrap'>
+    <div class='sec-head'>
+      <div class='eyebrow reveal'>Projects &amp; open source</div>
+      <h2 class='sec-title wide reveal'>Security tooling, built in the open</h2>
+      <p class='sec-sub reveal'>CYVANTAS security tooling and research is developed in the open. Repositories, scripts and utilities are published on GitHub as they are ready.</p>
+    </div>
+    <div class='proj-grid'>
+      <article class='proj reveal'><div class='proj-top'><span class='chip cyan'>Project</span></div><h3>Vibe Pentesterlab</h3><p>A CYVANTAS project. Details and source are published on GitHub.</p>
+        <dl><div><dt>Source</dt><dd>GitHub</dd></div></dl><a class='btn btn-ghost btn-sm' href='https://github.com/kcprajeesh' rel='noopener noreferrer' target='_blank'>View on GitHub<svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg><span class='sr-only'> (opens in a new tab)</span></a></article>
+      <article class='proj reveal'><div class='proj-top'><span class='chip cyan'>Project</span></div><h3>CYVANTAS AI Agent</h3><p>A CYVANTAS project. Details and source are published on GitHub.</p>
+        <dl><div><dt>Source</dt><dd>GitHub</dd></div></dl><a class='btn btn-ghost btn-sm' href='https://github.com/kcprajeesh' rel='noopener noreferrer' target='_blank'>View on GitHub<svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg><span class='sr-only'> (opens in a new tab)</span></a></article>
+      <article class='proj reveal'><div class='proj-top'><span class='chip'>Category</span></div><h3>Security automation tools</h3><p>Custom tooling and scripts that streamline recurring security workflows.</p>
+        <dl><div><dt>Source</dt><dd>GitHub</dd></div></dl><a class='btn btn-ghost btn-sm' href='https://github.com/kcprajeesh' rel='noopener noreferrer' target='_blank'>Browse repositories<svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg><span class='sr-only'> (opens in a new tab)</span></a></article>
+      <article class='proj reveal'><div class='proj-top'><span class='chip'>Category</span></div><h3>Research tooling</h3><p>Utilities that support vulnerability research and technical writing.</p>
+        <dl><div><dt>Source</dt><dd>GitHub</dd></div></dl><a class='btn btn-ghost btn-sm' href='https://github.com/kcprajeesh' rel='noopener noreferrer' target='_blank'>Browse repositories<svg aria-hidden='true' class='ic' focusable='false'><use href='#i-ext'/></svg><span class='sr-only'> (opens in a new tab)</span></a></article>
+    </div>
+    <p class='disclaimer resp reveal'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-alert'/></svg><span>Only use security tools against systems you own or are explicitly authorized to test.</span></p>
+  </div>
+</section>
+
+<section class='sec' id='founder'>
+  <div class='wrap'>
+    <div class='sec-head'><div class='eyebrow reveal'>Founder</div></div>
+    <div class='founder ticks reveal'>
+      <div class='f-photo'><img alt='Portrait of Prajeesh KC' decoding='async' height='200' loading='lazy' src='https://blogger.googleusercontent.com/img/a/AVvXsEjUqvH2qURGboMyaKq7hf9QpK9RcUW5bYXEW5dpSgDADUGc58CIRRIWItx0VKjqZVXRu3ig1FQtLunMSwMSQ69yr7x6NHvme5GY3TbGQgAaT5geJ_rQR_K09uE3ADQqhk_iGOa3_ZYEOqirGF-Ri5HfwmnT1Hv5yn251ZEGHDE6C10K5THPRhU1VaUWmuDc' width='200'/></div>
+      <div>
+        <h3>Prajeesh KC</h3>
+        <span class='role'>Founder / Cybersecurity Researcher</span>
+        <p>Prajeesh founded CYVANTAS to bring an offensive-security perspective to organizations navigating an increasingly complex threat landscape. His work centers on vulnerability research, security tooling, and workflow automation, with an ongoing interest in open-source development.</p>
+        <p>He shares security research, tooling, and technical writing through CYVANTAS and maintains open-source projects on GitHub.</p>
+        <div class='focus'><span class='chip'>Cybersecurity</span><span class='chip'>Offensive security</span><span class='chip'>Vulnerability research</span><span class='chip'>Security automation</span><span class='chip'>Open-source tooling</span></div>
+        <div class='socials'>
+          <a class='social' href='https://github.com/kcprajeesh' rel='noopener noreferrer' target='_blank'>GitHub<span class='sr-only'> &#8212; kcprajeesh (opens in a new tab)</span></a>
+          <a class='social' href='https://x.com/Prajeesh_kc' rel='noopener noreferrer' target='_blank'>X<span class='sr-only'> &#8212; @Prajeesh_kc (opens in a new tab)</span></a>
+          <a class='social' href='https://instagram.com/Prajeesh_kc' rel='noopener noreferrer' target='_blank'>Instagram<span class='sr-only'> &#8212; @Prajeesh_kc (opens in a new tab)</span></a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class='sec contact' id='contact'>
+  <div class='wrap contact-grid'>
+    <div class='contact-info'>
+      <div class='eyebrow reveal'>Get in touch</div>
+      <h2 class='reveal'>Let&#39;s secure what matters.</h2>
+      <p class='reveal'>Tell us about your environment and what you need assessed. We&#39;ll follow up to scope the engagement.</p>
+      <div class='topics reveal'><span class='chip'>VAPT</span><span class='chip'>Application security</span><span class='chip'>API security</span><span class='chip'>Cloud security</span><span class='chip'>Red teaming</span><span class='chip'>Security assessments</span><span class='chip'>Vulnerability research</span></div>
+      <div class='c-line reveal'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-mail'/></svg><a href='mailto:cyvantas@gmail.com'>cyvantas@gmail.com</a></div>
+      <p class='priv reveal'>We only use the details you share here to respond to your inquiry. Your information is never sold or shared with third parties.</p>
+    </div>
+    <form action='mailto:cyvantas@gmail.com' class='form ticks reveal' data-endpoint='https://script.google.com/macros/s/AKfycbwbCycVRHUmSrgLSiTdgISWHlvsiGn88nIixySDKVJ0dQSwGb5KEK6EUCzF8LO0Ke18/exec' enctype='text/plain' id='contactForm' method='post' novalidate='novalidate'>
+      <div class='f-row'>
+        <div class='field'><label for='cf-name'>Name <i aria-hidden='true'>*</i></label><input aria-describedby='cf-name-err' aria-required='true' autocomplete='name' id='cf-name' maxlength='120' name='name' required='required' type='text'/><span class='err' id='cf-name-err'/></div>
+        <div class='field'><label for='cf-email'>Business email <i aria-hidden='true'>*</i></label><input aria-describedby='cf-email-err' aria-required='true' autocomplete='email' id='cf-email' maxlength='160' name='email' required='required' type='email'/><span class='err' id='cf-email-err'/></div>
+      </div>
+      <div class='f-row'>
+        <div class='field'><label for='cf-company'>Organization</label><input autocomplete='organization' id='cf-company' maxlength='120' name='company' type='text'/></div>
+        <div class='field'><label for='cf-service'>Service</label><select id='cf-service' name='service'><option>Vulnerability Assessment &amp; Penetration Testing</option><option>Web Application Security</option><option>API Security Testing</option><option>Network Security Assessment</option><option>Mobile Application Security</option><option>Cloud Security Assessment</option><option>Red Teaming &amp; Adversary Simulation</option><option>Security Configuration Review</option><option>OSINT &amp; Threat Intelligence</option><option>Cybersecurity Consulting</option><option>Security Automation</option><option>Security Awareness &amp; Best Practices</option><option>Vulnerability research</option><option>Not sure yet</option></select></div>
+      </div>
+      <div class='field'><label for='cf-timeline'>Timeline</label><select id='cf-timeline' name='timeline'><option>Flexible</option><option>Within 1 month</option><option>1&#8211;3 months</option><option>3+ months</option></select></div>
+      <div class='field'><label for='cf-message'>Message &amp; scope <i aria-hidden='true'>*</i></label><textarea aria-describedby='cf-message-err' aria-required='true' id='cf-message' maxlength='4000' name='message' required='required'/><span class='err' id='cf-message-err'/></div>
+      <div aria-hidden='true' class='hp'><label for='cf-hp'>Leave this field empty</label><input autocomplete='off' id='cf-hp' name='website' tabindex='-1' type='text'/></div>
+      <button class='btn btn-primary' id='cf-submit' type='submit'>Request Security Assessment</button>
+      <p class='form-status' id='formStatus' role='status'/>
+    </form>
+  </div>
+</section>
+</b:if>
+</main>
+
+
+<div class='arch-dock'>
+  <div class='wrap'>
+    <details class='arch'><summary>Research archive</summary>
+
+<b:section id='archive-utility' maxwidgets='1' showaddelement='no'>
+  <b:widget id='BlogArchive1' locked='false' title='Archive' type='BlogArchive' version='2' visible='true'>
+    <b:widget-settings>
+      <b:widget-setting name='showStyle'>HIERARCHY</b:widget-setting>
+      <b:widget-setting name='yearPattern'>yyyy</b:widget-setting>
+      <b:widget-setting name='showWeekEnd'>true</b:widget-setting>
+      <b:widget-setting name='monthPattern'>MMMM</b:widget-setting>
+      <b:widget-setting name='dayPattern'>MMM dd</b:widget-setting>
+      <b:widget-setting name='weekPattern'>MM/dd</b:widget-setting>
+      <b:widget-setting name='chronological'>false</b:widget-setting>
+      <b:widget-setting name='showPosts'>true</b:widget-setting>
+      <b:widget-setting name='frequency'>MONTHLY</b:widget-setting>
+    </b:widget-settings>
+    <b:includable id='main'>
+  <b:include name='content'/>
+</b:includable>
+    <b:includable id='content'>
+  <div class='widget-content'>
+    <div id='ArchiveList'>
+      <div expr:id='data:widget.instanceId + &quot;_ArchiveList&quot;'>
+        <b:include cond='data:this.style == &quot;HIERARCHY&quot;' name='hierarchy'/>
+        <b:include cond='data:this.style in {&quot;FLAT&quot;, &quot;MENU&quot;}' name='flat'/>
+      </div>
+    </div>
+  </div>
+</b:includable>
+    <b:includable id='flat'>
+  <ul class='flat'>
+    <b:loop values='data:data' var='i'>
+      <li class='archivedate'>
+        <a expr:href='data:i.url'>
+          <data:i.name/><span class='post-count'><data:i.post-count/></span>
+        </a>
+      </li>
+    </b:loop>
+  </ul>
+</b:includable>
+    <b:includable id='hierarchy'>
+  <b:include data='data' name='interval'/>
+</b:includable>
+    <b:includable id='interval' var='intervals'>
+  <ul class='hierarchy'>
+    <b:loop values='data:intervals' var='interval'>
+      <li class='archivedate'>
+        <div class='hierarchy-title'>
+          <a class='post-count-link' expr:href='data:interval.url'>
+            <data:interval.name/>
+            <span class='post-count'><data:interval.post-count/></span>
+          </a>
+        </div>
+        <div class='hierarchy-content'>
+          <b:include cond='data:interval.data' data='interval.data' name='interval'/>
+          <b:include cond='data:interval.posts' data='interval.posts' name='posts'/>
+        </div>
+      </li>
+    </b:loop>
+  </ul>
+</b:includable>
+    <b:includable id='posts' var='posts'>
+  <ul class='posts hierarchy'>
+    <b:loop values='data:posts' var='post'>
+      <li>
+        <a expr:href='data:post.url'><data:post.title/></a>
+      </li>
+    </b:loop>
+  </ul>
+</b:includable>
+  </b:widget>
+</b:section>
+
+    </details>
+  </div>
+</div>
+
+<footer class='site-footer'>
+  <div class='wrap'>
+    <div class='foot'>
+      <div class='foot-brand'>
+        <a aria-label='CYVANTAS home' class='logo' expr:href='data:blog.homepageUrl'><svg aria-hidden='true' focusable='false' viewBox='0 0 200 200'><use href='#cyv-mark'/></svg><span class='logo-word'><b>CYVANTAS</b><small>Offensive Intelligence</small></span></a>
+        <p class='tagline'>Offensive Intelligence &amp; Cybersecurity</p>
+        <p>Security beyond the surface. Offensive security, vulnerability research and security automation.</p>
+      </div>
+      <div class='foot-cols'>
+        <div><h5>Navigation</h5><ul>
+          <li><a expr:href='data:blog.homepageUrl + &quot;#services&quot;'>Services</a></li><li><a expr:href='data:blog.homepageUrl + &quot;#research&quot;'>Research</a></li><li><a expr:href='data:blog.homepageUrl + &quot;#projects&quot;'>Projects</a></li><li><a expr:href='data:blog.homepageUrl + &quot;#about&quot;'>About</a></li><li><a expr:href='data:blog.homepageUrl + &quot;#contact&quot;'>Contact</a></li></ul></div>
+        <div><h5>Research</h5><ul>
+          <li><a expr:href='data:blog.searchUrl + &quot;/label/Vulnerability%20Research&quot;'>Vulnerability Research</a></li>
+          <li><a expr:href='data:blog.searchUrl + &quot;/label/Security%20Advisories&quot;'>Security Advisories</a></li>
+          <li><a expr:href='data:blog.homepageUrl + &quot;#frameworks&quot;'>Frameworks</a></li>
+          <li><a expr:href='data:blog.homepageUrl + &quot;#resources&quot;'>Resources</a></li>
+          <li><a expr:href='data:blog.homepageUrl + &quot;feeds/posts/default&quot;'>RSS feed</a></li></ul></div>
+        <div><h5>Social</h5><ul>
+          <li><a href='https://github.com/kcprajeesh' rel='noopener noreferrer' target='_blank'>GitHub<span class='sr-only'> (opens in a new tab)</span></a></li>
+          <li><a href='https://instagram.com/Prajeesh_kc' rel='noopener noreferrer' target='_blank'>Instagram<span class='sr-only'> (opens in a new tab)</span></a></li>
+          <li><a href='https://x.com/Prajeesh_kc' rel='noopener noreferrer' target='_blank'>X<span class='sr-only'> (opens in a new tab)</span></a></li></ul></div>
+        <div><h5>Legal</h5><ul>
+          <li><a expr:href='data:blog.homepageUrl + &quot;p/privacy-policy.html&quot;'>Privacy Policy</a></li>
+          <li><a expr:href='data:blog.homepageUrl + &quot;p/terms.html&quot;'>Terms of Use</a></li>
+          <li><a expr:href='data:blog.homepageUrl + &quot;p/responsible-disclosure.html&quot;'>Responsible Disclosure</a></li></ul></div>
+      </div>
+    </div>
+    <div class='foot-bottom'><span>&#169; <span id='year'>2026</span> CYVANTAS. All rights reserved.</span><span>OFFENSIVE INTELLIGENCE // SECURITY RESEARCH</span></div>
+    <p class='foot-note'>Security research is conducted for educational and authorized defensive purposes. Never test systems without permission.</p>
+  </div>
+</footer>
+<button aria-label='Back to top' class='to-top' id='toTop' type='button'><svg aria-hidden='true' class='ic' focusable='false'><use href='#i-chev'/></svg></button>
+
+<script>
+//<![CDATA[
+(function () {
+  "use strict";
+  var d = document, root = d.documentElement;
+  var $ = function (s, c) { return (c || d).querySelector(s); };
+  var $$ = function (s, c) { return Array.prototype.slice.call((c || d).querySelectorAll(s)); };
+  var run = function (fn) { try { fn(); } catch (e) { /* a failing enhancement must never break the page */ } };
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  var view = root.getAttribute("data-view") || "";
+  var hdr = $(".site-header");
+
+  function el(tag, cls, text) {
+    var n = d.createElement(tag);
+    if (cls) n.className = cls;
+    if (text != null) n.textContent = text;
+    return n;
+  }
+  function announce(msg) {
+    var l = $("#liveMsg");
+    if (l) { l.textContent = ""; setTimeout(function () { l.textContent = msg; }, 30); }
+  }
+
+  /* ---------- footer year ---------- */
+  run(function () { var y = $("#year"); if (y) y.textContent = new Date().getFullYear(); });
+
+  /* ---------- mobile drawer ---------- */
+  run(function () {
+    var burger = $("#burger"), drawer = $("#drawer");
+    if (!burger || !drawer) return;
+    function setMenu(open, refocus) {
+      drawer.classList.toggle("open", open);
+      burger.setAttribute("aria-expanded", open ? "true" : "false");
+      burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+      d.body.classList.toggle("menu-open", open);
+      if (open) { var f = $("a", drawer); if (f) f.focus(); }
+      else if (refocus) burger.focus();
+    }
+    burger.addEventListener("click", function () { setMenu(!drawer.classList.contains("open")); });
+    $$("a", drawer).forEach(function (a) { a.addEventListener("click", function () { setMenu(false); }); });
+    d.addEventListener("keydown", function (e) {
+      if (!drawer.classList.contains("open")) return;
+      if (e.key === "Escape") { setMenu(false, true); return; }
+      if (e.key !== "Tab") return;
+      var f = [burger].concat($$("a", drawer)), first = f[0], last = f[f.length - 1];
+      if (e.shiftKey && d.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && d.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
+    window.addEventListener("resize", function () { if (window.innerWidth >= 1100 && drawer.classList.contains("open")) setMenu(false); });
+  });
+
+  /* ---------- scroll: header state, progress, to-top, active nav ---------- */
+  run(function () {
+    var toTop = $("#toTop"), prog = $("#readProgress"), links = $$("[data-nav]"), ticking = false;
+    var order = ["home", "about", "services", "methodology", "attack-surface", "why", "research", "frameworks", "projects", "founder", "contact"];
+    var map = { why: "attack-surface", frameworks: "research" };
+    function setActive(id, kind) {
+      links.forEach(function (a) {
+        if (a.getAttribute("data-nav") === id) a.setAttribute("aria-current", kind || "location");
+        else a.removeAttribute("aria-current");
+      });
+    }
+    function spy() {
+      if (view !== "home") return;
+      var cur = "home", line = (hdr ? hdr.offsetHeight : 64) + 120;
+      order.forEach(function (id) {
+        var s = d.getElementById(id);
+        if (s && s.getBoundingClientRect().top <= line) cur = map[id] || id;
+      });
+      setActive(cur);
+    }
+    function tick() {
+      ticking = false;
+      var y = window.pageYOffset;
+      if (hdr) hdr.classList.toggle("scrolled", y > 8);
+      if (toTop) toTop.classList.toggle("show", y > 900);
+      if (prog) {
+        var h = root.scrollHeight - window.innerHeight;
+        prog.style.transform = "scaleX(" + (h > 0 ? Math.min(1, y / h) : 0) + ")";
+      }
+      spy();
+    }
+    window.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }, { passive: true });
+    window.addEventListener("resize", tick);
+    if (view && view !== "home" && view !== "page" && view !== "error") setActive("research", "page");
+    if (toTop) toTop.addEventListener("click", function () { window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" }); });
+    tick();
+  });
+
+  /* ---------- reveal on scroll ---------- */
+  run(function () {
+    var items = $$(".reveal");
+    if ("IntersectionObserver" in window && !reduce) {
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { threshold: 0.08, rootMargin: "0px 0px -5% 0px" });
+      items.forEach(function (n) { io.observe(n); });
+    } else items.forEach(function (n) { n.classList.add("in"); });
+  });
+
+  /* ---------- attack-surface: link list <-> diagram ---------- */
+  run(function () {
+    var lis = $$(".chain li"), nodes = $$(".node");
+    if (!lis.length) return;
+    function set(id) {
+      lis.forEach(function (l) { l.classList.toggle("active", l.getAttribute("data-node") === id); });
+      nodes.forEach(function (n) { n.classList.toggle("active", n.getAttribute("data-node") === id); });
+    }
+    lis.forEach(function (l) {
+      var id = l.getAttribute("data-node");
+      ["mouseenter", "focus", "click"].forEach(function (ev) { l.addEventListener(ev, function () { set(id); }); });
+      l.addEventListener("mouseleave", function () { if (d.activeElement !== l) set(""); });
+      l.addEventListener("blur", function () { set(""); });
+    });
+    nodes.forEach(function (n) {
+      var id = n.getAttribute("data-node");
+      n.addEventListener("mouseenter", function () { set(id); });
+      n.addEventListener("mouseleave", function () { set(""); });
+    });
+  });
+
+  /* ---------- service "discuss" links preselect the form ---------- */
+  run(function () {
+    $$("a[data-service]").forEach(function (a) {
+      a.addEventListener("click", function () {
+        var sel = $("#cf-service"), v = a.getAttribute("data-service");
+        if (!sel) return;
+        for (var i = 0; i < sel.options.length; i++) if (sel.options[i].text === v) { sel.selectedIndex = i; break; }
+      });
+    });
+  });
+
+  /* ---------- contact form ---------- */
+  run(function () {
+    var form = $("#contactForm");
+    if (!form) return;
+    var status = $("#formStatus"), btn = $("#cf-submit"), t0 = 0, sending = false;
+    form.addEventListener("focusin", function () { if (!t0) t0 = Date.now(); });
+    function field(id, msg) {
+      var f = $("#" + id), e = $("#" + id + "-err");
+      if (msg) { f.setAttribute("aria-invalid", "true"); e.textContent = msg; }
+      else { f.removeAttribute("aria-invalid"); e.textContent = ""; }
+      return !msg;
+    }
+    function show(kind, msg, withMail) {
+      status.className = "form-status show " + kind;
+      status.textContent = msg;
+      if (withMail) {
+        status.appendChild(d.createTextNode(" "));
+        var a = el("a", "", "cyvantas@gmail.com");
+        a.href = "mailto:cyvantas@gmail.com";
+        status.appendChild(a);
+      }
+    }
+    function validate() {
+      var name = $("#cf-name").value.trim(), email = $("#cf-email").value.trim(), msg = $("#cf-message").value.trim();
+      var ok = true, first = null;
+      function chk(id, cond, m) { var r = field(id, cond ? "" : m); if (!r) { ok = false; if (!first) first = $("#" + id); } }
+      chk("cf-name", name.length > 0 && name.length <= 120, "Please enter your name.");
+      chk("cf-email", /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) && email.length <= 160, "Please enter a valid email address.");
+      chk("cf-message", msg.length >= 10 && msg.length <= 4000, "Please describe what you need assessed (at least 10 characters).");
+      if (first) first.focus();
+      return ok;
+    }
+    $$("input,textarea", form).forEach(function (f) {
+      f.addEventListener("input", function () { if (f.getAttribute("aria-invalid")) field(f.id, ""); });
+    });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      if (sending) return;
+      /* spam heuristics: honeypot filled, or submitted faster than a person can type */
+      var bot = $("#cf-hp").value || !t0 || (Date.now() - t0 < 2500);
+      if (!validate()) { show("bad", "Please fix the highlighted fields."); return; }
+      if (bot) { show("ok", "Message sent. We will follow up shortly."); return; }
+      var endpoint = form.getAttribute("data-endpoint");
+      if (!endpoint) { show("bad", "The form is not connected yet. Please email", true); return; }
+      var payload = {
+        name: $("#cf-name").value.trim(), email: $("#cf-email").value.trim(),
+        company: $("#cf-company").value.trim(), site: "", service: $("#cf-service").value,
+        timeline: $("#cf-timeline").value, message: $("#cf-message").value.trim(), website: ""
+      };
+      sending = true; btn.disabled = true; btn.textContent = "Sending…";
+      status.className = "form-status"; status.textContent = "";
+      fetch(endpoint, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) })
+        .then(function (r) { return r.json(); })
+        .then(function (j) {
+          if (j && j.result === "success") { show("ok", "Message sent. We will follow up shortly."); form.reset(); t0 = 0; }
+          else show("bad", (j && j.message) ? String(j.message) : "Something went wrong. Please email", !(j && j.message));
+        })
+        .catch(function () { show("bad", "Something went wrong. Please email", true); })
+        .then(function () { sending = false; btn.disabled = false; btn.textContent = "Request Security Assessment"; });
+    });
+  });
+
+  /* ---------- research metadata: severity / CVE / affected tech come from labels ---------- */
+  function classify(names) {
+    var o = { cat: [], cve: [], sev: "", tech: "" };
+    names.forEach(function (raw) {
+      var t = (raw || "").trim(), m;
+      if (!t) return;
+      if (/^CVE-\d{4}-\d{4,}$/i.test(t)) o.cve.push(t.toUpperCase());
+      else if ((m = t.match(/^(?:severity\s*[:\-]\s*)?(critical|high|medium|low|info|informational)$/i))) o.sev = m[1].toLowerCase() === "informational" ? "info" : m[1].toLowerCase();
+      else if ((m = t.match(/^(?:affects|affected|tech|technology|product)\s*[:\-]\s*(.+)$/i))) o.tech = m[1].trim();
+      else o.cat.push(t);
+    });
+    return o;
+  }
+  function chip(text, cls) { return el("span", "chip " + (cls || ""), text); }
+  function sevLabel(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  run(function () {
+    $$(".post-card[data-labels]").forEach(function (card) {
+      var flags = $(".pc-flags", card), names = $$(".lbls li", card).map(function (li) { return li.textContent; });
+      if (!flags) return;
+      var o = classify(names);
+      flags.textContent = "";
+      if (o.cat[0]) flags.appendChild(chip(o.cat[0], "cyan"));
+      if (o.sev) flags.appendChild(chip(sevLabel(o.sev), "sev-" + o.sev));
+      o.cve.slice(0, 2).forEach(function (c) { flags.appendChild(chip(c)); });
+    });
+  });
+
+  /* ---------- article enhancements ---------- */
+  run(function () {
+    var content = $("#postContent");
+    if (!content) return;
+
+    /* labels -> category chips + advisory panel */
+    run(function () {
+      var cats = $("#postCats"), adv = $("#advisory");
+      if (!cats) return;
+      var anchors = $$("a", cats), o = classify(anchors.map(function (a) { return a.textContent; }));
+      anchors.forEach(function (a) {
+        var c = classify([a.textContent]);
+        if (!c.cat.length) a.parentNode.removeChild(a); else a.className = "chip cyan";
+      });
+      if (!adv || !(o.cve.length || o.sev || o.tech)) return;
+      function row(k, node) { var w = el("div"); w.appendChild(el("dt", "", k)); var dd = el("dd"); dd.appendChild(node); w.appendChild(dd); adv.appendChild(w); }
+      if (o.cve.length) {
+        var box = el("span");
+        o.cve.forEach(function (c, i) {
+          if (i) box.appendChild(d.createTextNode(", "));
+          var a = el("a", "", c); a.href = "https://nvd.nist.gov/vuln/detail/" + encodeURIComponent(c);
+          a.rel = "noopener noreferrer"; a.target = "_blank"; box.appendChild(a);
+        });
+        row("CVE", box);
+      }
+      if (o.sev) row("Severity", chip(sevLabel(o.sev), "sev-" + o.sev));
+      if (o.tech) row("Affected technology", d.createTextNode(o.tech));
+      if (o.cat[0]) row("Category", d.createTextNode(o.cat[0]));
+      adv.classList.add("show");
+    });
+
+    /* updated date + reading time */
+    run(function () {
+      var u = $("#updated");
+      if (u) {
+        var iso = u.getAttribute("data-iso"), pub = u.getAttribute("data-pub"), a = Date.parse(iso), b = Date.parse(pub);
+        if (a && b && a - b > 864e5) {
+          u.textContent = new Date(a).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+          u.setAttribute("datetime", iso);
+        } else u.textContent = "No revisions";
+      }
+      var rt = $("#readTime");
+      if (rt) {
+        var w = (content.textContent || "").trim().split(/\s+/).filter(Boolean).length;
+        rt.textContent = Math.max(1, Math.round(w / 200)) + " min";
+      }
+    });
+
+    /* code blocks with header bar + copy */
+    run(function () {
+      $$("pre", content).forEach(function (pre) {
+        if (pre.parentNode.classList.contains("code")) return;
+        var code = $("code", pre), cls = (code && code.className) || pre.className || "", m = cls.match(/lang(?:uage)?-([\w+#-]+)/i);
+        var wrap = el("div", "code"), bar = el("div", "code-bar"), btn = el("button", "code-copy", "Copy");
+        btn.type = "button"; btn.setAttribute("aria-label", "Copy code to clipboard");
+        bar.appendChild(el("span", "", m ? m[1] : "code")); bar.appendChild(btn);
+        pre.parentNode.insertBefore(wrap, pre);
+        wrap.appendChild(bar); wrap.appendChild(pre);
+        pre.className = (pre.className + " in-code").trim();
+        pre.setAttribute("tabindex", "0");
+        btn.addEventListener("click", function () {
+          var txt = (code || pre).textContent;
+          function done() { btn.textContent = "Copied"; announce("Code copied to clipboard"); setTimeout(function () { btn.textContent = "Copy"; }, 1800); }
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function () {});
+          else { var ta = el("textarea"); ta.value = txt; ta.style.cssText = "position:fixed;opacity:0"; d.body.appendChild(ta); ta.select(); try { d.execCommand("copy"); done(); } catch (e) {} d.body.removeChild(ta); }
+        });
+      });
+    });
+
+    /* tables scroll inside their own container */
+    $$("table", content).forEach(function (t) {
+      if (t.parentNode.classList.contains("tbl")) return;
+      var w = el("div", "tbl"); w.setAttribute("tabindex", "0"); w.setAttribute("role", "region"); w.setAttribute("aria-label", "Scrollable table");
+      t.parentNode.insertBefore(w, t); w.appendChild(t);
+    });
+
+    /* safe media + links */
+    $$("iframe", content).forEach(function (f) {
+      f.loading = "lazy"; f.setAttribute("referrerpolicy", "strict-origin-when-cross-origin");
+      if (!f.hasAttribute("sandbox")) f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation allow-popups");
+    });
+    $$("img", content).forEach(function (i) { i.loading = "lazy"; i.decoding = "async"; });
+    $$("a[href]", content).forEach(function (a) {
+      try { if (new URL(a.href, location.href).host !== location.host) a.rel = "noopener noreferrer"; } catch (e) {}
+    });
+
+    /* table of contents (+ scroll-spy) */
+    run(function () {
+      var hs = $$("h2, h3", content), used = {};
+      if (hs.filter(function (h) { return h.tagName === "H2"; }).length < 2) return;
+      var lists = [$("#tocInline ol"), $("#tocSide ol")].filter(Boolean), links = [];
+      hs.forEach(function (h) {
+        if (!h.id) {
+          var s = (h.textContent || "section").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "section";
+          var n = s, i = 2; while (used[n] || d.getElementById(n)) n = s + "-" + i++;
+          h.id = n;
+        }
+        used[h.id] = 1;
+        lists.forEach(function (ol) {
+          var li = el("li"), a = el("a", h.tagName === "H3" ? "h3" : "", h.textContent);
+          a.href = "#" + h.id; li.appendChild(a); ol.appendChild(li); links.push({ id: h.id, a: a });
+        });
+      });
+      var ti = $("#tocInline"), ts = $("#tocSide");
+      if (ti) ti.hidden = false;
+      if (ts) ts.classList.add("has");
+      if ("IntersectionObserver" in window) {
+        var io = new IntersectionObserver(function (es) {
+          es.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            links.forEach(function (l) { l.a.classList.toggle("on", l.id === e.target.id); });
+          });
+        }, { rootMargin: "-90px 0px -70% 0px" });
+        hs.forEach(function (h) { io.observe(h); });
+      }
+    });
+
+    /* related research from the first category label's feed */
+    run(function () {
+      var first = $("#postCats a"), path = "/feeds/posts/default";
+      var url = first ? path + "/-/" + encodeURIComponent(first.textContent.trim()) : path;
+      var s = d.createElement("script");
+      s.src = url + "?alt=json-in-script&max-results=8&callback=cyvantasRelatedPosts";
+      s.async = true;
+      s.onerror = function () { var r = $("#related"); if (r) r.classList.add("none"); };
+      d.body.appendChild(s);
+    });
+  });
+
+  window.cyvantasRelatedPosts = function (json) {
+    var box = $("#related"), grid = $("#relatedGrid");
+    if (!box || !grid) return;
+    var entries = (json && json.feed && json.feed.entry) || [], here = location.pathname, n = 0;
+    entries.forEach(function (en) {
+      if (n >= 3) return;
+      var href = "";
+      (en.link || []).forEach(function (l) { if (l.rel === "alternate") href = l.href; });
+      if (!href) return;
+      try { if (new URL(href).pathname === here) return; } catch (e) { return; }
+      var title = en.title ? en.title.$t : "", summary = en.summary ? en.summary.$t.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim() : "";
+      if (summary.length > 140) summary = summary.slice(0, 137) + "…";
+      var card = el("article", "post-card"), media = el("div", "pc-media no-img"), body = el("div", "pc-body");
+      var flags = el("div", "pc-flags"), names = (en.category || []).map(function (c) { return c.term; }), o = classify(names);
+      if (o.cat[0]) flags.appendChild(chip(o.cat[0], "cyan"));
+      if (o.sev) flags.appendChild(chip(sevLabel(o.sev), "sev-" + o.sev));
+      var h = el("h3"), a = el("a", "", title); a.href = href; h.appendChild(a);
+      body.appendChild(flags); body.appendChild(h); body.appendChild(el("p", "", summary));
+      var foot = el("div", "pc-foot");
+      foot.appendChild(el("span", "", en.published ? new Date(en.published.$t).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : ""));
+      var go = el("span", "go", "Read research →"); go.setAttribute("aria-hidden", "true"); foot.appendChild(go);
+      body.appendChild(foot);
+      card.appendChild(media); card.appendChild(body); grid.appendChild(card); n++;
+    });
+    if (!n) box.classList.add("none");
+  };
+
+  run(function () {
+    var b = $("#copyLink");
+    if (!b) return;
+    b.addEventListener("click", function () {
+      var u = b.getAttribute("data-url");
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(u).then(function () {
+        b.textContent = "Copied"; announce("Link copied"); setTimeout(function () { b.textContent = "Copy link"; }, 1800);
+      });
+    });
+  });
+})();
+
+//]]>
+</script>
+
+</body>
+</html>
