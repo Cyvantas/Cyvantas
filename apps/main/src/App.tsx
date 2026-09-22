@@ -1,22 +1,17 @@
+import { Routes, Route } from "react-router-dom";
 import { RootLayout } from "./components/layout/RootLayout";
-import { SectionTitle } from "./components/ui/SectionTitle";
-import { StatusDot } from "./components/ui/StatusDot";
+import { Home } from "./routes/Home";
 
 /**
- * Phase 0 placeholder. The design-system foundation and app shell are in
- * place; homepage content is built in later phases.
+ * App shell + routing. Only the temporary Home route is wired for now;
+ * additional routes and page content are added in subsequent phases.
  */
 function App() {
   return (
     <RootLayout>
-      <SectionTitle
-        eyebrow="Phase 0 — Foundations"
-        title="Design system & UI foundation ready"
-        description="Tokens, primitives, motion presets, and the application shell are in place. Page content is built in subsequent phases."
-      />
-      <div className="mt-6">
-        <StatusDot status="online" pulse label="Foundation online" />
-      </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+      </Routes>
     </RootLayout>
   );
 }
