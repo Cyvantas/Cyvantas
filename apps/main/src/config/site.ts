@@ -15,6 +15,24 @@ export const SITE = {
   founder: "Prajeesh KC",
 } as const;
 
+export interface SocialLink {
+  label: string;
+  href: string;
+  handle: string;
+}
+
+/**
+ * Official CYVANTAS *company* social accounts. These represent the brand and
+ * are the only social links used site-wide (footer, Organization JSON-LD,
+ * twitter:site). The founder's personal accounts live in content/home.ts
+ * (FOUNDER.socials) and appear ONLY in the About/Founder area.
+ */
+export const COMPANY_SOCIALS: SocialLink[] = [
+  { label: "GitHub", href: "https://github.com/Cyvantas", handle: "Cyvantas" },
+  { label: "X", href: "https://x.com/cyvantas", handle: "@cyvantas" },
+  { label: "Instagram", href: "https://www.instagram.com/cyvantas/", handle: "@cyvantas" },
+];
+
 export interface NavItem {
   label: string;
   /** Internal route path. */
@@ -58,16 +76,11 @@ export const FOOTER_NAV: FooterLink[] = [
 ];
 
 /**
- * Footer "Legal" column. Policy pages live on the existing site origin
- * (real Blogger pages); centralized here so they can be repointed to React
- * routes once those pages are built.
+ * Footer "Legal" column. Internal React routes served from the new site
+ * (replacing the old Blogger /p/*.html pages, which now 404).
  */
 export const LEGAL_NAV: FooterLink[] = [
-  { label: "Privacy Policy", href: `${SITE.url}/p/privacy-policy.html`, external: true },
-  { label: "Terms of Use", href: `${SITE.url}/p/terms.html`, external: true },
-  {
-    label: "Responsible Disclosure",
-    href: `${SITE.url}/p/responsible-disclosure.html`,
-    external: true,
-  },
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Use", href: "/terms" },
+  { label: "Responsible Disclosure", href: "/responsible-disclosure" },
 ];

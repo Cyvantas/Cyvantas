@@ -2,8 +2,8 @@ import { Link } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import { Logo } from "./Logo";
-import { SITE, FOOTER_NAV, LEGAL_NAV, LAB_NAV } from "../../config/site";
-import { FOUNDER, RESEARCH } from "../../content/home";
+import { SITE, FOOTER_NAV, LEGAL_NAV, LAB_NAV, COMPANY_SOCIALS } from "../../config/site";
+import { RESEARCH } from "../../content/home";
 
 /** Site footer: brand, navigation / research / social / legal, and disclosure. */
 export function Footer() {
@@ -72,7 +72,7 @@ export function Footer() {
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
               <span className={heading}>Social</span>
-              {FOUNDER.socials.map((social) => (
+              {COMPANY_SOCIALS.map((social) => (
                 <a
                   key={social.label}
                   href={social.href}
@@ -89,15 +89,9 @@ export function Footer() {
             <nav aria-label="Legal" className="flex flex-col gap-3">
               <span className={heading}>Legal</span>
               {LEGAL_NAV.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  {...(item.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                  className={linkClass}
-                >
+                <Link key={item.label} to={item.href} className={linkClass}>
                   {item.label}
-                  {item.external ? <span className="sr-only"> (opens in a new tab)</span> : null}
-                </a>
+                </Link>
               ))}
             </nav>
           </div>

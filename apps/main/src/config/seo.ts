@@ -5,8 +5,7 @@
  * could not be verified are flagged for later confirmation, not guessed.
  */
 
-import { SITE } from "./site";
-import { FOUNDER } from "../content/home";
+import { SITE, COMPANY_SOCIALS } from "./site";
 
 /**
  * Local, on-brand Open Graph card served from the app origin
@@ -14,8 +13,8 @@ import { FOUNDER } from "../content/home";
  */
 export const OG_IMAGE = `${SITE.url}/assets/cyvantas-og.jpg`;
 
-/** Personal handle from the Blogger theme; company handle UNVERIFIED (ARCHITECTURE.md §4.5). */
-export const TWITTER_SITE = "@Prajeesh_kc";
+/** Official CYVANTAS company X/Twitter handle (company identity, site-wide). */
+export const TWITTER_SITE = "@cyvantas";
 
 export interface RouteSeo {
   /** Route path; used to build the canonical URL. */
@@ -59,6 +58,23 @@ export const ROUTE_SEO = {
     title: "Contact | CYVANTAS",
     description: "Get in touch with CYVANTAS about authorized security assessments.",
   },
+  privacy: {
+    path: "/privacy",
+    title: "Privacy Policy | CYVANTAS",
+    description:
+      "How CYVANTAS handles the information you share through this website and its contact form.",
+  },
+  terms: {
+    path: "/terms",
+    title: "Terms of Use | CYVANTAS",
+    description: "The terms that govern your use of the CYVANTAS website.",
+  },
+  responsibleDisclosure: {
+    path: "/responsible-disclosure",
+    title: "Responsible Disclosure | CYVANTAS",
+    description:
+      "How to report a security vulnerability affecting CYVANTAS, and our coordinated disclosure approach.",
+  },
   notFound: {
     path: "/404",
     title: "Page not found | CYVANTAS",
@@ -87,7 +103,7 @@ export function buildSiteJsonLd() {
         image: OG_IMAGE,
         founder: { "@type": "Person", name: SITE.founder },
         address: { "@type": "PostalAddress", addressCountry: "IN" },
-        sameAs: FOUNDER.socials.map((s) => s.href),
+        sameAs: COMPANY_SOCIALS.map((s) => s.href),
       },
       {
         "@type": "WebSite",

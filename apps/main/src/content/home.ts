@@ -83,7 +83,7 @@ export const HERO = {
     "Evidence-driven findings",
     "Authorized-scope testing only",
   ],
-  github: "https://github.com/kcprajeesh",
+  github: "https://github.com/Cyvantas",
 } as const;
 
 // --- Capabilities snapshot ------------------------------------------------
@@ -435,24 +435,15 @@ export const RESEARCH = {
     "Tools",
   ],
   /**
-   * Research navigation. Label/feed entries point at the live Blogger origin
-   * (real, existing resources); framework/resource entries are in-page anchors.
+   * Research navigation. Vulnerability Research / Security Advisories resolve
+   * to the in-app /research route; Frameworks / Resources are homepage anchors.
    * `external` controls target/rel and the outbound-link affordance.
    */
   links: [
-    {
-      label: "Vulnerability Research",
-      href: `${SITE.url}/search/label/Vulnerability%20Research`,
-      external: true,
-    },
-    {
-      label: "Security Advisories",
-      href: `${SITE.url}/search/label/Security%20Advisories`,
-      external: true,
-    },
+    { label: "Vulnerability Research", href: "/research", external: false },
+    { label: "Security Advisories", href: "/research", external: false },
     { label: "Frameworks", href: "#frameworks", external: false },
     { label: "Resources", href: "#frameworks", external: false },
-    { label: "RSS feed", href: `${SITE.url}/feeds/posts/default`, external: true },
   ] as { label: string; href: string; external: boolean }[],
 } as const;
 
@@ -633,14 +624,14 @@ export const PROJECTS: Project[] = [
     title: "Vibe Pentesterlab",
     description: "A CYVANTAS project. Details and source are published on GitHub.",
     tag: "Project",
-    href: "https://github.com/kcprajeesh",
+    href: "https://github.com/Cyvantas",
     cta: "View on GitHub",
   },
   {
     title: "CYVANTAS AI Agent",
     description: "A CYVANTAS project. Details and source are published on GitHub.",
     tag: "Project",
-    href: "https://github.com/kcprajeesh",
+    href: "https://github.com/Cyvantas",
     cta: "View on GitHub",
   },
   {
@@ -648,14 +639,14 @@ export const PROJECTS: Project[] = [
     description:
       "Custom tooling and scripts that streamline recurring security workflows.",
     tag: "Category",
-    href: "https://github.com/kcprajeesh",
+    href: "https://github.com/Cyvantas",
     cta: "Browse repositories",
   },
   {
     title: "Research tooling",
     description: "Utilities that support vulnerability research and technical writing.",
     tag: "Category",
-    href: "https://github.com/kcprajeesh",
+    href: "https://github.com/Cyvantas",
     cta: "Browse repositories",
   },
 ];

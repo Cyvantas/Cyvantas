@@ -60,7 +60,7 @@ export function Hero() {
               <Icon size="sm">
                 <CodeIcon />
               </Icon>
-              github/kcprajeesh
+              github/Cyvantas
               <span className="sr-only"> (opens in a new tab)</span>
             </a>
           </motion.div>

@@ -6,6 +6,9 @@ import { Services } from "./routes/Services";
 import { Research } from "./routes/Research";
 import { About } from "./routes/About";
 import { Contact } from "./routes/Contact";
+import { Privacy } from "./routes/Privacy";
+import { Terms } from "./routes/Terms";
+import { ResponsibleDisclosure } from "./routes/ResponsibleDisclosure";
 import { NotFound } from "./routes/NotFound";
 
 /** App shell + routing. Each page composes reused, data-driven sections. */
@@ -19,6 +22,9 @@ function App() {
         <Route path="/research" element={<Research />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/responsible-disclosure" element={<ResponsibleDisclosure />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </RootLayout>
