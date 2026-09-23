@@ -1,0 +1,31 @@
+{
+  "name": "@cyvantas/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "CYVANTAS Security Lab API — Phase 7 skeleton (content read-only; environments/progress/flags stubbed).",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc --noEmit && tsup",
+    "start": "node dist/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "fastify": "^5.2.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.13.3",
+    "eslint": "^10.10.0",
+    "globals": "^17.12.0",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "~6.0.2",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^3.2.4"
+  }
+}
