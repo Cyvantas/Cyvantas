@@ -31,6 +31,50 @@ const createEnvironmentSchema = z.object({
   missionSlug: z.string().trim().min(1).max(200).optional(),
 })
 
+/**
+ * Client-PROPOSED sandbox policy. Shape/type validation only — every safety
+ * decision (limits, forbidden destinations, dangerous capabilities) is made
+ * server-side by the orchestrator's policy engine, not here.
+ */
+const sandboxRequestSchema = z
+  .object({
+    resources: z
+      .object({
+        cpuMillis: z.number().optional(),
+        memoryMb: z.number().optional(),
+        diskMb: z.number().optional(),
+        pids: z.number().optional(),
+        maxLifetimeSeconds: z.number().optional(),
+        idleTimeoutSeconds: z.number().optional(),
+      })
+      .optional(),
+    network: z
+      .object({
+        ingress: z.enum(["deny", "controlled"]).optional(),
+        egress: z.enum(["deny", "allowlist"]).optional(),
+        allowedDestinations: z.array(z.string().max(255)).max(50).optional(),
+      })
+      .optional(),
+    capabilities: z
+      .object({
+        allowNetwork: z.boolean().optional(),
+        allowOutboundHttp: z.boolean().optional(),
+        allowOutboundDns: z.boolean().optional(),
+        allowRawSockets: z.boolean().optional(),
+        allowPrivileged: z.boolean().optional(),
+        allowHostFilesystem: z.boolean().optional(),
+        allowDeviceAccess: z.boolean().optional(),
+      })
+      .optional(),
+    filesystem: z
+      .object({
+        readOnlyRootFilesystem: z.boolean().optional(),
+        allowHostMounts: z.boolean().optional(),
+      })
+      .optional(),
+  })
+  .optional()
+
 function parseBody<T>(schema: z.ZodType<T>, body: unknown): T {
   const result = schema.safeParse(body)
   if (!result.success) {
@@ -181,6 +225,41 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
         authContext(request),
       )
       return success(toEnvironmentDTO(env, runtimeConfigured))
+    },
+  )
+
+  // ----- Sandbox orchestration (Phase 10) -------------------------------------
+  // Thin handlers: ownership is enforced by loading the environment through the
+  // environment service (404 for not-owned), then the orchestrator makes every
+  // policy/runtime decision. No business logic lives here.
+
+  const orchestrator = app.sandboxOrchestrator
+
+  app.get(
+    "/:id/sandbox",
+    { preHandler: requireAuth },
+    async (request: FastifyRequest) => {
+      const { id } = request.params as { id: string }
+      const env = await service.getEnvironment(actorFrom(request), id)
+      return success(orchestrator.describeSandbox(env))
+    },
+  )
+
+  app.post(
+    "/:id/sandbox/provision",
+    { preHandler: requireAuth },
+    async (request: FastifyRequest) => {
+      assertTrustedOrigin(app, request)
+      const { id } = request.params as { id: string }
+      const env = await service.getEnvironment(actorFrom(request), id)
+      const body = parseBody(sandboxRequestSchema, request.body)
+      const descriptor = await orchestrator.provision(
+        env,
+        body,
+        { userId: env.userId, ...authContext(request) },
+        idempotencyKey(request),
+      )
+      return success(descriptor)
     },
   )
 }

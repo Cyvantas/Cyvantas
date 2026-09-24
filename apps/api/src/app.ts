@@ -17,6 +17,7 @@ import { createEnvironmentService } from "./services/environmentService.ts"
 import { catalogService } from "./services/catalogService.ts"
 import { notConfiguredRuntimeProvider } from "./services/runtime/environmentRuntimeProvider.ts"
 import { createInMemoryIdempotencyStore } from "./services/idempotencyStore.ts"
+import { createSandboxOrchestrator } from "./orchestration/index.ts"
 import { registerAuth } from "./plugins/auth.ts"
 import { createInMemoryRateLimiter } from "./security/rateLimiter.ts"
 
@@ -77,6 +78,16 @@ export async function buildApp(
     idempotency: createInMemoryIdempotencyStore(),
   })
   app.decorate("environmentService", environmentService)
+
+  // Sandbox orchestrator (Phase 10): server-authoritative policy + runtime
+  // coordination behind the SAME runtime-provider seam. Wired with the "not
+  // configured" runtime, so it enforces policy and audits honestly but never
+  // provisions a real container/process.
+  const sandboxOrchestrator = createSandboxOrchestrator({
+    runtime: notConfiguredRuntimeProvider,
+    audit: repositories.audit,
+  })
+  app.decorate("sandboxOrchestrator", sandboxOrchestrator)
 
   app.addHook("onClose", async () => {
     await repositories.shutdown()
