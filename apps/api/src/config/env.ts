@@ -16,7 +16,25 @@ const DEFAULT_CORS_ORIGIN = "http://localhost:5173"
 const DEFAULT_SESSION_COOKIE_NAME = "cyv_session"
 const DEFAULT_SESSION_TTL_SECONDS = 60 * 60 * 24 * 7 // 7 days
 
+// Environment-service policy defaults. Centralized so limits/TTL are never
+// hard-coded across the codebase; every value is server-authoritative.
+const DEFAULT_MAX_ACTIVE_ENVIRONMENTS = 3
+const DEFAULT_MAX_TOTAL_ENVIRONMENTS = 25
+const DEFAULT_ENVIRONMENT_TTL_MINUTES = 60
+const DEFAULT_MAX_ENVIRONMENT_LIFETIME_MINUTES = 240
+
 export type NodeEnv = "development" | "test" | "production"
+
+/**
+ * Environment-service policy. TTL is the sliding idle window; maxLifetimeMinutes
+ * is the absolute cap from creation that a client can NEVER extend past.
+ */
+export interface EnvironmentPolicy {
+  readonly maxActive: number
+  readonly maxTotal: number
+  readonly ttlMinutes: number
+  readonly maxLifetimeMinutes: number
+}
 
 export interface AppConfig {
   readonly port: number
@@ -30,6 +48,7 @@ export interface AppConfig {
   readonly sessionTtlSeconds: number
   /** True when the API should emit Secure cookies (production over HTTPS). */
   readonly cookieSecure: boolean
+  readonly environment: EnvironmentPolicy
 }
 
 function parsePort(raw: string | undefined): number {
@@ -69,6 +88,58 @@ function parseSessionTtl(raw: string | undefined): number {
   return ttl
 }
 
+function parsePositiveInt(
+  raw: string | undefined,
+  fallback: number,
+  label: string,
+  { min = 1, max = 100_000 }: { min?: number; max?: number } = {},
+): number {
+  if (raw === undefined || raw.trim() === "") return fallback
+  const value = Number(raw)
+  if (!Number.isInteger(value) || value < min || value > max) {
+    throw new Error(`Invalid ${label} (${min}..${max}): ${raw}`)
+  }
+  return value
+}
+
+function parseEnvironmentPolicy(env: NodeJS.ProcessEnv): EnvironmentPolicy {
+  const maxActive = parsePositiveInt(
+    env.MAX_ACTIVE_ENVIRONMENTS,
+    DEFAULT_MAX_ACTIVE_ENVIRONMENTS,
+    "MAX_ACTIVE_ENVIRONMENTS",
+    { max: 1000 },
+  )
+  const maxTotal = parsePositiveInt(
+    env.MAX_TOTAL_ENVIRONMENTS,
+    DEFAULT_MAX_TOTAL_ENVIRONMENTS,
+    "MAX_TOTAL_ENVIRONMENTS",
+    { max: 10_000 },
+  )
+  const ttlMinutes = parsePositiveInt(
+    env.ENVIRONMENT_TTL_MINUTES,
+    DEFAULT_ENVIRONMENT_TTL_MINUTES,
+    "ENVIRONMENT_TTL_MINUTES",
+    { max: 60 * 24 },
+  )
+  const maxLifetimeMinutes = parsePositiveInt(
+    env.MAX_ENVIRONMENT_LIFETIME_MINUTES,
+    DEFAULT_MAX_ENVIRONMENT_LIFETIME_MINUTES,
+    "MAX_ENVIRONMENT_LIFETIME_MINUTES",
+    { max: 60 * 24 * 7 },
+  )
+  if (maxLifetimeMinutes < ttlMinutes) {
+    throw new Error(
+      "MAX_ENVIRONMENT_LIFETIME_MINUTES must be >= ENVIRONMENT_TTL_MINUTES",
+    )
+  }
+  if (maxTotal < maxActive) {
+    throw new Error(
+      "MAX_TOTAL_ENVIRONMENTS must be >= MAX_ACTIVE_ENVIRONMENTS",
+    )
+  }
+  return { maxActive, maxTotal, ttlMinutes, maxLifetimeMinutes }
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const nodeEnv = parseNodeEnv(env.NODE_ENV)
   const databaseUrl = env.DATABASE_URL?.trim() || undefined
@@ -87,6 +158,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       env.SESSION_COOKIE_NAME?.trim() || DEFAULT_SESSION_COOKIE_NAME,
     sessionTtlSeconds: parseSessionTtl(env.SESSION_TTL),
     cookieSecure: nodeEnv === "production",
+    environment: parseEnvironmentPolicy(env),
   }
 }
 

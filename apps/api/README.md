@@ -55,7 +55,7 @@ src/
     challenges.ts        GET /api/v1/challenges[/:slug]
     learning.ts          GET /api/v1/learning[/:slug]
     missions.ts          GET /api/v1/missions[/:slug]
-    environments.ts      501 stubs
+    environments.ts      full lifecycle (Phase 9)
     progress.ts          501 stub
     flags.ts             501 stub
   app.ts                 buildApp(): Fastify + CORS + cookie + auth + routes
@@ -166,11 +166,14 @@ deps (`fastify`, `@fastify/cors`, `@fastify/cookie`, `@prisma/client`,
 | GET    | `/api/v1/learning/:slug`            | 200/404| One path. `LEARNING_PATH_NOT_FOUND`. |
 | GET    | `/api/v1/missions`                  | 200    | Public mission list.                 |
 | GET    | `/api/v1/missions/:slug`            | 200/404| One mission. `MISSION_NOT_FOUND`.    |
-| POST   | `/api/v1/environments`              | 501    | `ENVIRONMENT_SERVICE_NOT_IMPLEMENTED`|
-| GET    | `/api/v1/environments/:id`          | 501    | stub                                 |
-| POST   | `/api/v1/environments/:id/start`    | 501    | stub                                 |
-| POST   | `/api/v1/environments/:id/reset`    | 501    | stub                                 |
-| POST   | `/api/v1/environments/:id/stop`     | 501    | stub                                 |
+| POST   | `/api/v1/environments`              | 201    | Create env. Auth. `Idempotency-Key`. |
+| GET    | `/api/v1/environments`              | 200    | List the caller's environments.      |
+| GET    | `/api/v1/environments/:id`          | 200/404| One env (404 hides others' ids).     |
+| POST   | `/api/v1/environments/:id/start`    | 200    | Move toward ACTIVE (no real runtime).|
+| POST   | `/api/v1/environments/:id/touch`    | 200    | Slide the TTL (capped by lifetime).  |
+| POST   | `/api/v1/environments/:id/reset`    | 200    | Reset back to READY.                 |
+| POST   | `/api/v1/environments/:id/stop`     | 200    | Stop ACTIVE → READY (idempotent).    |
+| DELETE | `/api/v1/environments/:id`          | 200    | Destroy (terminal, idempotent).      |
 | GET    | `/api/v1/progress`                  | 501    | `PROGRESS_SERVICE_NOT_IMPLEMENTED`   |
 | POST   | `/api/v1/flags/submit`              | 501    | `FLAG_SERVICE_NOT_IMPLEMENTED`       |
 
@@ -193,18 +196,26 @@ Error handling covers `400` (validation), `404` (unknown route/slug), `500`
 
 ## Current limitations
 
-Phase 8 adds authentication, sessions, roles, and a PostgreSQL/Prisma
-persistence foundation (with an in-memory fallback). By design, the service
-still does **not** implement — and never performs — any of the following:
+Phase 9 adds the **environment lifecycle** (persistent records, state machine,
+ownership, per-user limits, TTL, reset/destroy, idempotency, auditing) on top of
+the Phase 8 auth/database foundation. Crucially, it provisions **nothing**: the
+runtime provider is the "not configured" implementation, so `runtimeStatus`
+stays `NOT_PROVISIONED` and every DTO reports `runtimeConfigured: false`. The
+service still does **not** implement — and never performs — any of the following:
 
-- environment provisioning, containers, sandboxes, or command execution
+- containers, sandboxes, Docker/Kubernetes, or command/shell execution
+- `start` never launches a process; it only advances the lifecycle record and
+  is honest that no runtime exists (Phase 10 will attach a real provider)
 - flag validation or scoring (submissions are never marked "correct")
 - outbound network requests, URL proxying, or SSRF primitives
-- a scheduler/cron (session cleanup is a plain function, invoked on demand)
-- Redis or any shared store — the rate limiter is per-process and **not**
-  horizontally scalable (see [`docs/AUTH.md`](docs/AUTH.md))
+- a scheduler/cron — `cleanupExpiredEnvironments` is a plain function invoked on
+  demand; the idempotency store and rate limiter are per-process and **not**
+  horizontally scalable
 - a frontend login UI (the Lab frontend remains backend-disabled)
 - secrets in git (`DATABASE_URL` lives only in your local `.env`)
+
+Environment lifecycle, statuses, endpoints, limits, and TTL are documented in
+[`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md).
 
 Additionally, on the aarch64 Android/Termux build host, Prisma's native
 query/schema engines cannot run and PostgreSQL is not installed, so live DB

@@ -7,6 +7,12 @@
  * testable without a running PostgreSQL and keeps SQL out of route handlers.
  */
 import type { RoleName } from "../domain/roles.ts"
+import type {
+  EnvironmentRecord,
+  EnvironmentRuntimeStatus,
+  EnvironmentStatus,
+  EnvironmentType,
+} from "../domain/environment.ts"
 
 export interface UserRecord {
   id: string
@@ -52,6 +58,16 @@ export type AuditEventName =
   | "REGISTER"
   | "SESSION_REVOKED"
   | "ROLE_CHANGED"
+  | "ENVIRONMENT_CREATED"
+  | "ENVIRONMENT_START_REQUESTED"
+  | "ENVIRONMENT_READY"
+  | "ENVIRONMENT_ACTIVATED"
+  | "ENVIRONMENT_RESET_REQUESTED"
+  | "ENVIRONMENT_STOP_REQUESTED"
+  | "ENVIRONMENT_DESTROY_REQUESTED"
+  | "ENVIRONMENT_DESTROYED"
+  | "ENVIRONMENT_TIMEOUT"
+  | "ENVIRONMENT_FAILED"
 
 export interface AuditRecordInput {
   event: AuditEventName
@@ -103,6 +119,60 @@ export interface Repositories {
   sessions: SessionRepository
   audit: AuditRepository
   progress: ProgressRepository
+  environments: EnvironmentRepository
   /** Called on server shutdown to release resources (DB connections). */
   shutdown(): Promise<void>
+}
+
+/** Fields set at creation time. The rest are derived by the service. */
+export interface CreateEnvironmentInput {
+  userId: string
+  type: EnvironmentType
+  challengeSlug: string | null
+  missionSlug: string | null
+  status: EnvironmentStatus
+  runtimeStatus: EnvironmentRuntimeStatus
+  requestedAt: Date
+  lastActivityAt: Date
+  expiresAt: Date
+  metadata?: Record<string, unknown> | null
+}
+
+/**
+ * Mutable fields a lifecycle transition may update. Immutable identity fields
+ * (id, userId, type, target slugs, createdAt, requestedAt) are intentionally
+ * absent so a transition can never rewrite ownership or the target.
+ */
+export interface EnvironmentUpdate {
+  status?: EnvironmentStatus
+  runtimeStatus?: EnvironmentRuntimeStatus
+  provisioningStartedAt?: Date | null
+  readyAt?: Date | null
+  startedAt?: Date | null
+  lastActivityAt?: Date
+  expiresAt?: Date
+  timeoutAt?: Date | null
+  destroyedAt?: Date | null
+  failureCode?: string | null
+  failureMessage?: string | null
+  metadata?: Record<string, unknown> | null
+}
+
+export interface EnvironmentRepository {
+  create(input: CreateEnvironmentInput): Promise<EnvironmentRecord>
+  findById(id: string): Promise<EnvironmentRecord | null>
+  listByUser(userId: string): Promise<EnvironmentRecord[]>
+  update(
+    id: string,
+    patch: EnvironmentUpdate,
+  ): Promise<EnvironmentRecord | null>
+  /**
+   * Live (non-terminal) environments whose expiresAt is at/before `before`.
+   * Used by cleanupExpiredEnvironments to time them out. `liveStatuses` scopes
+   * the query to statuses still holding a slot.
+   */
+  findExpired(
+    before: Date,
+    liveStatuses: readonly EnvironmentStatus[],
+  ): Promise<EnvironmentRecord[]>
 }

@@ -10,8 +10,11 @@ import type { RoleName } from "../domain/roles.ts"
 import type {
   AuditRecordInput,
   AuditRepository,
+  CreateEnvironmentInput,
   CreateSessionInput,
   CreateUserInput,
+  EnvironmentRepository,
+  EnvironmentUpdate,
   ProgressKind,
   ProgressRecordInput,
   ProgressRepository,
@@ -22,6 +25,10 @@ import type {
   UserRecord,
   UserRepository,
 } from "./types.ts"
+import type {
+  EnvironmentRecord,
+  EnvironmentStatus,
+} from "../domain/environment.ts"
 import { disconnectPrisma } from "../db/prisma.ts"
 
 interface UserRow {
@@ -45,6 +52,66 @@ function mapUser(row: UserRow): UserRecord {
 }
 
 const USER_INCLUDE = { roles: { include: { role: true } } } as const
+
+interface EnvironmentRow {
+  id: string
+  userId: string
+  type: string
+  challengeSlug: string | null
+  missionSlug: string | null
+  status: string
+  runtimeStatus: string
+  requestedAt: Date
+  provisioningStartedAt: Date | null
+  readyAt: Date | null
+  startedAt: Date | null
+  lastActivityAt: Date
+  expiresAt: Date
+  timeoutAt: Date | null
+  destroyedAt: Date | null
+  failureCode: string | null
+  failureMessage: string | null
+  metadata: unknown
+  createdAt: Date
+  updatedAt: Date
+}
+
+function mapEnv(row: EnvironmentRow): EnvironmentRecord {
+  return {
+    id: row.id,
+    userId: row.userId,
+    type: row.type as EnvironmentRecord["type"],
+    challengeSlug: row.challengeSlug,
+    missionSlug: row.missionSlug,
+    status: row.status as EnvironmentStatus,
+    runtimeStatus: row.runtimeStatus as EnvironmentRecord["runtimeStatus"],
+    requestedAt: row.requestedAt,
+    provisioningStartedAt: row.provisioningStartedAt,
+    readyAt: row.readyAt,
+    startedAt: row.startedAt,
+    lastActivityAt: row.lastActivityAt,
+    expiresAt: row.expiresAt,
+    timeoutAt: row.timeoutAt,
+    destroyedAt: row.destroyedAt,
+    failureCode: row.failureCode,
+    failureMessage: row.failureMessage,
+    metadata:
+      row.metadata && typeof row.metadata === "object"
+        ? (row.metadata as Record<string, unknown>)
+        : null,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  }
+}
+
+// Environment delegate accessed via a loose cast for the same reason as audit:
+// avoid a hard dependency on a regenerated Prisma client on engine-less hosts.
+interface EnvironmentDelegate {
+  create: (args: unknown) => Promise<EnvironmentRow>
+  findUnique: (args: unknown) => Promise<EnvironmentRow | null>
+  findMany: (args: unknown) => Promise<EnvironmentRow[]>
+  update: (args: unknown) => Promise<EnvironmentRow>
+}
 
 const PROGRESS_DELEGATE = {
   challenge: "challengeProgress",
@@ -144,7 +211,14 @@ export function createPrismaRepositories(prisma: PrismaClient): Repositories {
 
   const audit: AuditRepository = {
     async record(input: AuditRecordInput) {
-      await prisma.auditLog.create({
+      // Delegate accessed via a loose cast so newly added AuditEvent enum values
+      // (environment lifecycle events) do not require regenerating the Prisma
+      // client to type-check on build hosts where the engine cannot run. The DB
+      // enum is extended by the Phase 9 migration.
+      const delegate = prisma.auditLog as unknown as {
+        create: (args: unknown) => Promise<unknown>
+      }
+      await delegate.create({
         data: {
           event: input.event,
           userId: input.userId ?? null,
@@ -194,8 +268,69 @@ export function createPrismaRepositories(prisma: PrismaClient): Repositories {
     sessions,
     audit,
     progress,
+    environments: createEnvironmentRepository(prisma),
     async shutdown() {
       await disconnectPrisma()
+    },
+  }
+}
+
+function createEnvironmentRepository(
+  prisma: PrismaClient,
+): EnvironmentRepository {
+  const delegate = (prisma as unknown as { environment: EnvironmentDelegate })
+    .environment
+
+  return {
+    async create(input: CreateEnvironmentInput): Promise<EnvironmentRecord> {
+      const row = await delegate.create({
+        data: {
+          userId: input.userId,
+          type: input.type,
+          challengeSlug: input.challengeSlug,
+          missionSlug: input.missionSlug,
+          status: input.status,
+          runtimeStatus: input.runtimeStatus,
+          requestedAt: input.requestedAt,
+          lastActivityAt: input.lastActivityAt,
+          expiresAt: input.expiresAt,
+          metadata: input.metadata ?? undefined,
+        },
+      })
+      return mapEnv(row)
+    },
+    async findById(id): Promise<EnvironmentRecord | null> {
+      const row = await delegate.findUnique({ where: { id } })
+      return row ? mapEnv(row) : null
+    },
+    async listByUser(userId): Promise<EnvironmentRecord[]> {
+      const rows = await delegate.findMany({
+        where: { userId },
+        orderBy: { createdAt: "desc" },
+      })
+      return rows.map(mapEnv)
+    },
+    async update(id, patch: EnvironmentUpdate): Promise<EnvironmentRecord | null> {
+      const row = await delegate.update({
+        where: { id },
+        data: {
+          ...patch,
+          metadata: patch.metadata === undefined ? undefined : patch.metadata,
+        },
+      })
+      return mapEnv(row)
+    },
+    async findExpired(
+      before,
+      liveStatuses: readonly EnvironmentStatus[],
+    ): Promise<EnvironmentRecord[]> {
+      const rows = await delegate.findMany({
+        where: {
+          status: { in: [...liveStatuses] },
+          expiresAt: { lte: before },
+        },
+      })
+      return rows.map(mapEnv)
     },
   }
 }

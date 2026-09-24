@@ -13,6 +13,10 @@ import { apiV1Routes } from "./routes/index.ts"
 import { createRepositories } from "./repositories/index.ts"
 import type { Repositories } from "./repositories/types.ts"
 import { createAuthService } from "./services/authService.ts"
+import { createEnvironmentService } from "./services/environmentService.ts"
+import { catalogService } from "./services/catalogService.ts"
+import { notConfiguredRuntimeProvider } from "./services/runtime/environmentRuntimeProvider.ts"
+import { createInMemoryIdempotencyStore } from "./services/idempotencyStore.ts"
 import { registerAuth } from "./plugins/auth.ts"
 import { createInMemoryRateLimiter } from "./security/rateLimiter.ts"
 
@@ -41,7 +45,7 @@ export async function buildApp(
   // credentials:true is required so browsers send/receive the session cookie.
   await app.register(cors, {
     origin: config.corsOrigin,
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "DELETE"],
     credentials: true,
   })
 
@@ -61,6 +65,19 @@ export async function buildApp(
     config,
     rateLimiter: createInMemoryRateLimiter(),
   })
+
+  // Environment service: pure business logic over repository interfaces and a
+  // runtime provider. Phase 9 wires the "not configured" runtime, so it never
+  // starts a container/process; runtimeStatus stays NOT_PROVISIONED honestly.
+  const environmentService = createEnvironmentService({
+    repositories,
+    catalog: catalogService,
+    runtime: notConfiguredRuntimeProvider,
+    policy: config.environment,
+    idempotency: createInMemoryIdempotencyStore(),
+  })
+  app.decorate("environmentService", environmentService)
+
   app.addHook("onClose", async () => {
     await repositories.shutdown()
   })

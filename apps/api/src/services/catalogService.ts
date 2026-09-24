@@ -233,4 +233,19 @@ export const catalogService = {
     const found = publishedMissions.find((m) => m.slug === slug)
     return found ? toPublicMission(found) : undefined
   },
+
+  /**
+   * Whether a challenge slug refers to a real catalog challenge that supports a
+   * training environment. In Phase 9 every catalog challenge is environment-
+   * eligible; this stays centralized so a future "no environment for this
+   * target" rule has one place to live.
+   */
+  challengeSupportsEnvironment(slug: string): boolean {
+    return challenges.some((c) => c.slug === slug)
+  },
+
+  /** Whether a published mission slug supports a training environment. */
+  missionSupportsEnvironment(slug: string): boolean {
+    return publishedMissions.some((m) => m.slug === slug)
+  },
 }

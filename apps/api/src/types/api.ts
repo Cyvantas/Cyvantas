@@ -57,3 +57,15 @@ export function notImplemented(code: string, message: string): ApiError {
 export function notFound(code: string, message: string): ApiError {
   return new ApiError(code, message, 404)
 }
+
+export function badRequest(code: string, message: string): ApiError {
+  return new ApiError(code, message, 400)
+}
+
+export function conflict(code: string, message: string): ApiError {
+  return new ApiError(code, message, 409)
+}
+
+export function forbidden(code: string, message: string): ApiError {
+  return new ApiError(code, message, 403)
+}

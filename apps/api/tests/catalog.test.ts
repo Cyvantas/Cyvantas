@@ -117,36 +117,6 @@ describe("GET /api/v1/missions", () => {
   })
 })
 
-describe("environment stubs", () => {
-  it("POST /api/v1/environments returns 501", async () => {
-    const res = await app.inject({
-      method: "POST",
-      url: "/api/v1/environments",
-      payload: { missionId: "anything" },
-    })
-    expect(res.statusCode).toBe(501)
-    expect(res.json()).toEqual({
-      error: {
-        code: "ENVIRONMENT_SERVICE_NOT_IMPLEMENTED",
-        message: "Environment provisioning is not implemented yet",
-        status: 501,
-      },
-    })
-  })
-
-  it("environment lifecycle sub-routes all return 501", async () => {
-    for (const url of [
-      "/api/v1/environments/x/start",
-      "/api/v1/environments/x/reset",
-      "/api/v1/environments/x/stop",
-    ]) {
-      const res = await app.inject({ method: "POST", url })
-      expect(res.statusCode).toBe(501)
-      expect(res.json().error.code).toBe("ENVIRONMENT_SERVICE_NOT_IMPLEMENTED")
-    }
-  })
-})
-
 describe("progress stub", () => {
   it("GET /api/v1/progress returns 501", async () => {
     const res = await app.inject({ method: "GET", url: "/api/v1/progress" })

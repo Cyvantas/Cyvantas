@@ -9,8 +9,11 @@
 import { randomUUID } from "node:crypto"
 import type {
   AuditRepository,
+  CreateEnvironmentInput,
   CreateSessionInput,
   CreateUserInput,
+  EnvironmentRepository,
+  EnvironmentUpdate,
   ProgressKind,
   ProgressRecordInput,
   ProgressRepository,
@@ -21,9 +24,17 @@ import type {
   UserRecord,
   UserRepository,
 } from "./types.ts"
+import type {
+  EnvironmentRecord,
+  EnvironmentStatus,
+} from "../domain/environment.ts"
 
 function cloneUser(u: UserRecord): UserRecord {
   return { ...u, roles: [...u.roles] }
+}
+
+function cloneEnv(e: EnvironmentRecord): EnvironmentRecord {
+  return { ...e, metadata: e.metadata ? { ...e.metadata } : null }
 }
 
 export function createInMemoryRepositories(): Repositories {
@@ -31,6 +42,7 @@ export function createInMemoryRepositories(): Repositories {
   const usersByEmail = new Map<string, string>()
   const sessions = new Map<string, SessionRecord>()
   const progress = new Map<string, ProgressRecordInput & { completedAt: Date | null }>()
+  const environments = new Map<string, EnvironmentRecord>()
 
   const users: UserRepository = {
     async findByEmail(email) {
@@ -138,11 +150,80 @@ export function createInMemoryRepositories(): Repositories {
     },
   }
 
+  const envRepo: EnvironmentRepository = {
+    async create(input: CreateEnvironmentInput): Promise<EnvironmentRecord> {
+      const now = new Date()
+      const record: EnvironmentRecord = {
+        id: randomUUID(),
+        userId: input.userId,
+        type: input.type,
+        challengeSlug: input.challengeSlug,
+        missionSlug: input.missionSlug,
+        status: input.status,
+        runtimeStatus: input.runtimeStatus,
+        requestedAt: input.requestedAt,
+        provisioningStartedAt: null,
+        readyAt: null,
+        startedAt: null,
+        lastActivityAt: input.lastActivityAt,
+        expiresAt: input.expiresAt,
+        timeoutAt: null,
+        destroyedAt: null,
+        failureCode: null,
+        failureMessage: null,
+        metadata: input.metadata ?? null,
+        createdAt: now,
+        updatedAt: now,
+      }
+      environments.set(record.id, record)
+      return cloneEnv(record)
+    },
+    async findById(id): Promise<EnvironmentRecord | null> {
+      const e = environments.get(id)
+      return e ? cloneEnv(e) : null
+    },
+    async listByUser(userId): Promise<EnvironmentRecord[]> {
+      const out: EnvironmentRecord[] = []
+      for (const e of environments.values()) {
+        if (e.userId === userId) out.push(cloneEnv(e))
+      }
+      return out
+    },
+    async update(id, patch: EnvironmentUpdate): Promise<EnvironmentRecord | null> {
+      const e = environments.get(id)
+      if (!e) return null
+      // Only whitelisted mutable fields are applied; identity/target fields are
+      // never in EnvironmentUpdate, so they cannot be rewritten here.
+      const updated: EnvironmentRecord = {
+        ...e,
+        ...patch,
+        metadata:
+          patch.metadata !== undefined ? patch.metadata : e.metadata,
+        updatedAt: new Date(),
+      }
+      environments.set(id, updated)
+      return cloneEnv(updated)
+    },
+    async findExpired(
+      before,
+      liveStatuses: readonly EnvironmentStatus[],
+    ): Promise<EnvironmentRecord[]> {
+      const out: EnvironmentRecord[] = []
+      for (const e of environments.values()) {
+        if (liveStatuses.includes(e.status) && e.expiresAt <= before) {
+          out.push(cloneEnv(e))
+        }
+      }
+      return out
+    },
+  }
+
   return {
     users,
     sessions: sessionRepo,
     audit,
     progress: progressRepo,
+    environments: envRepo,
     async shutdown() {},
   }
 }

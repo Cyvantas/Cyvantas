@@ -31,6 +31,48 @@ enum AuditEvent {
   REGISTER
   SESSION_REVOKED
   ROLE_CHANGED
+  ENVIRONMENT_CREATED
+  ENVIRONMENT_START_REQUESTED
+  ENVIRONMENT_READY
+  ENVIRONMENT_ACTIVATED
+  ENVIRONMENT_RESET_REQUESTED
+  ENVIRONMENT_STOP_REQUESTED
+  ENVIRONMENT_DESTROY_REQUESTED
+  ENVIRONMENT_DESTROYED
+  ENVIRONMENT_TIMEOUT
+  ENVIRONMENT_FAILED
+}
+
+// Environment lifecycle (control-plane) status. Kept deliberately separate from
+// runtimeStatus: this describes the environment record's lifecycle, NOT whether
+// a sandbox/container is running.
+enum EnvironmentStatus {
+  REQUESTED
+  PROVISIONING
+  READY
+  ACTIVE
+  TIMEOUT
+  RESETTING
+  DESTROYING
+  DESTROYED
+  FAILED
+}
+
+// Runtime (data-plane) status — the future contract for an actual sandbox
+// runtime. In Phase 9 no runtime exists, so this stays NOT_PROVISIONED; the
+// other values are reserved for the Phase 10 runtime provider.
+enum EnvironmentRuntimeStatus {
+  NOT_PROVISIONED
+  STARTING
+  RUNNING
+  STOPPING
+  STOPPED
+  FAILED
+}
+
+enum EnvironmentType {
+  CHALLENGE
+  MISSION
 }
 
 model User {
@@ -48,6 +90,7 @@ model User {
   learningProgress  LearningProgress[]
   missionProgress   MissionProgress[]
   auditLogs         AuditLog[]
+  environments      Environment[]
 
   @@index([isActive])
   @@map("users")
@@ -154,4 +197,47 @@ model AuditLog {
   @@index([event])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// A per-user training environment for a challenge or mission.
+//
+// Phase 9 persists the lifecycle only — it NEVER creates a container, sandbox,
+// or process. `status` is the control-plane lifecycle; `runtimeStatus` is the
+// (future) data-plane state, which stays NOT_PROVISIONED until a real runtime
+// provider is attached in Phase 10. Exactly one of challengeSlug/missionSlug is
+// set, matching `type`. Slugs are validated against the Lab catalog before an
+// Environment is created; arbitrary values are rejected at the service layer.
+model Environment {
+  id                    String                   @id @default(uuid()) @db.Uuid
+  userId                String                   @db.Uuid
+  type                  EnvironmentType
+  challengeSlug         String?
+  missionSlug           String?
+  status                EnvironmentStatus        @default(REQUESTED)
+  runtimeStatus         EnvironmentRuntimeStatus @default(NOT_PROVISIONED)
+  requestedAt           DateTime                 @default(now())
+  provisioningStartedAt DateTime?
+  readyAt               DateTime?
+  startedAt             DateTime?
+  lastActivityAt        DateTime                 @default(now())
+  expiresAt             DateTime
+  timeoutAt             DateTime?
+  destroyedAt           DateTime?
+  failureCode           String?
+  failureMessage        String?
+  // Reserved for the Phase 10 runtime provider (e.g. provider handle/refs).
+  // Never contains secrets and is never exposed through the public DTO.
+  metadata              Json?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+  @@index([userId, status])
+  @@index([challengeSlug])
+  @@index([missionSlug])
+  @@map("environments")
 }
