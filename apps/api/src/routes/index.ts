@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify"
 import { success } from "../types/api.ts"
+import { authRoutes } from "./auth.ts"
 import { challengeRoutes } from "./challenges.ts"
 import { learningRoutes } from "./learning.ts"
 import { missionRoutes } from "./missions.ts"
@@ -17,6 +18,7 @@ export async function apiV1Routes(app: FastifyInstance): Promise<void> {
     }),
   )
 
+  await app.register(authRoutes, { prefix: "/auth" })
   await app.register(challengeRoutes, { prefix: "/challenges" })
   await app.register(learningRoutes, { prefix: "/learning" })
   await app.register(missionRoutes, { prefix: "/missions" })

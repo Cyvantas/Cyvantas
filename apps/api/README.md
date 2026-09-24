@@ -1,13 +1,26 @@
 # CYVANTAS Security Lab API
 
-Phase 7 backend **skeleton** for the CYVANTAS Security Lab. It exposes the Lab's
-public content (challenges, learning paths, missions) over a small, safe-by-default
-Fastify + TypeScript service, and declares contract stubs for features that arrive
-in later phases (environments, progress, flags).
+Backend for the CYVANTAS Security Lab: a safe-by-default Fastify + TypeScript
+service. It serves the Lab's public content (challenges, learning paths,
+missions), and — as of **Phase 8** — provides an authentication + database
+foundation (users, sessions, roles, progress). Environment/flag features remain
+contract stubs for later phases.
 
-> **Status: skeleton.** No authentication, no database, no persistence, no
-> sandbox/containers, no command execution, no outbound network. See
-> [Current limitations](#current-limitations).
+> **Status.** Phase 7 content endpoints + Phase 8 auth/database foundation.
+> Still **no** sandbox/containers, no command execution, no real flag
+> validation, and no outbound network. See [Current limitations](#current-limitations).
+
+## Authentication & database
+
+Phase 8 adds cookie-based sessions backed by PostgreSQL (via Prisma), Argon2id
+password hashing, server-side roles/authorization, rate limiting, CSRF
+protection, and an audit log. **Full details — data model, cookies, CSRF,
+password policy, roles, rate limits, and setup — are in
+[`docs/AUTH.md`](docs/AUTH.md).**
+
+Persistence is behind repository interfaces with two implementations: **Prisma**
+(when `DATABASE_URL` is set) and **in-memory** (when unset — for local dev
+without a DB, and for tests).
 
 ## Purpose
 
@@ -23,21 +36,32 @@ in later phases (environments, progress, flags).
 
 ```
 src/
-  config/env.ts          loopback host, port, non-wildcard CORS (no secrets)
+  config/env.ts          host/port, non-wildcard CORS, DB/session/cookie config
   types/api.ts           { data } / { error:{code,message,status} } envelope + ApiError
-  services/catalogService.ts  reuses apps/lab data → public DTOs (whitelisted fields)
+  domain/                roles (const union) + AuthUser/UserDTO mapping
+  security/              password (argon2id), tokens, rate limiter, CSRF
+  db/prisma.ts           single Prisma client + clean shutdown
+  repositories/          interfaces + Prisma impl + in-memory impl + factory
+  services/
+    authService.ts       register/login/logout/session resolution
+    sessionCleanup.ts    delete expired sessions (function, no scheduler)
+    catalogService.ts    reuses apps/lab data → public DTOs (whitelisted fields)
+  validation/authSchemas.ts  Zod schemas (email/password/displayName)
+  plugins/auth.ts        request auth context + requireAuth/requireRole guards
   routes/
     health.ts            GET /health
     index.ts             /api/v1 root + registers all v1 sub-routes
+    auth.ts              /api/v1/auth register|login|logout|me
     challenges.ts        GET /api/v1/challenges[/:slug]
     learning.ts          GET /api/v1/learning[/:slug]
     missions.ts          GET /api/v1/missions[/:slug]
     environments.ts      501 stubs
     progress.ts          501 stub
     flags.ts             501 stub
-  app.ts                 buildApp(): Fastify + CORS + error/404 handlers + routes
+  app.ts                 buildApp(): Fastify + CORS + cookie + auth + routes
   server.ts              loads config, binds to 127.0.0.1
-tests/                   vitest via app.inject (no real sockets)
+prisma/                  schema.prisma + migrations/
+tests/                   vitest via app.inject (no real sockets; no DB required)
 ```
 
 The catalog service imports the Lab data directly (single source of truth) and
@@ -46,12 +70,31 @@ challenge hints/objectives, internal ids, and runtime status are never exposed.
 
 ## Local setup
 
+PostgreSQL is not assumed to be installed. Two supported modes:
+
+**In-memory (no database)** — leave `DATABASE_URL` unset:
+
 ```bash
 cd apps/api
 npm install
-cp .env.example .env   # optional; defaults are safe
-npm run dev            # tsx watch, http://127.0.0.1:8787
+cp .env.example .env        # keep DATABASE_URL commented / unset
+npx prisma generate         # generate Prisma client types (needed by the build)
+npm run dev                 # tsx watch, http://127.0.0.1:8787
 ```
+
+**PostgreSQL (production-like)** — set `DATABASE_URL` in `.env`:
+
+```bash
+npm install
+cp .env.example .env        # set a real DATABASE_URL
+npx prisma generate
+npx prisma migrate dev      # apply prisma/migrations to your database
+npm run dev
+```
+
+See [`docs/AUTH.md`](docs/AUTH.md) for `migrate reset`, the test-database
+strategy, and a build-host platform note (Prisma engines / PostgreSQL
+availability).
 
 Smoke test:
 
@@ -63,13 +106,18 @@ curl http://127.0.0.1:8787/api/v1/challenges
 
 ## Environment variables
 
-All values are non-sensitive; the service stores **no secrets**.
+The service stores **no secrets** in git; `DATABASE_URL` is the only sensitive
+value and belongs only in your local `.env`.
 
-| Variable      | Default                  | Notes                                             |
-| ------------- | ------------------------ | ------------------------------------------------- |
-| `PORT`        | `8787`                   | 1–65535.                                          |
-| `HOST`        | `127.0.0.1`              | Loopback by default; not reachable off-host.      |
-| `CORS_ORIGIN` | `http://localhost:5173`  | Comma-separated allow-list. `*` is rejected.      |
+| Variable              | Default                  | Notes                                             |
+| --------------------- | ------------------------ | ------------------------------------------------- |
+| `NODE_ENV`            | `development`            | `production` requires `DATABASE_URL`; Secure cookies. |
+| `PORT`                | `8787`                   | 1–65535.                                          |
+| `HOST`                | `127.0.0.1`              | Loopback by default; not reachable off-host.      |
+| `CORS_ORIGIN`         | `http://localhost:5173`  | Comma-separated allow-list. `*` is rejected. Also the CSRF allow-list. |
+| `DATABASE_URL`        | *(unset → in-memory)*    | PostgreSQL connection string (Prisma).            |
+| `SESSION_COOKIE_NAME` | `cyv_session`            | Session cookie name.                              |
+| `SESSION_TTL`         | `604800` (7 days)        | Seconds, range 60..7776000.                       |
 
 Copy `.env.example` → `.env` for overrides. `.env` is git-ignored; never commit it.
 
@@ -99,7 +147,8 @@ npm run start   # node dist/server.js
 ```
 
 `tsup` bundles the server and the reused Lab data into a single ESM file; runtime
-deps (`fastify`, `@fastify/cors`) stay external and resolve from `node_modules`.
+deps (`fastify`, `@fastify/cors`, `@fastify/cookie`, `@prisma/client`,
+`hash-wasm`, `zod`) stay external and resolve from `node_modules`.
 
 ## Endpoint overview
 
@@ -107,6 +156,10 @@ deps (`fastify`, `@fastify/cors`) stay external and resolve from `node_modules`.
 | ------ | ----------------------------------- | ------ | ------------------------------------ |
 | GET    | `/health`                           | 200    | Liveness + service metadata.         |
 | GET    | `/api/v1`                           | 200    | API root descriptor.                 |
+| POST   | `/api/v1/auth/register`             | 201    | Create user + session; sets cookie.  |
+| POST   | `/api/v1/auth/login`                | 200/401| Start session; `INVALID_CREDENTIALS`.|
+| POST   | `/api/v1/auth/logout`               | 200/401| Revoke session; clears cookie.       |
+| GET    | `/api/v1/auth/me`                   | 200/401| Current user + roles.                |
 | GET    | `/api/v1/challenges`                | 200    | Public challenge list.               |
 | GET    | `/api/v1/challenges/:slug`          | 200/404| One challenge. `CHALLENGE_NOT_FOUND`.|
 | GET    | `/api/v1/learning`                  | 200    | Public learning-path list.           |
@@ -140,15 +193,23 @@ Error handling covers `400` (validation), `404` (unknown route/slug), `500`
 
 ## Current limitations
 
-By design, this Phase 7 skeleton does **not** implement — and the service never
-performs — any of the following:
+Phase 8 adds authentication, sessions, roles, and a PostgreSQL/Prisma
+persistence foundation (with an in-memory fallback). By design, the service
+still does **not** implement — and never performs — any of the following:
 
-- authentication, user accounts, sessions
-- database, Redis, or any persistence
 - environment provisioning, containers, sandboxes, or command execution
 - flag validation or scoring (submissions are never marked "correct")
 - outbound network requests, URL proxying, or SSRF primitives
-- secrets of any kind
+- a scheduler/cron (session cleanup is a plain function, invoked on demand)
+- Redis or any shared store — the rate limiter is per-process and **not**
+  horizontally scalable (see [`docs/AUTH.md`](docs/AUTH.md))
+- a frontend login UI (the Lab frontend remains backend-disabled)
+- secrets in git (`DATABASE_URL` lives only in your local `.env`)
+
+Additionally, on the aarch64 Android/Termux build host, Prisma's native
+query/schema engines cannot run and PostgreSQL is not installed, so live DB
+queries and `prisma migrate dev` require a Prisma-supported host. The in-memory
+path, build, and tests run without a database. See [`docs/AUTH.md`](docs/AUTH.md).
 
 The API binds to `127.0.0.1` by default and uses an explicit, non-wildcard CORS
 allow-list. See `docs/API.md` and `apps/lab/docs/LAB-BACKEND-ARCHITECTURE.md` for

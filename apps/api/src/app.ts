@@ -5,13 +5,21 @@ import Fastify, {
   type FastifyRequest,
 } from "fastify"
 import cors from "@fastify/cors"
+import cookie from "@fastify/cookie"
 import { loadConfig, type AppConfig } from "./config/env.ts"
 import { ApiError, errorEnvelope } from "./types/api.ts"
 import { healthRoutes } from "./routes/health.ts"
 import { apiV1Routes } from "./routes/index.ts"
+import { createRepositories } from "./repositories/index.ts"
+import type { Repositories } from "./repositories/types.ts"
+import { createAuthService } from "./services/authService.ts"
+import { registerAuth } from "./plugins/auth.ts"
+import { createInMemoryRateLimiter } from "./security/rateLimiter.ts"
 
 export interface BuildAppOptions {
   config?: AppConfig
+  /** Inject repositories (tests use in-memory); defaults from config. */
+  repositories?: Repositories
 }
 
 /**
@@ -30,9 +38,31 @@ export async function buildApp(
   })
 
   // Explicit, non-wildcard CORS. Origins come from config (never "*").
+  // credentials:true is required so browsers send/receive the session cookie.
   await app.register(cors, {
     origin: config.corsOrigin,
     methods: ["GET", "POST"],
+    credentials: true,
+  })
+
+  await app.register(cookie)
+
+  // Persistence + auth wiring. Repositories default from config (Postgres via
+  // Prisma when DATABASE_URL is set, otherwise in-memory); tests inject their
+  // own. The auth service and guards derive all authorization server-side.
+  const repositories =
+    options.repositories ?? (await createRepositories(config))
+  const authService = createAuthService({
+    repositories,
+    sessionTtlSeconds: config.sessionTtlSeconds,
+  })
+  registerAuth(app, {
+    authService,
+    config,
+    rateLimiter: createInMemoryRateLimiter(),
+  })
+  app.addHook("onClose", async () => {
+    await repositories.shutdown()
   })
 
   app.setErrorHandler(
