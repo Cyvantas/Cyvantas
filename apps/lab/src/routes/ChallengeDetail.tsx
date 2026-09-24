@@ -156,7 +156,7 @@ export function ChallengeDetail() {
           </div>
 
           <aside className="flex flex-col gap-6">
-            <LabEnvironmentPanel />
+            <LabEnvironmentPanel challengeSlug={challenge.slug} />
             {challenge.tags.length > 0 ? (
               <Card className="flex flex-col gap-3">
                 <h2 className="text-technical text-dim">Tags</h2>
