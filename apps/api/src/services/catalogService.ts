@@ -33,6 +33,15 @@ export interface PublicChallenge {
   tags: string[]
 }
 
+/**
+ * Challenge DETAIL — the list DTO plus safe objectives. Objectives describe
+ * what the learner should accomplish and are safe to show; hints, internal ids,
+ * status, and any flag/answer remain stripped.
+ */
+export interface PublicChallengeDetail extends PublicChallenge {
+  objectives: string[]
+}
+
 export interface PublicLearningLesson {
   title: string
   summary: string
@@ -214,6 +223,13 @@ export const catalogService = {
   getChallenge(slug: string): PublicChallenge | undefined {
     const found = challenges.find((c) => c.slug === slug)
     return found ? toPublicChallenge(found) : undefined
+  },
+
+  /** Challenge detail (adds safe objectives). Never exposes hints/flags/ids. */
+  getChallengeDetail(slug: string): PublicChallengeDetail | undefined {
+    const found = challenges.find((c) => c.slug === slug)
+    if (!found) return undefined
+    return { ...toPublicChallenge(found), objectives: [...found.objectives] }
   },
 
   listLearningPaths(): PublicLearningPathSummary[] {

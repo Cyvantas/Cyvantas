@@ -14,6 +14,8 @@ import { createRepositories } from "./repositories/index.ts"
 import type { Repositories } from "./repositories/types.ts"
 import { createAuthService } from "./services/authService.ts"
 import { createEnvironmentService } from "./services/environmentService.ts"
+import { createChallengeService } from "./services/challengeService.ts"
+import { createChallengeRegistry } from "./challenges/index.ts"
 import { catalogService } from "./services/catalogService.ts"
 import { notConfiguredRuntimeProvider } from "./services/runtime/environmentRuntimeProvider.ts"
 import { createInMemoryIdempotencyStore } from "./services/idempotencyStore.ts"
@@ -78,6 +80,19 @@ export async function buildApp(
     idempotency: createInMemoryIdempotencyStore(),
   })
   app.decorate("environmentService", environmentService)
+
+  // Challenge service (Phase 11): challenge-environment lifecycle + server-side
+  // flag verification. It REUSES environmentService (and thus the same runtime
+  // seam), holds the flag only inside a verifier closure, and returns only safe
+  // views / a boolean result. No execution capability of its own.
+  const challengeService = createChallengeService({
+    environments: environmentService,
+    catalog: catalogService,
+    registry: createChallengeRegistry(),
+    audit: repositories.audit,
+    progress: repositories.progress,
+  })
+  app.decorate("challengeService", challengeService)
 
   // Sandbox orchestrator (Phase 10): server-authoritative policy + runtime
   // coordination behind the SAME runtime-provider seam. Wired with the "not

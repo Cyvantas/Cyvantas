@@ -75,4 +75,9 @@ export const RATE_RULES = {
   login: { limit: 10, windowMs: 15 * 60 * 1000 }, // 10 / 15min per IP+email
   register: { limit: 5, windowMs: 60 * 60 * 1000 }, // 5 / hour per IP
   authApi: { limit: 120, windowMs: 60 * 1000 }, // 120 / min per user/IP
+  // Challenge endpoints (Phase 11), keyed per user. Submission is the tightest
+  // to blunt flag brute-forcing; creation/reset are throttled to prevent abuse.
+  challengeEnvironmentCreate: { limit: 20, windowMs: 60 * 1000 }, // 20 / min
+  challengeEnvironmentReset: { limit: 30, windowMs: 60 * 1000 }, // 30 / min
+  challengeSubmit: { limit: 15, windowMs: 60 * 1000 }, // 15 / min per user
 } as const satisfies Record<string, RateLimitRule>

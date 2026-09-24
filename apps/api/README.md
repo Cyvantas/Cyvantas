@@ -217,6 +217,13 @@ service still does **not** implement — and never performs — any of the follo
 Environment lifecycle, statuses, endpoints, limits, and TTL are documented in
 [`docs/ENVIRONMENTS.md`](docs/ENVIRONMENTS.md).
 
+Phase 11 adds the first **isolated educational challenge** (`reflected-xss`) and
+**server-authoritative flag submission** at `POST /api/v1/challenges/:slug/submit`
+(returns only `{ correct }`; the flag never leaves the server). It reuses the
+same runtime seam, so it provisions nothing and never fakes a live target. The
+older `/flags/submit` stub remains unimplemented (501). Full contract, trust
+model, and security guarantees are in [`docs/CHALLENGES.md`](docs/CHALLENGES.md).
+
 Additionally, on the aarch64 Android/Termux build host, Prisma's native
 query/schema engines cannot run and PostgreSQL is not installed, so live DB
 queries and `prisma migrate dev` require a Prisma-supported host. The in-memory
