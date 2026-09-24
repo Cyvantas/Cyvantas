@@ -260,6 +260,15 @@ export const catalogService = {
     return challenges.some((c) => c.slug === slug)
   },
 
+  /**
+   * Authoritative catalog points for a challenge. This is the ONLY source of a
+   * challenge's score value — never the request body, URL, or client storage.
+   * Returns undefined for an unknown slug so callers can treat it as 0.
+   */
+  challengePoints(slug: string): number | undefined {
+    return challenges.find((c) => c.slug === slug)?.points
+  },
+
   /** Whether a published mission slug supports a training environment. */
   missionSupportsEnvironment(slug: string): boolean {
     return publishedMissions.some((m) => m.slug === slug)

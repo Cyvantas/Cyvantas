@@ -63,6 +63,7 @@ enum AuditEvent {
   CHALLENGE_ENVIRONMENT_DESTROYED
   CHALLENGE_SUBMISSION_ACCEPTED
   CHALLENGE_SUBMISSION_REJECTED
+  CHALLENGE_SCORE_AWARDED
 }
 
 // Environment lifecycle (control-plane) status. Kept deliberately separate from
@@ -111,6 +112,7 @@ model User {
   challengeProgress ChallengeProgress[]
   learningProgress  LearningProgress[]
   missionProgress   MissionProgress[]
+  scoreEvents       ScoreEvent[]
   auditLogs         AuditLog[]
   environments      Environment[]
 
@@ -161,6 +163,10 @@ model ChallengeProgress {
   userId        String    @db.Uuid
   challengeSlug String
   status        String    @default("in_progress")
+  attempts      Int       @default(0)
+  pointsAwarded Int       @default(0)
+  firstSolvedAt DateTime?
+  lastAttemptAt DateTime?
   completedAt   DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -170,6 +176,27 @@ model ChallengeProgress {
   @@unique([userId, challengeSlug])
   @@index([userId])
   @@map("challenge_progress")
+}
+
+// Append-only scoring ledger. It is the server-authoritative source of truth for
+// awarded points and is NEVER mutated after creation. The unique key
+// (userId, challengeSlug, reason) enforces that points for a given completion are
+// awarded EXACTLY ONCE — a duplicate/racing submission cannot double-score
+// because the second insert violates the constraint. The client is authoritative
+// for nothing here: userId comes from the session and points from the catalog.
+model ScoreEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  userId        String   @db.Uuid
+  challengeSlug String
+  points        Int
+  reason        String
+  createdAt     DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, challengeSlug, reason])
+  @@index([userId])
+  @@map("score_events")
 }
 
 model LearningProgress {

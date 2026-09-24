@@ -117,11 +117,10 @@ describe("GET /api/v1/missions", () => {
   })
 })
 
-describe("progress stub", () => {
-  it("GET /api/v1/progress returns 501", async () => {
+describe("progress read API", () => {
+  it("GET /api/v1/progress requires a session (401 unauthenticated)", async () => {
     const res = await app.inject({ method: "GET", url: "/api/v1/progress" })
-    expect(res.statusCode).toBe(501)
-    expect(res.json().error.code).toBe("PROGRESS_SERVICE_NOT_IMPLEMENTED")
+    expect(res.statusCode).toBe(401)
   })
 })
 

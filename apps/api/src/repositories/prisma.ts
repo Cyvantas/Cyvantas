@@ -10,6 +10,7 @@ import type { RoleName } from "../domain/roles.ts"
 import type {
   AuditRecordInput,
   AuditRepository,
+  ChallengeProgressEntry,
   CreateEnvironmentInput,
   CreateSessionInput,
   CreateUserInput,
@@ -18,13 +19,18 @@ import type {
   ProgressKind,
   ProgressRecordInput,
   ProgressRepository,
+  RecordSubmissionInput,
   Repositories,
+  ScoringRepository,
   SessionRecord,
   SessionRepository,
   SessionWithUser,
+  SubmissionOutcome,
   UserRecord,
   UserRepository,
+  UserScoreSummary,
 } from "./types.ts"
+import { CHALLENGE_COMPLETION_REASON } from "./types.ts"
 import type {
   EnvironmentRecord,
   EnvironmentStatus,
@@ -268,6 +274,7 @@ export function createPrismaRepositories(prisma: PrismaClient): Repositories {
     sessions,
     audit,
     progress,
+    scoring: createScoringRepository(prisma),
     environments: createEnvironmentRepository(prisma),
     async shutdown() {
       await disconnectPrisma()
@@ -331,6 +338,145 @@ function createEnvironmentRepository(
         },
       })
       return rows.map(mapEnv)
+    },
+  }
+}
+
+interface ChallengeProgressRow {
+  challengeSlug: string
+  status: string
+  attempts: number
+  pointsAwarded: number
+  firstSolvedAt: Date | null
+  completedAt: Date | null
+  lastAttemptAt: Date | null
+}
+
+// challengeProgress/scoreEvent delegates via loose casts — same rationale as the
+// audit/environment delegates: avoid a hard dependency on a regenerated Prisma
+// client on engine-less (Termux/aarch64) build hosts. The scoring columns/table
+// are created by the Phase 12 migration.
+interface ChallengeProgressDelegate {
+  upsert: (args: unknown) => Promise<ChallengeProgressRow>
+  update: (args: unknown) => Promise<ChallengeProgressRow>
+  findMany: (args: unknown) => Promise<ChallengeProgressRow[]>
+}
+
+interface ScoreEventDelegate {
+  create: (args: unknown) => Promise<unknown>
+  aggregate: (args: unknown) => Promise<{ _sum: { points: number | null } }>
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { code?: string }).code === "P2002"
+  )
+}
+
+function createScoringRepository(prisma: PrismaClient): ScoringRepository {
+  const cp = (prisma as unknown as { challengeProgress: ChallengeProgressDelegate })
+    .challengeProgress
+  const se = (prisma as unknown as { scoreEvent: ScoreEventDelegate }).scoreEvent
+
+  async function sumPoints(userId: string): Promise<number> {
+    const agg = await se.aggregate({ where: { userId }, _sum: { points: true } })
+    return agg._sum.points ?? 0
+  }
+
+  return {
+    async recordSubmission(
+      input: RecordSubmissionInput,
+    ): Promise<SubmissionOutcome> {
+      const reason = input.reason ?? CHALLENGE_COMPLETION_REASON
+      const where = {
+        userId_challengeSlug: {
+          userId: input.userId,
+          challengeSlug: input.challengeSlug,
+        },
+      }
+
+      // Always count the attempt. Atomic increment avoids a read-modify-write
+      // race on the attempt counter.
+      let row = await cp.upsert({
+        where,
+        create: {
+          userId: input.userId,
+          challengeSlug: input.challengeSlug,
+          status: "in_progress",
+          attempts: 1,
+          lastAttemptAt: input.at,
+        },
+        update: {
+          attempts: { increment: 1 },
+          lastAttemptAt: input.at,
+        },
+      })
+
+      let alreadySolved = false
+      let pointsAwarded = 0
+
+      if (input.correct) {
+        if (row.firstSolvedAt) {
+          alreadySolved = true
+        } else {
+          // The append-only ScoreEvent ledger's unique (userId, challengeSlug,
+          // reason) key is the hard once-only guarantee: a duplicate/racing
+          // correct submission's insert violates it (P2002) instead of
+          // double-scoring. The progress row is derived best-effort.
+          try {
+            await se.create({
+              data: {
+                userId: input.userId,
+                challengeSlug: input.challengeSlug,
+                points: input.points,
+                reason,
+              },
+            })
+            row = await cp.update({
+              where,
+              data: {
+                status: "completed",
+                firstSolvedAt: input.at,
+                completedAt: input.at,
+                pointsAwarded: input.points,
+              },
+            })
+            pointsAwarded = input.points
+          } catch (error) {
+            if (!isUniqueViolation(error)) throw error
+            alreadySolved = true
+            row = await cp.update({ where, data: { status: "completed" } })
+          }
+        }
+      }
+
+      const totalPoints = await sumPoints(input.userId)
+      return {
+        correct: input.correct,
+        alreadySolved,
+        pointsAwarded,
+        totalPoints,
+        completedAt: row.completedAt ?? null,
+        attempts: row.attempts,
+      }
+    },
+
+    async getUserSummary(userId: string): Promise<UserScoreSummary> {
+      const rows = await cp.findMany({ where: { userId } })
+      const challenges: ChallengeProgressEntry[] = rows.map((r) => ({
+        challengeSlug: r.challengeSlug,
+        status: r.status,
+        attempts: r.attempts,
+        pointsAwarded: r.pointsAwarded,
+        firstSolvedAt: r.firstSolvedAt ?? null,
+        completedAt: r.completedAt ?? null,
+        lastAttemptAt: r.lastAttemptAt ?? null,
+      }))
+      const totalPoints = await sumPoints(userId)
+      const solvedCount = challenges.filter((c) => c.firstSolvedAt !== null).length
+      return { totalPoints, solvedCount, challenges }
     },
   }
 }

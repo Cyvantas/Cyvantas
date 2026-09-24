@@ -92,6 +92,7 @@ export type AuditEventName =
   | "CHALLENGE_ENVIRONMENT_DESTROYED"
   | "CHALLENGE_SUBMISSION_ACCEPTED"
   | "CHALLENGE_SUBMISSION_REJECTED"
+  | "CHALLENGE_SCORE_AWARDED"
 
 export interface AuditRecordInput {
   event: AuditEventName
@@ -138,11 +139,77 @@ export interface ProgressRepository {
   ): Promise<Array<{ slug: string; status: string; completedAt: Date | null }>>
 }
 
+/** Default score-event reason for the one-and-only completion award. */
+export const CHALLENGE_COMPLETION_REASON = "CHALLENGE_COMPLETION"
+
+/**
+ * One flag submission to record. `correct` and `points` are decided server-side
+ * (the verifier and the catalog respectively) — never taken from the client.
+ * `points` is only ever awarded on the FIRST correct solve.
+ */
+export interface RecordSubmissionInput {
+  userId: string
+  challengeSlug: string
+  correct: boolean
+  /** Authoritative catalog points; used only when this is the first solve. */
+  points: number
+  at: Date
+  /** Score-event key; defaults to CHALLENGE_COMPLETION_REASON. */
+  reason?: string
+}
+
+/**
+ * The server-authoritative outcome of a recorded submission. Points are awarded
+ * exactly once: `pointsAwarded` is non-zero only on the first correct solve and
+ * `alreadySolved` is true for every subsequent correct submission.
+ */
+export interface SubmissionOutcome {
+  correct: boolean
+  alreadySolved: boolean
+  pointsAwarded: number
+  totalPoints: number
+  completedAt: Date | null
+  attempts: number
+}
+
+/** Per-challenge progress row, safe to project into a user-facing DTO. */
+export interface ChallengeProgressEntry {
+  challengeSlug: string
+  status: string
+  attempts: number
+  pointsAwarded: number
+  firstSolvedAt: Date | null
+  completedAt: Date | null
+  lastAttemptAt: Date | null
+}
+
+export interface UserScoreSummary {
+  totalPoints: number
+  solvedCount: number
+  challenges: ChallengeProgressEntry[]
+}
+
+/**
+ * Scoring persistence — server-authoritative and idempotent.
+ *
+ * `recordSubmission` transactionally increments the attempt counter and, on the
+ * first correct solve, records completion and appends a single ScoreEvent. The
+ * append-only ScoreEvent ledger's unique (userId, challengeSlug, reason) key is
+ * the hard once-only guarantee: a duplicate/racing correct submission cannot
+ * double-score. Points come from the caller (resolved from the catalog), never
+ * from client input.
+ */
+export interface ScoringRepository {
+  recordSubmission(input: RecordSubmissionInput): Promise<SubmissionOutcome>
+  getUserSummary(userId: string): Promise<UserScoreSummary>
+}
+
 export interface Repositories {
   users: UserRepository
   sessions: SessionRepository
   audit: AuditRepository
   progress: ProgressRepository
+  scoring: ScoringRepository
   environments: EnvironmentRepository
   /** Called on server shutdown to release resources (DB connections). */
   shutdown(): Promise<void>

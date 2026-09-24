@@ -278,7 +278,7 @@ describe("challenges — submission", () => {
     expect(res.json().error.code).toBe("VALIDATION_ERROR")
   })
 
-  it("returns { correct: true } for the correct flag", async () => {
+  it("returns a correct outcome with catalog points for the correct flag", async () => {
     const id = await createEnv(app, token)
     const res = await app.inject({
       method: "POST",
@@ -287,10 +287,28 @@ describe("challenges — submission", () => {
       payload: { environmentId: id, answer: CORRECT_FLAG },
     })
     expect(res.statusCode).toBe(200)
-    expect(res.json().data).toEqual({ correct: true })
+    expect(res.json().data).toMatchObject({
+      correct: true,
+      alreadySolved: false,
+      pointsAwarded: 100,
+      totalPoints: 100,
+    })
   })
 
-  it("returns { correct: false } for a wrong flag", async () => {
+  it("ignores a client-supplied points field (points come from the catalog)", async () => {
+    const id = await createEnv(app, token)
+    const res = await app.inject({
+      method: "POST",
+      url: `/api/v1/challenges/${SLUG}/submit`,
+      ...auth(token),
+      payload: { environmentId: id, answer: CORRECT_FLAG, points: 999999 },
+    })
+    // Extra body fields are dropped by the zod schema; the award is the catalog's.
+    expect(res.statusCode).toBe(200)
+    expect(res.json().data).toMatchObject({ pointsAwarded: 100, totalPoints: 100 })
+  })
+
+  it("returns a wrong outcome (no points) for a wrong flag", async () => {
     const id = await createEnv(app, token)
     const res = await app.inject({
       method: "POST",
@@ -299,7 +317,12 @@ describe("challenges — submission", () => {
       payload: { environmentId: id, answer: "CYVANTAS{nope}" },
     })
     expect(res.statusCode).toBe(200)
-    expect(res.json().data).toEqual({ correct: false })
+    expect(res.json().data).toMatchObject({
+      correct: false,
+      alreadySolved: false,
+      pointsAwarded: 0,
+      totalPoints: 0,
+    })
   })
 
   it("returns 404 when submitting against another user's environment", async () => {
@@ -378,5 +401,51 @@ describe("challenges — submission rate limiting", () => {
       }
     }
     expect(sawRateLimit).toBe(true)
+  })
+})
+
+describe("progress — server-authoritative read API", () => {
+  let app: FastifyInstance
+  beforeEach(async () => {
+    app = await newApp()
+  })
+  afterAll(async () => { await app.close() })
+
+  it("requires a session", async () => {
+    const res = await app.inject({ method: "GET", url: "/api/v1/progress" })
+    expect(res.statusCode).toBe(401)
+  })
+
+  it("reflects a solve: totalPoints and solvedCount after a correct submit", async () => {
+    const token = await registerAndToken(app, "progress@example.com")
+    const id = await createEnv(app, token)
+    await app.inject({
+      method: "POST",
+      url: `/api/v1/challenges/${SLUG}/submit`,
+      ...auth(token),
+      payload: { environmentId: id, answer: CORRECT_FLAG },
+    })
+    const res = await app.inject({ method: "GET", url: "/api/v1/progress", ...auth(token) })
+    expect(res.statusCode).toBe(200)
+    const dto = res.json().data
+    expect(dto.totalPoints).toBe(100)
+    expect(dto.solvedCount).toBe(1)
+    expect(dto.challenges).toEqual([
+      expect.objectContaining({
+        challengeSlug: SLUG,
+        status: "completed",
+        attempts: 1,
+        pointsAwarded: 100,
+      }),
+    ])
+    // The safe DTO never exposes the userId.
+    expect(dto.challenges[0]).not.toHaveProperty("userId")
+  })
+
+  it("starts empty for a fresh account", async () => {
+    const token = await registerAndToken(app, "fresh@example.com")
+    const res = await app.inject({ method: "GET", url: "/api/v1/progress", ...auth(token) })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().data).toEqual({ totalPoints: 0, solvedCount: 0, challenges: [] })
   })
 })

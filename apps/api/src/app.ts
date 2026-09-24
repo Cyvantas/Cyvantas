@@ -90,7 +90,7 @@ export async function buildApp(
     catalog: catalogService,
     registry: createChallengeRegistry(),
     audit: repositories.audit,
-    progress: repositories.progress,
+    scoring: repositories.scoring,
   })
   app.decorate("challengeService", challengeService)
 

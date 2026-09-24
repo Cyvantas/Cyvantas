@@ -29,6 +29,12 @@ function phase11Sources(): Array<{ file: string; text: string }> {
     .map((f) => join(challengesDir, f))
   files.push(join(srcDir, "services", "challengeService.ts"))
   files.push(join(srcDir, "routes", "challenges.ts"))
+  // Phase 12 scoring source: prove the scoring/progress code paths are equally
+  // free of execution/container/socket/network primitives.
+  files.push(join(srcDir, "services", "catalogService.ts"))
+  files.push(join(srcDir, "routes", "progress.ts"))
+  files.push(join(srcDir, "repositories", "memory.ts"))
+  files.push(join(srcDir, "repositories", "prisma.ts"))
   return files.map((path) => ({ file: path, text: readFileSync(path, "utf8") }))
 }
 

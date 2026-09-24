@@ -19,6 +19,7 @@ import { createInMemoryIdempotencyStore } from "../src/services/idempotencyStore
 const config = loadConfig({ NODE_ENV: "test", CORS_ORIGIN: "http://localhost:5173" })
 const SLUG = "reflected-xss"
 const FLAG = "CYVANTAS{unit_test_flag_value}"
+const POINTS = 100
 
 const actor: EnvironmentActor = { id: "user-unit-1", roles: [] }
 const otherActor: EnvironmentActor = { id: "user-unit-2", roles: [] }
@@ -38,7 +39,7 @@ function build(now?: () => Date) {
     catalog: catalogService,
     registry: createChallengeRegistry({ CHALLENGE_REFLECTED_XSS_FLAG: FLAG } as NodeJS.ProcessEnv),
     audit: repositories.audit,
-    progress: repositories.progress,
+    scoring: repositories.scoring,
     now,
   })
   return { service, environments, repositories }
@@ -85,50 +86,104 @@ describe("challengeService — environment lifecycle", () => {
 })
 
 describe("challengeService — submission verification", () => {
-  it("returns { correct: true } for the exact server-side flag", async () => {
+  it("returns a correct outcome with catalog points on the first solve", async () => {
     const { service } = build()
     const env = await service.createEnvironment(actor, SLUG)
     const result = await service.submit(actor, SLUG, {
       environmentId: env.environmentId,
       answer: FLAG,
     })
-    expect(result).toEqual({ correct: true })
+    expect(result).toEqual({
+      correct: true,
+      alreadySolved: false,
+      pointsAwarded: POINTS,
+      totalPoints: POINTS,
+    })
   })
 
-  it("returns { correct: false } for a wrong answer", async () => {
+  it("returns a wrong outcome (no points) for a wrong answer", async () => {
     const { service } = build()
     const env = await service.createEnvironment(actor, SLUG)
     const result = await service.submit(actor, SLUG, {
       environmentId: env.environmentId,
       answer: "CYVANTAS{not_the_flag}",
     })
-    expect(result).toEqual({ correct: false })
+    expect(result).toEqual({
+      correct: false,
+      alreadySolved: false,
+      pointsAwarded: 0,
+      totalPoints: 0,
+    })
   })
 
-  it("returns { correct: false } for a wrong-length prefix (no partial match)", async () => {
+  it("returns a wrong outcome for a wrong-length prefix (no partial match)", async () => {
     const { service } = build()
     const env = await service.createEnvironment(actor, SLUG)
     const result = await service.submit(actor, SLUG, {
       environmentId: env.environmentId,
       answer: FLAG.slice(0, 10),
     })
-    expect(result).toEqual({ correct: false })
+    expect(result.correct).toBe(false)
+    expect(result.pointsAwarded).toBe(0)
   })
 
-  it("records completion progress only on a correct submission", async () => {
+  it("awards points exactly once — a second correct solve is alreadySolved", async () => {
+    const { service } = build()
+    const env = await service.createEnvironment(actor, SLUG)
+    const first = await service.submit(actor, SLUG, { environmentId: env.environmentId, answer: FLAG })
+    const second = await service.submit(actor, SLUG, { environmentId: env.environmentId, answer: FLAG })
+    expect(first).toEqual({ correct: true, alreadySolved: false, pointsAwarded: POINTS, totalPoints: POINTS })
+    expect(second).toEqual({ correct: true, alreadySolved: true, pointsAwarded: 0, totalPoints: POINTS })
+  })
+
+  it("points come from the catalog, not the caller (submit takes no points input)", async () => {
+    const { service } = build()
+    const env = await service.createEnvironment(actor, SLUG)
+    // The submission shape has no `points` field; the catalog is the only source.
+    const result = await service.submit(actor, SLUG, { environmentId: env.environmentId, answer: FLAG })
+    expect(result.pointsAwarded).toBe(POINTS)
+    expect(catalogService.challengePoints(SLUG)).toBe(POINTS)
+  })
+
+  it("records completion and awards points only on a correct submission", async () => {
     const { service, repositories } = build()
     const env = await service.createEnvironment(actor, SLUG)
     await service.submit(actor, SLUG, { environmentId: env.environmentId, answer: FLAG })
-    const progress = await repositories.progress.listForUser("challenge", actor.id)
-    expect(progress).toEqual([{ slug: SLUG, status: "completed", completedAt: expect.any(Date) }])
+    const summary = await repositories.scoring.getUserSummary(actor.id)
+    expect(summary.totalPoints).toBe(POINTS)
+    expect(summary.solvedCount).toBe(1)
+    expect(summary.challenges).toEqual([
+      {
+        challengeSlug: SLUG,
+        status: "completed",
+        attempts: 1,
+        pointsAwarded: POINTS,
+        firstSolvedAt: expect.any(Date),
+        completedAt: expect.any(Date),
+        lastAttemptAt: expect.any(Date),
+      },
+    ])
   })
 
-  it("does not record progress on a wrong submission", async () => {
+  it("counts attempts without awarding points on wrong submissions", async () => {
     const { service, repositories } = build()
     const env = await service.createEnvironment(actor, SLUG)
-    await service.submit(actor, SLUG, { environmentId: env.environmentId, answer: "wrong" })
-    const progress = await repositories.progress.listForUser("challenge", actor.id)
-    expect(progress).toEqual([])
+    await service.submit(actor, SLUG, { environmentId: env.environmentId, answer: "wrong-1" })
+    await service.submit(actor, SLUG, { environmentId: env.environmentId, answer: "wrong-2" })
+    const summary = await repositories.scoring.getUserSummary(actor.id)
+    expect(summary.totalPoints).toBe(0)
+    expect(summary.solvedCount).toBe(0)
+    expect(summary.challenges).toEqual([
+      {
+        challengeSlug: SLUG,
+        status: "in_progress",
+        attempts: 2,
+        pointsAwarded: 0,
+        firstSolvedAt: null,
+        completedAt: null,
+        lastAttemptAt: expect.any(Date),
+      },
+    ])
   })
 
   it("rejects an empty answer with INVALID_SUBMISSION", async () => {
@@ -174,7 +229,7 @@ describe("challengeService — submission verification", () => {
       catalog: catalogService,
       registry: createChallengeRegistry({ CHALLENGE_REFLECTED_XSS_FLAG: FLAG } as NodeJS.ProcessEnv),
       audit: created.repositories.audit,
-      progress: created.repositories.progress,
+      scoring: created.repositories.scoring,
       now: () => new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
     })
     await expect(

@@ -21,19 +21,22 @@
  */
 import type { AuthContext } from "./authService.ts"
 import type { EnvironmentActor, EnvironmentService } from "./environmentService.ts"
-import type { AuditRepository, ProgressRepository } from "../repositories/types.ts"
+import type { AuditRepository, ScoringRepository } from "../repositories/types.ts"
 import type { AuditEventName } from "../repositories/types.ts"
 import type {
   ChallengeDefinition,
   ChallengeEnvironmentView,
   ChallengeResult,
   ChallengeSubmission,
+  UserProgressSummary,
 } from "../challenges/challengeTypes.ts"
 import type { EnvironmentRecord } from "../domain/environment.ts"
 import { badRequest, conflict, notFound } from "../types/api.ts"
 
 interface ChallengeCatalog {
   challengeSupportsEnvironment(slug: string): boolean
+  /** Authoritative catalog points; the request body's points are never read. */
+  challengePoints(slug: string): number | undefined
 }
 
 export interface ChallengeServiceDeps {
@@ -41,7 +44,7 @@ export interface ChallengeServiceDeps {
   catalog: ChallengeCatalog
   registry: Map<string, ChallengeDefinition>
   audit: AuditRepository
-  progress: ProgressRepository
+  scoring: ScoringRepository
   now?: () => Date
 }
 
@@ -77,12 +80,13 @@ export interface ChallengeService {
     submission: ChallengeSubmission,
     ctx?: AuthContext,
   ): Promise<ChallengeResult>
+  getProgress(actor: EnvironmentActor): Promise<UserProgressSummary>
 }
 
 export function createChallengeService(
   deps: ChallengeServiceDeps,
 ): ChallengeService {
-  const { environments, catalog, registry, audit, progress } = deps
+  const { environments, catalog, registry, audit, scoring } = deps
   const now = deps.now ?? (() => new Date())
   const runtimeConfigured = environments.runtimeConfigured
 
@@ -229,22 +233,53 @@ export function createChallengeService(
 
       const correct = def.verifier.verify({ slug, environment: env }, answer)
 
+      // Points are resolved from the authoritative catalog, NEVER the request
+      // body. recordSubmission is server-authoritative and idempotent: it counts
+      // the attempt and, on the first correct solve only, records completion and
+      // awards points exactly once (append-only ScoreEvent unique key).
+      const points = catalog.challengePoints(slug) ?? 0
+      const outcome = await scoring.recordSubmission({
+        userId: actor.id,
+        challengeSlug: slug,
+        correct,
+        points,
+        at: now(),
+      })
+
       if (correct) {
         await record("CHALLENGE_SUBMISSION_ACCEPTED", actor.id, ctx)
-        // Record completion via the existing progress store. This is a single
-        // record, not a scoring/leaderboard engine (out of Phase 11 scope).
-        await progress.upsert("challenge", {
-          userId: actor.id,
-          slug,
-          status: "completed",
-          completedAt: now(),
-        })
+        // Score is awarded exactly once — audit it only on the first solve.
+        if (!outcome.alreadySolved) {
+          await record("CHALLENGE_SCORE_AWARDED", actor.id, ctx)
+        }
       } else {
         await record("CHALLENGE_SUBMISSION_REJECTED", actor.id, ctx)
       }
 
-      // The ONLY thing returned. No flag, no reason, no partial-match signal.
-      return { correct }
+      // Only server-decided fields. No flag, no reason, no partial-match signal.
+      return {
+        correct,
+        alreadySolved: outcome.alreadySolved,
+        pointsAwarded: outcome.pointsAwarded,
+        totalPoints: outcome.totalPoints,
+      }
+    },
+
+    async getProgress(actor): Promise<UserProgressSummary> {
+      const summary = await scoring.getUserSummary(actor.id)
+      return {
+        totalPoints: summary.totalPoints,
+        solvedCount: summary.solvedCount,
+        challenges: summary.challenges.map((c) => ({
+          challengeSlug: c.challengeSlug,
+          status: c.status,
+          attempts: c.attempts,
+          pointsAwarded: c.pointsAwarded,
+          firstSolvedAt: c.firstSolvedAt ? c.firstSolvedAt.toISOString() : null,
+          completedAt: c.completedAt ? c.completedAt.toISOString() : null,
+          lastAttemptAt: c.lastAttemptAt ? c.lastAttemptAt.toISOString() : null,
+        })),
+      }
     },
   }
 }

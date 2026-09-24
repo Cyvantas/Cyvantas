@@ -61,9 +61,40 @@ export interface ChallengeSubmission {
   answer: string
 }
 
-/** The ONLY thing a submission ever returns to the client. */
+/**
+ * The safe result of a submission. It carries ONLY server-decided fields and
+ * NEVER the flag/answer, a reason, or a partial-match signal:
+ *   - `correct`        — server-authoritative verifier boolean.
+ *   - `alreadySolved`  — true for every correct submission after the first.
+ *   - `pointsAwarded`  — non-zero ONLY on the first correct solve (catalog value).
+ *   - `totalPoints`    — the user's server-computed running total.
+ */
 export interface ChallengeResult {
   correct: boolean
+  alreadySolved: boolean
+  pointsAwarded: number
+  totalPoints: number
+}
+
+/**
+ * Safe per-challenge progress row for a user-facing progress DTO. Deliberately
+ * omits userId and any internal identifiers; timestamps are ISO strings.
+ */
+export interface UserProgressView {
+  challengeSlug: string
+  status: string
+  attempts: number
+  pointsAwarded: number
+  firstSolvedAt: string | null
+  completedAt: string | null
+  lastAttemptAt: string | null
+}
+
+/** Safe aggregate progress DTO returned by GET /progress. */
+export interface UserProgressSummary {
+  totalPoints: number
+  solvedCount: number
+  challenges: UserProgressView[]
 }
 
 /**

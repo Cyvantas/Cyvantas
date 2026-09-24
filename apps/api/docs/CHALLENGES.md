@@ -27,7 +27,10 @@ Everything a client sends is untrusted. The following are hard guarantees:
   response, environment view, HTML, JS bundle, DTO, or audit log. It lives only
   inside a verifier closure (`src/challenges/verifier.ts`).
 - **The client never defines correctness.** Submission returns only
-  `{ correct: boolean }` — no answer, no partial-match signal, no reason.
+  server-decided fields (`correct`, `alreadySolved`, `pointsAwarded`,
+  `totalPoints`) — never the answer, a partial-match signal, or a reason. Points
+  come from the authoritative catalog, never the request body (see
+  [SCORING.md](./SCORING.md)).
 - **The actor is derived from the session, never from the body.** A
   client-supplied `userId` is ignored; ownership is enforced by
   `environmentService` (404, not 403, for a non-owned id).
@@ -70,7 +73,7 @@ per user.
 | POST | `/:slug/environments` | yes | Create a challenge environment (201). |
 | GET | `/:slug/environments/:environmentId` | yes | Owned environment view. |
 | POST | `/:slug/environments/:environmentId/reset` | yes | Reset an environment. |
-| POST | `/:slug/submit` | yes | Submit `{ environmentId, answer }` → `{ correct }`. |
+| POST | `/:slug/submit` | yes | Submit `{ environmentId, answer }` → server-decided scoring outcome. |
 
 Rate rules (`src/security/rateLimiter.ts`): `challengeEnvironmentCreate`
 (20/min), `challengeEnvironmentReset` (30/min), `challengeSubmit` (15/min).
@@ -100,13 +103,17 @@ messages, host ids/paths/addresses, or the flag.
 `CHALLENGE_ENVIRONMENT_REQUESTED`, `CHALLENGE_ENVIRONMENT_READY`,
 `CHALLENGE_ENVIRONMENT_FAILED`, `CHALLENGE_ENVIRONMENT_RESET`,
 `CHALLENGE_ENVIRONMENT_DESTROYED`, `CHALLENGE_SUBMISSION_ACCEPTED`,
-`CHALLENGE_SUBMISSION_REJECTED`. Flags, tokens, and passwords are never logged.
+`CHALLENGE_SUBMISSION_REJECTED`, `CHALLENGE_SCORE_AWARDED` (first solve only).
+Flags, tokens, and passwords are never logged.
 
-## Progress
+## Progress & scoring
 
-A correct submission records a single completion via the existing progress
-store (`progress.upsert("challenge", …)`). This is a completion record only —
-scoring, leaderboards, and badges are out of Phase 11 scope.
+A correct submission is recorded **server-authoritatively and idempotently**:
+every submission counts an attempt, and the first correct solve records
+completion and awards catalog points **exactly once** via an append-only
+`ScoreEvent` ledger. The safe read API is `GET /api/v1/progress`. See
+[SCORING.md](./SCORING.md) for the full trust model, the once-only guarantee,
+and the DTOs.
 
 ## Database
 
@@ -120,6 +127,6 @@ with `prisma migrate dev` on a Prisma-supported host.
 
 ## Not in this phase
 
-Scoring, leaderboards, badges, production Docker/containers, a real running
-target, multiple isolated challenges, and environment-side evidence
-verification. Those are Phase 12+.
+Leaderboards, badges, production Docker/containers, a real running target,
+multiple isolated challenges, and environment-side evidence verification. Those
+are Phase 13+.
