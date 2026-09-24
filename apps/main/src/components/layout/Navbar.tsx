@@ -56,7 +56,7 @@ export function Navbar() {
           className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           aria-label="CYVANTAS — home"
         >
-          <Logo />
+          <Logo responsive />
         </NavLink>
 
         {/* Desktop navigation */}

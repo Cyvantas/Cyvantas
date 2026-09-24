@@ -99,7 +99,7 @@ export function buildSiteJsonLd() {
         url: SITE.url,
         email: SITE.contactEmail,
         description: HOME_DESCRIPTION,
-        logo: `${SITE.url}/favicon.svg`,
+        logo: `${SITE.url}/cyvantas-logo-light.png`,
         image: OG_IMAGE,
         founder: { "@type": "Person", name: SITE.founder },
         address: { "@type": "PostalAddress", addressCountry: "IN" },
