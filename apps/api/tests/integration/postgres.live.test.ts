@@ -21,6 +21,7 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest"
 import type { FastifyInstance } from "fastify"
 import type { PrismaClient } from "@prisma/client"
 import { getPrismaClient, disconnectPrisma } from "../../src/db/prisma.ts"
+import { hashSessionToken } from "../../src/security/tokens.ts"
 import {
   connectRespClient,
   type RespTestClient,
@@ -153,6 +154,10 @@ describe.skipIf(!hasLiveInfra)("live PostgreSQL — app over the real database",
     })
     expect(login.statusCode).toBe(200)
     const cookie = login.cookies.find((c) => c.name === "cyv_session")!.value
+    // Identify the exact session issued by THIS login. Registration also issues
+    // a session, so the user legitimately has more than one live session; we
+    // assert on the login-issued row rather than a per-user count.
+    const loginTokenHash = hashSessionToken(cookie)
 
     const me = await app.inject({
       method: "GET",
@@ -162,12 +167,11 @@ describe.skipIf(!hasLiveInfra)("live PostgreSQL — app over the real database",
     expect(me.statusCode).toBe(200)
     expect(me.json().data.email).toBe(email)
 
-    // The session row is real: exactly one live session for this user in PG.
-    const sessions = await prisma.$queryRaw<Array<{ n: bigint }>>`
-      SELECT COUNT(*)::bigint AS n FROM sessions s
-      JOIN users u ON u.id = s."userId"
-      WHERE u.email = ${email} AND s."revokedAt" IS NULL`
-    expect(Number(sessions[0]!.n)).toBe(1)
+    // The login-issued session row is real and live in Postgres.
+    const live = await prisma.$queryRaw<Array<{ n: bigint }>>`
+      SELECT COUNT(*)::bigint AS n FROM sessions
+      WHERE "tokenHash" = ${loginTokenHash} AND "revokedAt" IS NULL`
+    expect(Number(live[0]!.n)).toBe(1)
 
     const out = await app.inject({
       method: "POST",
@@ -183,6 +187,12 @@ describe.skipIf(!hasLiveInfra)("live PostgreSQL — app over the real database",
       cookies: { cyv_session: cookie },
     })
     expect(after.statusCode).toBe(401)
+
+    // Logout revoked exactly the login-issued session in Postgres.
+    const revoked = await prisma.$queryRaw<Array<{ n: bigint }>>`
+      SELECT COUNT(*)::bigint AS n FROM sessions
+      WHERE "tokenHash" = ${loginTokenHash} AND "revokedAt" IS NOT NULL`
+    expect(Number(revoked[0]!.n)).toBe(1)
   })
 
   it("never leaks a connection string or secret in /ready or /health", async () => {
