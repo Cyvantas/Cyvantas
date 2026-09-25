@@ -85,9 +85,17 @@ function parsePort(raw: string | undefined): number {
   return port
 }
 
-function parseCorsOrigin(raw: string | undefined): string[] {
+function parseCorsOrigin(raw: string | undefined, nodeEnv: NodeEnv): string[] {
   const value = raw?.trim()
-  if (!value) return [DEFAULT_CORS_ORIGIN]
+  if (!value) {
+    // Fail-closed in production: an explicit allow-list is mandatory. A silent
+    // localhost fallback would either break the deployment or, worse, quietly
+    // accept dev origins on a production host.
+    if (nodeEnv === "production") {
+      throw new Error("CORS_ORIGIN is required in production. Set explicit https origins.")
+    }
+    return [DEFAULT_CORS_ORIGIN]
+  }
   const origins = value
     .split(",")
     .map((origin) => origin.trim())
@@ -95,7 +103,32 @@ function parseCorsOrigin(raw: string | undefined): string[] {
   if (origins.includes("*")) {
     throw new Error("Wildcard CORS ('*') is not permitted. Set explicit origins.")
   }
-  return origins.length > 0 ? origins : [DEFAULT_CORS_ORIGIN]
+  if (origins.length === 0) {
+    if (nodeEnv === "production") {
+      throw new Error("CORS_ORIGIN is required in production. Set explicit https origins.")
+    }
+    return [DEFAULT_CORS_ORIGIN]
+  }
+  // In production every origin must be an absolute https:// URL. Reject
+  // http/loopback so a mistaken value can never downgrade the browser trust
+  // boundary or expose the credentialed cookie over cleartext.
+  if (nodeEnv === "production") {
+    for (const origin of origins) {
+      let url: URL
+      try {
+        url = new URL(origin)
+      } catch {
+        throw new Error(`Invalid CORS_ORIGIN entry (must be an absolute URL): ${origin}`)
+      }
+      if (url.protocol !== "https:") {
+        throw new Error(`CORS_ORIGIN must use https in production: ${origin}`)
+      }
+      if (url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "::1") {
+        throw new Error(`CORS_ORIGIN must not be a loopback host in production: ${origin}`)
+      }
+    }
+  }
+  return origins
 }
 
 function parseNodeEnv(raw: string | undefined): NodeEnv {
@@ -242,7 +275,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   return {
     port: parsePort(env.PORT),
     host: env.HOST?.trim() || DEFAULT_HOST,
-    corsOrigin: parseCorsOrigin(env.CORS_ORIGIN),
+    corsOrigin: parseCorsOrigin(env.CORS_ORIGIN, nodeEnv),
     nodeEnv,
     databaseUrl,
     sessionCookieName:

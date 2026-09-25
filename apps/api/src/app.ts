@@ -61,16 +61,34 @@ export async function buildApp(
 
   // Correlation id: assign on every request FIRST so all later hooks, handlers,
   // and the error handler can reference request.requestId. Honors an inbound
-  // X-Request-Id when it is a sane length, otherwise mints one. Always echoed
-  // back on the response header for client/side correlation.
+  // X-Request-Id only when it matches a safe charset/length (so it can never
+  // smuggle control characters or header-splitting bytes into logs/responses),
+  // otherwise mints one. Always echoed back on the response header. Security
+  // response headers are set on the same hook so every response — including
+  // errors and 404s — carries them.
+  const REQUEST_ID_PATTERN = /^[A-Za-z0-9._-]{1,200}$/
+  const isProd = config.nodeEnv === "production"
   app.decorateRequest("requestId", "")
   app.addHook("onRequest", async (request: FastifyRequest, reply: FastifyReply) => {
     const inbound = request.headers["x-request-id"]
     request.requestId =
-      typeof inbound === "string" && inbound.length > 0 && inbound.length <= 200
+      typeof inbound === "string" && REQUEST_ID_PATTERN.test(inbound)
         ? inbound
         : randomUUID()
     reply.header("x-request-id", request.requestId)
+
+    // Baseline hardening headers. The API serves only JSON and is never framed
+    // or embedded, so lock everything down: no sniffing, no framing, no
+    // referrer leakage, and a null-by-default CSP. HSTS only in production
+    // (where TLS is terminated) to avoid poisoning local http development.
+    reply.header("X-Content-Type-Options", "nosniff")
+    reply.header("X-Frame-Options", "DENY")
+    reply.header("Referrer-Policy", "no-referrer")
+    reply.header("Cross-Origin-Resource-Policy", "same-origin")
+    reply.header("Content-Security-Policy", "default-src 'none'; frame-ancestors 'none'")
+    if (isProd) {
+      reply.header("Strict-Transport-Security", "max-age=63072000; includeSubDomains")
+    }
   })
 
   // Explicit, non-wildcard CORS. Origins come from config (never "*").

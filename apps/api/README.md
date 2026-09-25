@@ -114,7 +114,7 @@ value and belongs only in your local `.env`.
 | `NODE_ENV`            | `development`            | `production` requires `DATABASE_URL`; Secure cookies. |
 | `PORT`                | `8787`                   | 1–65535.                                          |
 | `HOST`                | `127.0.0.1`              | Loopback by default; not reachable off-host.      |
-| `CORS_ORIGIN`         | `http://localhost:5173`  | Comma-separated allow-list. `*` is rejected. Also the CSRF allow-list. |
+| `CORS_ORIGIN`         | `http://localhost:5173`  | Comma-separated allow-list. `*` is rejected. Also the CSRF allow-list. **Production: mandatory, https-only, no loopback.** |
 | `DATABASE_URL`        | *(unset → in-memory)*    | PostgreSQL connection string (Prisma).            |
 | `SESSION_COOKIE_NAME` | `cyv_session`            | Session cookie name.                              |
 | `SESSION_TTL`         | `604800` (7 days)        | Seconds, range 60..7776000.                       |
@@ -159,6 +159,14 @@ npm run start   # node dist/server.js
 `tsup` bundles the server and the reused Lab data into a single ESM file; runtime
 deps (`fastify`, `@fastify/cors`, `@fastify/cookie`, `@prisma/client`,
 `hash-wasm`, `zod`) stay external and resolve from `node_modules`.
+
+Before deploying, work through the pre-production checklist, deployment
+architecture, and disaster-recovery procedures in
+[`docs/PRODUCTION-HARDENING.md`](docs/PRODUCTION-HARDENING.md). In production the
+config loader is fail-closed: `DATABASE_URL` and an https-only, non-loopback
+`CORS_ORIGIN` are mandatory, and every response carries baseline security headers
+(`X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`,
+`Cross-Origin-Resource-Policy`, `Content-Security-Policy`, plus HSTS).
 
 ## Endpoint overview
 
@@ -243,6 +251,13 @@ and **fail-closed** per-user + per-IP rate limits on every mutating endpoint. No
 flag, password, session token, or authorization header is ever logged. See
 [`docs/MONITORING.md`](docs/MONITORING.md) and
 [`docs/ABUSE-CONTROLS.md`](docs/ABUSE-CONTROLS.md).
+
+Phase 14 is a **production-hardening** pass (no new runtime capability): the
+config loader is fail-closed in production (mandatory `DATABASE_URL` and an
+https-only, non-loopback `CORS_ORIGIN`), every response carries baseline security
+headers, the inbound `X-Request-Id` is charset-guarded, and a pre-production
+checklist plus deployment and disaster-recovery procedures are documented in
+[`docs/PRODUCTION-HARDENING.md`](docs/PRODUCTION-HARDENING.md).
 
 Additionally, on the aarch64 Android/Termux build host, Prisma's native
 query/schema engines cannot run and PostgreSQL is not installed, so live DB
