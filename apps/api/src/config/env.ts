@@ -71,10 +71,13 @@ export interface AppConfig {
   /**
    * Redis-compatible connection string for shared state (rate limiter /
    * detection) in a multi-instance deployment. Optional and provider-neutral:
-   * the repository ships no Redis adapter, so setting this validates the URL and
-   * documents intent, but the in-memory shared-state store is still used until an
-   * adapter is wired. See src/infra/sharedState.ts and
-   * docs/PRODUCTION-INFRASTRUCTURE.md. Never logged.
+   * the repository ships no Redis client and selects no provider. When set, the
+   * deployment boundary (src/server.ts → resolveSharedStateStore) builds a
+   * Redis-backed store from an injected client; if no client factory is wired,
+   * boot is refused fail-closed rather than silently using per-process state.
+   * Absent → in-memory store (single-instance only). See src/infra/sharedState.ts,
+   * src/infra/sharedStateFactory.ts, and docs/PRODUCTION-INFRASTRUCTURE.md.
+   * Never logged.
    */
   readonly redisUrl: string | undefined
   readonly sessionCookieName: string

@@ -34,9 +34,12 @@ Defined in `src/security/rateLimiter.ts` (`RATE_RULES`), all server-authoritativ
 Submission is the tightest per-user rule to blunt flag brute-forcing. The
 fixed-window limiter holds no state of its own — it reads and writes counters
 through a `SharedStateStore`. The default in-memory store makes it
-single-process; injecting the Redis-backed store
-(`src/infra/redisSharedStateStore.ts`) makes the same limits global across
-instances, with no change to callers.
+single-process; the Redis-backed store (`src/infra/redisSharedStateStore.ts`),
+selected at the deployment boundary (`resolveSharedStateStore`) when `REDIS_URL`
+is set and a client factory is wired, makes the same limits global across
+instances with no change to callers. No provider is selected in-repo, and
+setting `REDIS_URL` without a wired client refuses boot fail-closed rather than
+silently degrading to per-process counters.
 
 ## The abuse guard — fail-closed
 

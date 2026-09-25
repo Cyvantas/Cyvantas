@@ -88,16 +88,25 @@ in-memory implementation as the default. `src/infra/redisSharedStateStore.ts`
 adapts that interface onto any Redis-compatible client via an injected
 `RedisLikeClient` (atomic `SET … EX` on write, `INCRBY`/`EXPIRE` for windowed
 counters, bounded fail-closed `ping()`). This repo installs **no** Redis client
-package and assumes **no** provider: a deployment injects a concrete client
-(e.g. `ioredis`/`redis`) that satisfies `RedisLikeClient`. Setting `REDIS_URL`
-validates the URL and records intent; the deployment is responsible for
-constructing the client from it and passing the Redis-backed store to the app.
+package and assumes **no** provider.
+
+**Selection happens at the deployment boundary** (`src/server.ts` →
+`resolveSharedStateStore`, `src/infra/sharedStateFactory.ts`):
+
+- `REDIS_URL` **unset** → in-memory store (single-instance only).
+- `REDIS_URL` **set** + an injected `redisClientFactory` (e.g.
+  `(url) => new Redis(url)`) → Redis-backed store. The factory is the one place a
+  concrete client is named, so the application code stays provider-neutral.
+- `REDIS_URL` **set** + **no** factory → **boot is refused, fail-closed.** The
+  service never silently falls back to per-process counters when a shared store
+  was explicitly requested; the error carries no connection string.
 
 > **Honesty note:** the API is horizontally scalable *for the rate limits* once
-> a Redis-backed `SharedStateStore` is injected (the adapter is now shipped;
-> only the concrete client construction is deployment-supplied). Sessions and
-> all durable state already live in PostgreSQL, so instances are otherwise
-> stateless and safe to scale.
+> a Redis-backed `SharedStateStore` is injected at the boundary (the adapter and
+> the fail-closed resolver ship; only the concrete client construction is
+> deployment-supplied — no provider is selected). Sessions and all durable state
+> already live in PostgreSQL, so instances are otherwise stateless and safe to
+> scale.
 
 ## 5. Health vs readiness
 
@@ -162,7 +171,9 @@ Full descriptions live in the README table; the production-relevant contract:
 **Optional / infrastructure**
 - `REDIS_URL` — `redis://` or `rediss://` shared-state URL. Required only for
   multi-instance rate-limit correctness (§4). Validated on boot; the deployment
-  constructs a `RedisLikeClient` from it and injects the Redis-backed store.
+  boundary constructs a `RedisLikeClient` from it and the resolver returns the
+  Redis-backed store. Setting it without wiring a client factory refuses boot
+  (fail-closed) — it never silently degrades to per-process state.
 - `SESSION_TTL`, `SESSION_COOKIE_NAME`, environment-policy limits, and the
   `SECURITY_*` detection thresholds — see README.
 
@@ -295,8 +306,10 @@ The build host is Termux / Android / aarch64, where:
 - [ ] PostgreSQL provisioned, TLS enforced, reachable only from the API network.
 - [ ] `prisma migrate deploy` applied and reviewed (§6).
 - [ ] Redis-compatible store provisioned **iff** running >1 instance, a
-      `RedisLikeClient` constructed from `REDIS_URL`, and the Redis-backed
-      `SharedStateStore` injected (§4).
+      `RedisLikeClient` constructed from `REDIS_URL`, and the client factory wired
+      at the deployment boundary (`resolveSharedStateStore`) so the Redis-backed
+      `SharedStateStore` is selected (§4). Boot refuses fail-closed if `REDIS_URL`
+      is set without a wired client.
 - [ ] `NODE_ENV=production`, `DATABASE_URL`, `CORS_ORIGIN` (https, exact) set via
       the secret manager; boot succeeds (fail-closed config).
 - [ ] LB liveness → `GET /health`; readiness gate → `GET /ready`.

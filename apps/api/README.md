@@ -117,7 +117,7 @@ value and belongs only in your local `.env`.
 | `HOST`                | `127.0.0.1`              | Loopback by default; not reachable off-host.      |
 | `CORS_ORIGIN`         | `http://localhost:5173`  | Comma-separated allow-list. `*` is rejected. Also the CSRF allow-list. **Production: mandatory, https-only, no loopback.** |
 | `DATABASE_URL`        | *(unset → in-memory)*    | PostgreSQL connection string (Prisma).            |
-| `REDIS_URL`           | *(unset → in-memory)*    | Optional `redis://`/`rediss://` shared-state URL. Required only for **multi-instance** rate-limit correctness; validated on boot. A deployment builds a `RedisLikeClient` from it and injects the Redis-backed `SharedStateStore` (`src/infra/redisSharedStateStore.ts`). Never logged. |
+| `REDIS_URL`           | *(unset → in-memory)*    | Optional `redis://`/`rediss://` shared-state URL. Required only for **multi-instance** rate-limit correctness; validated on boot. The deployment boundary (`src/server.ts` → `resolveSharedStateStore`) builds a `RedisLikeClient` from it and selects the Redis-backed `SharedStateStore` (`src/infra/redisSharedStateStore.ts`). Set without a wired client factory → boot refused fail-closed (never a silent per-process fallback). No provider is selected; never logged. |
 | `SESSION_COOKIE_NAME` | `cyv_session`            | Session cookie name.                              |
 | `SESSION_TTL`         | `604800` (7 days)        | Seconds, range 60..7776000.                       |
 | `SECURITY_EVENT_LOG`  | `true` (except test)     | Emit security events as JSON lines to stdout.     |
@@ -290,6 +290,19 @@ store contract onto any injected `RedisLikeClient` (atomic `SET … EX`,
 is installed and no provider is selected; a deployment constructs the client from
 `REDIS_URL` and injects the Redis-backed store. The abuse guard remains
 fail-closed (a store error is a denial, never an allow).
+
+Phase 17 completes the **deployment-boundary selection** of that shared state
+(no new runtime capability, no new endpoints or env vars). `src/server.ts` now
+resolves the store via `resolveSharedStateStore` (`src/infra/sharedStateFactory.ts`):
+in-memory when `REDIS_URL` is unset; a Redis-backed store when `REDIS_URL` is set
+**and** a provider-neutral `RedisLikeClient` factory is injected at the boundary;
+and a **fail-closed boot error** when `REDIS_URL` is set without a wired client —
+so the service never silently keeps per-process counters when a shared store was
+requested. No Redis client package is installed and **no provider is selected**;
+the operator supplies the client. The enforcement path is async end-to-end and
+fail-closed (verified, unchanged from Phase 16). Multi-instance deployment still
+requires a real Redis-compatible backend, and Prisma migrations still require a
+supported host — this phase provisions **no** infrastructure.
 
 The API binds to `127.0.0.1` by default and uses an explicit, non-wildcard CORS
 allow-list. See `docs/API.md` and `apps/lab/docs/LAB-BACKEND-ARCHITECTURE.md` for
