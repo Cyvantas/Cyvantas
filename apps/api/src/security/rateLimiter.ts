@@ -71,6 +71,13 @@ export function createInMemoryRateLimiter(
 }
 
 // Baseline rules. Auth endpoints are stricter than general authenticated API.
+//
+// Two enforcement scopes exist (Phase 13): per-USER rules bound what one
+// account can do; per-IP rules bound what one network origin can do regardless
+// of account (they blunt credential stuffing / many-account abuse from a single
+// source). An endpoint may be gated by both — the tighter one trips first. IP
+// rules are set ABOVE the corresponding per-user rule so a single legitimate
+// user never trips the IP limit, while a burst across many accounts still does.
 export const RATE_RULES = {
   login: { limit: 10, windowMs: 15 * 60 * 1000 }, // 10 / 15min per IP+email
   register: { limit: 5, windowMs: 60 * 60 * 1000 }, // 5 / hour per IP
@@ -80,4 +87,14 @@ export const RATE_RULES = {
   challengeEnvironmentCreate: { limit: 20, windowMs: 60 * 1000 }, // 20 / min
   challengeEnvironmentReset: { limit: 30, windowMs: 60 * 1000 }, // 30 / min
   challengeSubmit: { limit: 15, windowMs: 60 * 1000 }, // 15 / min per user
+  // Environment control-plane endpoints (Phase 9 routes), keyed per user.
+  environmentCreate: { limit: 30, windowMs: 60 * 1000 }, // 30 / min per user
+  environmentMutate: { limit: 60, windowMs: 60 * 1000 }, // 60 / min per user
+  // Per-IP ceilings (Phase 13). Coarser than the per-user rules above.
+  loginPerIp: { limit: 30, windowMs: 15 * 60 * 1000 }, // 30 / 15min per IP
+  challengeSubmitPerIp: { limit: 60, windowMs: 60 * 1000 }, // 60 / min per IP
+  challengeEnvironmentCreatePerIp: { limit: 60, windowMs: 60 * 1000 },
+  challengeEnvironmentResetPerIp: { limit: 90, windowMs: 60 * 1000 },
+  environmentCreatePerIp: { limit: 90, windowMs: 60 * 1000 }, // 90 / min per IP
+  environmentMutatePerIp: { limit: 180, windowMs: 60 * 1000 },
 } as const satisfies Record<string, RateLimitRule>

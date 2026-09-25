@@ -13,7 +13,9 @@ import { toUserDTO } from "../domain/user.ts"
 import { loginSchema, registerSchema } from "../validation/authSchemas.ts"
 import { requireAuth } from "../plugins/auth.ts"
 import { isTrustedOrigin } from "../security/csrf.ts"
-import { RATE_RULES, type RateLimitRule } from "../security/rateLimiter.ts"
+import { RATE_RULES } from "../security/rateLimiter.ts"
+import { enforceAbuseControls, type AbuseCheck } from "../security/abuseGuard.ts"
+import type { RequestContext } from "../monitoring/securityMonitor.ts"
 
 function parseBody<T>(schema: z.ZodType<T>, body: unknown): T {
   const result = schema.safeParse(body)
@@ -34,19 +36,34 @@ function assertTrustedOrigin(app: FastifyInstance, request: FastifyRequest): voi
   }
 }
 
-function enforceRateLimit(
-  app: FastifyInstance,
-  key: string,
-  rule: RateLimitRule,
-): void {
-  const outcome = app.rateLimiter.check(key, rule)
-  if (!outcome.allowed) {
-    throw new ApiError(
-      "RATE_LIMITED",
-      "Too many requests. Please try again later.",
-      429,
-    )
+/**
+ * Request context for the security monitor. Auth routes are unauthenticated at
+ * entry, so actorId is null — the monitor keys detection on IP here.
+ */
+function monitorCtx(request: FastifyRequest): RequestContext {
+  return {
+    ip: request.ip,
+    userAgent: request.headers["user-agent"] ?? null,
+    requestId: request.requestId,
+    actorId: request.authUser?.id ?? null,
   }
+}
+
+/**
+ * Enforce layered rate limits, FAIL-CLOSED, emitting a RATE_LIMIT_EXCEEDED
+ * security event on denial and throwing a uniform 429. The response reveals no
+ * limit details.
+ */
+function enforceAuthLimit(
+  app: FastifyInstance,
+  request: FastifyRequest,
+  checks: readonly AbuseCheck[],
+): void {
+  enforceAbuseControls(
+    { limiter: app.rateLimiter, monitor: app.securityMonitor },
+    monitorCtx(request),
+    checks,
+  )
 }
 
 function sessionCookieOptions(app: FastifyInstance) {
@@ -73,7 +90,9 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     "/register",
     async (request: FastifyRequest, reply: FastifyReply) => {
       assertTrustedOrigin(app, request)
-      enforceRateLimit(app, `register:${request.ip}`, RATE_RULES.register)
+      enforceAuthLimit(app, request, [
+        { scope: "register:ip", key: `register:${request.ip}`, rule: RATE_RULES.register },
+      ])
 
       const body = parseBody(registerSchema, request.body)
       const issued = await app.authService.register(
@@ -88,7 +107,14 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post("/login", async (request: FastifyRequest, reply: FastifyReply) => {
     assertTrustedOrigin(app, request)
     const body = parseBody(loginSchema, request.body)
-    enforceRateLimit(app, `login:${request.ip}:${body.email}`, RATE_RULES.login)
+    enforceAuthLimit(app, request, [
+      {
+        scope: "login:ip-email",
+        key: `login:${request.ip}:${body.email}`,
+        rule: RATE_RULES.login,
+      },
+      { scope: "login:ip", key: `login:ip:${request.ip}`, rule: RATE_RULES.loginPerIp },
+    ])
 
     const issued = await app.authService.login(
       { email: body.email, password: body.password },

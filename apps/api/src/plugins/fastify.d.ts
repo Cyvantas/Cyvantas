@@ -5,11 +5,14 @@ import type { ChallengeService } from "../services/challengeService.ts"
 import type { SandboxOrchestrator } from "../orchestration/index.ts"
 import type { AppConfig } from "../config/env.ts"
 import type { RateLimiter } from "../security/rateLimiter.ts"
+import type { SecurityMonitor } from "../monitoring/securityMonitor.ts"
 
 declare module "fastify" {
   interface FastifyRequest {
     authUser: AuthUser | null
     sessionId: string | null
+    /** Correlation id assigned on every request (Phase 13). */
+    requestId: string
   }
   interface FastifyInstance {
     authService: AuthService
@@ -18,6 +21,7 @@ declare module "fastify" {
     sandboxOrchestrator: SandboxOrchestrator
     appConfig: AppConfig
     rateLimiter: RateLimiter
+    securityMonitor: SecurityMonitor
   }
 }
 

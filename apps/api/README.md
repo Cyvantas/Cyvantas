@@ -118,6 +118,16 @@ value and belongs only in your local `.env`.
 | `DATABASE_URL`        | *(unset → in-memory)*    | PostgreSQL connection string (Prisma).            |
 | `SESSION_COOKIE_NAME` | `cyv_session`            | Session cookie name.                              |
 | `SESSION_TTL`         | `604800` (7 days)        | Seconds, range 60..7776000.                       |
+| `SECURITY_EVENT_LOG`  | `true` (except test)     | Emit security events as JSON lines to stdout.     |
+| `SECURITY_FAILED_AUTH_THRESHOLD` | `8`           | Failed-auth escalation (per ip/user) / 15 min. Observe-only. |
+| `SECURITY_SUBMISSION_THRESHOLD`  | `40`          | Challenge submissions per user / 1 min. Observe-only. |
+| `SECURITY_ENV_ACTIVITY_THRESHOLD`| `40`          | Env create/reset per user / 1 min. Observe-only.  |
+| `SECURITY_INVALID_SESSION_THRESHOLD` | `12`      | Invalid sessions per ip / 5 min. Observe-only.    |
+| `SECURITY_REQUEST_BURST_THRESHOLD`   | `600`     | Requests per ip / 1 min. Observe-only.            |
+
+Detection thresholds above are **observe-only** — they never deny a request (the
+rate limiter does). See [`docs/MONITORING.md`](docs/MONITORING.md) and
+[`docs/ABUSE-CONTROLS.md`](docs/ABUSE-CONTROLS.md).
 
 Copy `.env.example` → `.env` for overrides. `.env` is git-ignored; never commit it.
 
@@ -223,6 +233,16 @@ Phase 11 adds the first **isolated educational challenge** (`reflected-xss`) and
 same runtime seam, so it provisions nothing and never fakes a live target. The
 older `/flags/submit` stub remains unimplemented (501). Full contract, trust
 model, and security guarantees are in [`docs/CHALLENGES.md`](docs/CHALLENGES.md).
+
+Phase 13 adds **monitoring + abuse controls**: structured, redaction-safe
+security events funneled through a single monitor (by wrapping the audit seam,
+with zero service changes), request **correlation ids** (`x-request-id`, echoed
+on every response and attached to error envelopes), observe-only **detection**
+of failed-auth / submission / environment / invalid-session / burst anomalies,
+and **fail-closed** per-user + per-IP rate limits on every mutating endpoint. No
+flag, password, session token, or authorization header is ever logged. See
+[`docs/MONITORING.md`](docs/MONITORING.md) and
+[`docs/ABUSE-CONTROLS.md`](docs/ABUSE-CONTROLS.md).
 
 Additionally, on the aarch64 Android/Termux build host, Prisma's native
 query/schema engines cannot run and PostgreSQL is not installed, so live DB

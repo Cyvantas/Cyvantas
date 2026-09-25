@@ -9,6 +9,7 @@
  * API runs against an in-memory data store (development/test convenience);
  * when present it uses PostgreSQL via Prisma. See docs/AUTH.md.
  */
+import type { SecurityDetectionConfig } from "../monitoring/securityMonitor.ts"
 
 const DEFAULT_PORT = 8787
 const DEFAULT_HOST = "127.0.0.1"
@@ -23,6 +24,19 @@ const DEFAULT_MAX_TOTAL_ENVIRONMENTS = 25
 const DEFAULT_ENVIRONMENT_TTL_MINUTES = 60
 const DEFAULT_MAX_ENVIRONMENT_LIFETIME_MINUTES = 240
 
+// Detection thresholds (Phase 13). These drive OBSERVE-ONLY escalation events;
+// they never deny a request (the rate limiter does that). Windows are fixed
+// constants; the occurrence thresholds are env-overridable so an operator can
+// tune sensitivity without a code change. Defaults sit above the per-user rate
+// limits so a single well-behaved user never trips a detection alert.
+const DEFAULT_DETECTION = {
+  failedAuth: { threshold: 8, windowMs: 15 * 60 * 1000 },
+  challengeSubmission: { threshold: 40, windowMs: 60 * 1000 },
+  environmentActivity: { threshold: 40, windowMs: 60 * 1000 },
+  invalidSession: { threshold: 12, windowMs: 5 * 60 * 1000 },
+  requestBurst: { threshold: 600, windowMs: 60 * 1000 },
+} as const
+
 export type NodeEnv = "development" | "test" | "production"
 
 /**
@@ -34,6 +48,16 @@ export interface EnvironmentPolicy {
   readonly maxTotal: number
   readonly ttlMinutes: number
   readonly maxLifetimeMinutes: number
+}
+
+/**
+ * Monitoring / abuse-detection configuration (Phase 13). `logSecurityEvents`
+ * gates the console sink; `detection` holds the fixed-window thresholds used by
+ * the security monitor's detection layer.
+ */
+export interface SecurityConfig {
+  readonly logSecurityEvents: boolean
+  readonly detection: SecurityDetectionConfig
 }
 
 export interface AppConfig {
@@ -49,6 +73,7 @@ export interface AppConfig {
   /** True when the API should emit Secure cookies (production over HTTPS). */
   readonly cookieSecure: boolean
   readonly environment: EnvironmentPolicy
+  readonly security: SecurityConfig
 }
 
 function parsePort(raw: string | undefined): number {
@@ -140,6 +165,72 @@ function parseEnvironmentPolicy(env: NodeJS.ProcessEnv): EnvironmentPolicy {
   return { maxActive, maxTotal, ttlMinutes, maxLifetimeMinutes }
 }
 
+function parseBoolean(raw: string | undefined, fallback: boolean): boolean {
+  const value = raw?.trim().toLowerCase()
+  if (value === undefined || value === "") return fallback
+  if (value === "true" || value === "1" || value === "yes") return true
+  if (value === "false" || value === "0" || value === "no") return false
+  throw new Error(`Invalid boolean flag: ${raw}`)
+}
+
+function parseSecurityConfig(
+  env: NodeJS.ProcessEnv,
+  nodeEnv: NodeEnv,
+): SecurityConfig {
+  const d = DEFAULT_DETECTION
+  return {
+    // Quiet by default under test so the suite does not print event lines.
+    logSecurityEvents: parseBoolean(env.SECURITY_EVENT_LOG, nodeEnv !== "test"),
+    detection: {
+      failedAuth: {
+        threshold: parsePositiveInt(
+          env.SECURITY_FAILED_AUTH_THRESHOLD,
+          d.failedAuth.threshold,
+          "SECURITY_FAILED_AUTH_THRESHOLD",
+          { max: 100_000 },
+        ),
+        windowMs: d.failedAuth.windowMs,
+      },
+      challengeSubmission: {
+        threshold: parsePositiveInt(
+          env.SECURITY_SUBMISSION_THRESHOLD,
+          d.challengeSubmission.threshold,
+          "SECURITY_SUBMISSION_THRESHOLD",
+          { max: 100_000 },
+        ),
+        windowMs: d.challengeSubmission.windowMs,
+      },
+      environmentActivity: {
+        threshold: parsePositiveInt(
+          env.SECURITY_ENV_ACTIVITY_THRESHOLD,
+          d.environmentActivity.threshold,
+          "SECURITY_ENV_ACTIVITY_THRESHOLD",
+          { max: 100_000 },
+        ),
+        windowMs: d.environmentActivity.windowMs,
+      },
+      invalidSession: {
+        threshold: parsePositiveInt(
+          env.SECURITY_INVALID_SESSION_THRESHOLD,
+          d.invalidSession.threshold,
+          "SECURITY_INVALID_SESSION_THRESHOLD",
+          { max: 100_000 },
+        ),
+        windowMs: d.invalidSession.windowMs,
+      },
+      requestBurst: {
+        threshold: parsePositiveInt(
+          env.SECURITY_REQUEST_BURST_THRESHOLD,
+          d.requestBurst.threshold,
+          "SECURITY_REQUEST_BURST_THRESHOLD",
+          { max: 1_000_000 },
+        ),
+        windowMs: d.requestBurst.windowMs,
+      },
+    },
+  }
+}
+
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
   const nodeEnv = parseNodeEnv(env.NODE_ENV)
   const databaseUrl = env.DATABASE_URL?.trim() || undefined
@@ -159,6 +250,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     sessionTtlSeconds: parseSessionTtl(env.SESSION_TTL),
     cookieSecure: nodeEnv === "production",
     environment: parseEnvironmentPolicy(env),
+    security: parseSecurityConfig(env, nodeEnv),
   }
 }
 

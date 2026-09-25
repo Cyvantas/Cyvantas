@@ -76,13 +76,14 @@ describe("GET /api/v1/challenges/:slug", () => {
       url: "/api/v1/challenges/does-not-exist",
     })
     expect(res.statusCode).toBe(404)
-    expect(res.json()).toEqual({
+    expect(res.json()).toMatchObject({
       error: {
         code: "CHALLENGE_NOT_FOUND",
         message: "Challenge not found",
         status: 404,
       },
     })
+    expect(typeof res.json().error.requestId).toBe("string")
   })
 })
 
@@ -132,7 +133,7 @@ describe("flag stub", () => {
       payload: { flag: "CYV{whatever}" },
     })
     expect(res.statusCode).toBe(501)
-    expect(res.json()).toEqual({
+    expect(res.json()).toMatchObject({
       error: {
         code: "FLAG_SERVICE_NOT_IMPLEMENTED",
         message: "Flag validation is not implemented yet",

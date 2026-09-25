@@ -4,7 +4,9 @@ import { ApiError, success, notFound } from "../types/api.ts"
 import { catalogService } from "../services/catalogService.ts"
 import { requireAuth } from "../plugins/auth.ts"
 import { isTrustedOrigin } from "../security/csrf.ts"
-import { RATE_RULES, type RateLimitRule } from "../security/rateLimiter.ts"
+import { RATE_RULES } from "../security/rateLimiter.ts"
+import { enforceAbuseControls, type AbuseCheck } from "../security/abuseGuard.ts"
+import type { RequestContext } from "../monitoring/securityMonitor.ts"
 import type { EnvironmentActor } from "../services/environmentService.ts"
 
 const submitSchema = z.object({
@@ -35,6 +37,16 @@ function authContext(request: FastifyRequest) {
   return { ip: request.ip, userAgent: request.headers["user-agent"] ?? null }
 }
 
+/** Request context for the security monitor. Actor is server-derived only. */
+function monitorCtx(request: FastifyRequest): RequestContext {
+  return {
+    ip: request.ip,
+    userAgent: request.headers["user-agent"] ?? null,
+    requestId: request.requestId,
+    actorId: request.authUser?.id ?? null,
+  }
+}
+
 /** Actor derived ONLY from the server-side session, never from request input. */
 function actorFrom(request: FastifyRequest): EnvironmentActor {
   const user = request.authUser!
@@ -47,18 +59,27 @@ function idempotencyKey(request: FastifyRequest): string | null {
   return null
 }
 
-/** Per-user rate gate. Throws 429 when the window is exhausted. */
-function enforceRateLimit(
+/**
+ * Layered rate gate: a per-USER limit and a per-IP ceiling, enforced together
+ * and FAIL-CLOSED by the abuse guard. Throws a uniform 429 on denial and emits
+ * a RATE_LIMIT_EXCEEDED security event; the response reveals no limit details.
+ */
+function enforceChallengeLimit(
   app: FastifyInstance,
   request: FastifyRequest,
-  bucket: string,
-  rule: RateLimitRule,
+  scope: string,
+  userRule: AbuseCheck["rule"],
+  ipRule: AbuseCheck["rule"],
 ): void {
-  const key = `${bucket}:${request.authUser!.id}`
-  const result = app.rateLimiter.check(key, rule)
-  if (!result.allowed) {
-    throw new ApiError("RATE_LIMITED", "Too many requests. Try again later.", 429)
-  }
+  const userId = request.authUser!.id
+  enforceAbuseControls(
+    { limiter: app.rateLimiter, monitor: app.securityMonitor },
+    monitorCtx(request),
+    [
+      { scope: `${scope}:user`, key: `${scope}:user:${userId}`, rule: userRule },
+      { scope: `${scope}:ip`, key: `${scope}:ip:${request.ip}`, rule: ipRule },
+    ],
+  )
 }
 
 /**
@@ -88,7 +109,13 @@ export async function challengeRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest<{ Params: { slug: string } }>, reply: FastifyReply) => {
       assertTrustedOrigin(app, request)
-      enforceRateLimit(app, request, "challenge-env-create", RATE_RULES.challengeEnvironmentCreate)
+      enforceChallengeLimit(
+        app,
+        request,
+        "challenge-env-create",
+        RATE_RULES.challengeEnvironmentCreate,
+        RATE_RULES.challengeEnvironmentCreatePerIp,
+      )
       const view = await service.createEnvironment(actorFrom(request), request.params.slug, {
         idempotencyKey: idempotencyKey(request),
         ctx: authContext(request),
@@ -112,7 +139,13 @@ export async function challengeRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest<{ Params: { slug: string; environmentId: string } }>) => {
       assertTrustedOrigin(app, request)
-      enforceRateLimit(app, request, "challenge-env-reset", RATE_RULES.challengeEnvironmentReset)
+      enforceChallengeLimit(
+        app,
+        request,
+        "challenge-env-reset",
+        RATE_RULES.challengeEnvironmentReset,
+        RATE_RULES.challengeEnvironmentResetPerIp,
+      )
       const { slug, environmentId } = request.params
       const view = await service.resetEnvironment(
         actorFrom(request),
@@ -129,7 +162,13 @@ export async function challengeRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest<{ Params: { slug: string } }>) => {
       assertTrustedOrigin(app, request)
-      enforceRateLimit(app, request, "challenge-submit", RATE_RULES.challengeSubmit)
+      enforceChallengeLimit(
+        app,
+        request,
+        "challenge-submit",
+        RATE_RULES.challengeSubmit,
+        RATE_RULES.challengeSubmitPerIp,
+      )
       const body = parseBody(submitSchema, request.body)
       const result = await service.submit(
         actorFrom(request),

@@ -20,6 +20,9 @@ import { ApiError, success } from "../types/api.ts"
 import { toEnvironmentDTO } from "../domain/environment.ts"
 import { requireAuth } from "../plugins/auth.ts"
 import { isTrustedOrigin } from "../security/csrf.ts"
+import { RATE_RULES, type RateLimitRule } from "../security/rateLimiter.ts"
+import { enforceAbuseControls } from "../security/abuseGuard.ts"
+import type { RequestContext } from "../monitoring/securityMonitor.ts"
 import type {
   EnvironmentActor,
   RequestEnvironmentInput,
@@ -113,6 +116,39 @@ function idempotencyKey(request: FastifyRequest): string | null {
   return null
 }
 
+/** Request context for the security monitor. Actor is server-derived only. */
+function monitorCtx(request: FastifyRequest): RequestContext {
+  return {
+    ip: request.ip,
+    userAgent: request.headers["user-agent"] ?? null,
+    requestId: request.requestId,
+    actorId: request.authUser?.id ?? null,
+  }
+}
+
+/**
+ * Layered rate gate: a per-USER limit and a per-IP ceiling, enforced together
+ * and FAIL-CLOSED. Throws a uniform 429 on denial; the response reveals no
+ * limit details. The actor is always the server-side session user.
+ */
+function enforceEnvLimit(
+  app: FastifyInstance,
+  request: FastifyRequest,
+  scope: string,
+  userRule: RateLimitRule,
+  ipRule: RateLimitRule,
+): void {
+  const userId = request.authUser!.id
+  enforceAbuseControls(
+    { limiter: app.rateLimiter, monitor: app.securityMonitor },
+    monitorCtx(request),
+    [
+      { scope: `${scope}:user`, key: `${scope}:user:${userId}`, rule: userRule },
+      { scope: `${scope}:ip`, key: `${scope}:ip:${request.ip}`, rule: ipRule },
+    ],
+  )
+}
+
 export async function environmentRoutes(app: FastifyInstance): Promise<void> {
   const service = app.environmentService
   const runtimeConfigured = service.runtimeConfigured
@@ -122,6 +158,13 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest, reply: FastifyReply) => {
       assertTrustedOrigin(app, request)
+      enforceEnvLimit(
+        app,
+        request,
+        "environment-create",
+        RATE_RULES.environmentCreate,
+        RATE_RULES.environmentCreatePerIp,
+      )
       const body = parseBody(createEnvironmentSchema, request.body)
       const input: RequestEnvironmentInput = {
         type: body.type,
@@ -162,6 +205,13 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
+      enforceEnvLimit(
+        app,
+        request,
+        "environment-mutate",
+        RATE_RULES.environmentMutate,
+        RATE_RULES.environmentMutatePerIp,
+      )
       const { id } = request.params as { id: string }
       const env = await service.activateEnvironment(
         actorFrom(request),
@@ -177,6 +227,13 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
+      enforceEnvLimit(
+        app,
+        request,
+        "environment-mutate",
+        RATE_RULES.environmentMutate,
+        RATE_RULES.environmentMutatePerIp,
+      )
       const { id } = request.params as { id: string }
       const env = await service.touchEnvironment(actorFrom(request), id)
       return success(toEnvironmentDTO(env, runtimeConfigured))
@@ -188,6 +245,13 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
+      enforceEnvLimit(
+        app,
+        request,
+        "environment-mutate",
+        RATE_RULES.environmentMutate,
+        RATE_RULES.environmentMutatePerIp,
+      )
       const { id } = request.params as { id: string }
       const env = await service.resetEnvironment(
         actorFrom(request),
@@ -203,6 +267,13 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
+      enforceEnvLimit(
+        app,
+        request,
+        "environment-mutate",
+        RATE_RULES.environmentMutate,
+        RATE_RULES.environmentMutatePerIp,
+      )
       const { id } = request.params as { id: string }
       const env = await service.stopEnvironment(
         actorFrom(request),
@@ -218,6 +289,13 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
+      enforceEnvLimit(
+        app,
+        request,
+        "environment-mutate",
+        RATE_RULES.environmentMutate,
+        RATE_RULES.environmentMutatePerIp,
+      )
       const { id } = request.params as { id: string }
       const env = await service.destroyEnvironment(
         actorFrom(request),
@@ -250,6 +328,13 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
+      enforceEnvLimit(
+        app,
+        request,
+        "environment-mutate",
+        RATE_RULES.environmentMutate,
+        RATE_RULES.environmentMutatePerIp,
+      )
       const { id } = request.params as { id: string }
       const env = await service.getEnvironment(actorFrom(request), id)
       const body = parseBody(sandboxRequestSchema, request.body)

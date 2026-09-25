@@ -17,6 +17,8 @@ export interface ApiErrorEnvelope {
     code: string
     message: string
     status: number
+    /** Correlation id, attached by the error handler when available (Phase 13). */
+    requestId?: string
   }
 }
 
