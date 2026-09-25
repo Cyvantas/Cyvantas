@@ -10,7 +10,10 @@ import cookie from "@fastify/cookie"
 import { loadConfig, type AppConfig } from "./config/env.ts"
 import { ApiError, errorEnvelope } from "./types/api.ts"
 import { healthRoutes } from "./routes/health.ts"
+import { readinessRoutes } from "./routes/readiness.ts"
 import { apiV1Routes } from "./routes/index.ts"
+import { createReadinessService, type ReadinessService } from "./health/readiness.ts"
+import { createInMemorySharedStateStore, type SharedStateStore } from "./infra/sharedState.ts"
 import { createRepositories } from "./repositories/index.ts"
 import type { Repositories } from "./repositories/types.ts"
 import { createAuthService } from "./services/authService.ts"
@@ -42,6 +45,14 @@ export interface BuildAppOptions {
    * a noop sink.
    */
   sink?: SecurityEventSink
+  /**
+   * Inject a readiness service (tests supply controlled probes). Defaults to a
+   * service probing the backing store (repositories.checkHealth) and the
+   * shared-state store.
+   */
+  readiness?: ReadinessService
+  /** Inject a shared-state store (tests/fakes); defaults to in-memory. */
+  sharedState?: SharedStateStore
 }
 
 /**
@@ -196,6 +207,26 @@ export async function buildApp(
     await repositories.shutdown()
   })
 
+  // Shared-state store (provider-neutral). In-memory by default and thus
+  // single-instance only; a multi-instance deployment injects a Redis-backed
+  // adapter. Exposed as a decoration so future callers (e.g. a shared rate
+  // limiter) resolve it from the app.
+  const sharedState = options.sharedState ?? createInMemorySharedStateStore()
+  app.decorate("sharedState", sharedState)
+
+  // Readiness: probes the dependencies required to serve traffic. Bounded and
+  // fail-closed; the report exposes only coarse per-check statuses. The DB probe
+  // is a trivial round-trip against the configured backend (in-memory store is
+  // always ready; Prisma runs SELECT 1). Distinct from /health, which never
+  // touches a dependency.
+  const readiness =
+    options.readiness ??
+    createReadinessService([
+      { name: "database", check: () => repositories.checkHealth() },
+      { name: "sharedState", check: () => sharedState.ping() },
+    ])
+  app.decorate("readiness", readiness)
+
   app.setErrorHandler(
     (error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
       // Attach the correlation id to every error envelope so a client can quote
@@ -252,6 +283,7 @@ export async function buildApp(
   )
 
   await app.register(healthRoutes)
+  await app.register(readinessRoutes, { readiness })
   await app.register(apiV1Routes, { prefix: "/api/v1" })
 
   return app

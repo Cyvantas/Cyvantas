@@ -211,6 +211,13 @@ export interface Repositories {
   progress: ProgressRepository
   scoring: ScoringRepository
   environments: EnvironmentRepository
+  /**
+   * Bounded, fail-closed readiness probe for the backing store. The in-memory
+   * store is always ready; the Prisma store performs a trivial `SELECT 1`
+   * round-trip. Resolves false on error/timeout; never throws, never leaks a
+   * driver error. Used by the readiness endpoint.
+   */
+  checkHealth(timeoutMs?: number): Promise<boolean>
   /** Called on server shutdown to release resources (DB connections). */
   shutdown(): Promise<void>
 }

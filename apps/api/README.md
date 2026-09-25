@@ -100,6 +100,7 @@ Smoke test:
 
 ```bash
 curl http://127.0.0.1:8787/health
+curl http://127.0.0.1:8787/ready
 curl http://127.0.0.1:8787/api/v1
 curl http://127.0.0.1:8787/api/v1/challenges
 ```
@@ -116,6 +117,7 @@ value and belongs only in your local `.env`.
 | `HOST`                | `127.0.0.1`              | Loopback by default; not reachable off-host.      |
 | `CORS_ORIGIN`         | `http://localhost:5173`  | Comma-separated allow-list. `*` is rejected. Also the CSRF allow-list. **Production: mandatory, https-only, no loopback.** |
 | `DATABASE_URL`        | *(unset → in-memory)*    | PostgreSQL connection string (Prisma).            |
+| `REDIS_URL`           | *(unset → in-memory)*    | Optional `redis://`/`rediss://` shared-state URL. Required only for **multi-instance** rate-limit correctness; validated but not connected until an adapter ships. Never logged. |
 | `SESSION_COOKIE_NAME` | `cyv_session`            | Session cookie name.                              |
 | `SESSION_TTL`         | `604800` (7 days)        | Seconds, range 60..7776000.                       |
 | `SECURITY_EVENT_LOG`  | `true` (except test)     | Emit security events as JSON lines to stdout.     |
@@ -173,6 +175,7 @@ config loader is fail-closed: `DATABASE_URL` and an https-only, non-loopback
 | Method | Path                                | Status | Description                          |
 | ------ | ----------------------------------- | ------ | ------------------------------------ |
 | GET    | `/health`                           | 200    | Liveness + service metadata.         |
+| GET    | `/ready`                            | 200/503| Readiness: DB + shared-state probes. |
 | GET    | `/api/v1`                           | 200    | API root descriptor.                 |
 | POST   | `/api/v1/auth/register`             | 201    | Create user + session; sets cookie.  |
 | POST   | `/api/v1/auth/login`                | 200/401| Start session; `INVALID_CREDENTIALS`.|
@@ -263,6 +266,16 @@ Additionally, on the aarch64 Android/Termux build host, Prisma's native
 query/schema engines cannot run and PostgreSQL is not installed, so live DB
 queries and `prisma migrate dev` require a Prisma-supported host. The in-memory
 path, build, and tests run without a database. See [`docs/AUTH.md`](docs/AUTH.md).
+
+Phase 15 is **production-infrastructure readiness** (no new runtime capability):
+a dependency-probing readiness endpoint (`GET /ready`, DB + shared-state, bounded
+and fail-closed) distinct from the dependency-free liveness `GET /health`; a
+small DB readiness abstraction over the existing Prisma client (`SELECT 1`, no
+migration); a provider-neutral `SharedStateStore` interface (in-memory impl only,
+Redis adapter contract documented); an optional validated `REDIS_URL`; and a full
+provider-neutral deployment/backup/rollback runbook in
+[`docs/PRODUCTION-INFRASTRUCTURE.md`](docs/PRODUCTION-INFRASTRUCTURE.md). Nothing
+is deployed or provisioned and no provider is selected.
 
 The API binds to `127.0.0.1` by default and uses an explicit, non-wildcard CORS
 allow-list. See `docs/API.md` and `apps/lab/docs/LAB-BACKEND-ARCHITECTURE.md` for

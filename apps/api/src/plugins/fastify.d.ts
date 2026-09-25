@@ -6,6 +6,8 @@ import type { SandboxOrchestrator } from "../orchestration/index.ts"
 import type { AppConfig } from "../config/env.ts"
 import type { RateLimiter } from "../security/rateLimiter.ts"
 import type { SecurityMonitor } from "../monitoring/securityMonitor.ts"
+import type { SharedStateStore } from "../infra/sharedState.ts"
+import type { ReadinessService } from "../health/readiness.ts"
 
 declare module "fastify" {
   interface FastifyRequest {
@@ -22,6 +24,8 @@ declare module "fastify" {
     appConfig: AppConfig
     rateLimiter: RateLimiter
     securityMonitor: SecurityMonitor
+    sharedState: SharedStateStore
+    readiness: ReadinessService
   }
 }
 

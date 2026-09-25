@@ -36,6 +36,7 @@ import type {
   EnvironmentStatus,
 } from "../domain/environment.ts"
 import { disconnectPrisma } from "../db/prisma.ts"
+import { checkPrismaHealth } from "../db/databaseHealth.ts"
 
 interface UserRow {
   id: string
@@ -276,6 +277,9 @@ export function createPrismaRepositories(prisma: PrismaClient): Repositories {
     progress,
     scoring: createScoringRepository(prisma),
     environments: createEnvironmentRepository(prisma),
+    async checkHealth(timeoutMs) {
+      return checkPrismaHealth(prisma, timeoutMs)
+    },
     async shutdown() {
       await disconnectPrisma()
     },

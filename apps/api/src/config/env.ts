@@ -68,6 +68,15 @@ export interface AppConfig {
   readonly nodeEnv: NodeEnv
   /** Postgres connection string. Undefined → in-memory store (dev/test). */
   readonly databaseUrl: string | undefined
+  /**
+   * Redis-compatible connection string for shared state (rate limiter /
+   * detection) in a multi-instance deployment. Optional and provider-neutral:
+   * the repository ships no Redis adapter, so setting this validates the URL and
+   * documents intent, but the in-memory shared-state store is still used until an
+   * adapter is wired. See src/infra/sharedState.ts and
+   * docs/PRODUCTION-INFRASTRUCTURE.md. Never logged.
+   */
+  readonly redisUrl: string | undefined
   readonly sessionCookieName: string
   readonly sessionTtlSeconds: number
   /** True when the API should emit Secure cookies (production over HTTPS). */
@@ -135,6 +144,26 @@ function parseNodeEnv(raw: string | undefined): NodeEnv {
   const value = raw?.trim()
   if (value === "production" || value === "test") return value
   return "development"
+}
+
+/**
+ * Optional Redis connection string. When present it must be a valid
+ * redis:// or rediss:// URL. Its value is never logged. Absent → in-memory
+ * shared state (single-instance only).
+ */
+function parseRedisUrl(raw: string | undefined): string | undefined {
+  const value = raw?.trim()
+  if (!value) return undefined
+  let url: URL
+  try {
+    url = new URL(value)
+  } catch {
+    throw new Error("Invalid REDIS_URL (must be a redis:// or rediss:// URL)")
+  }
+  if (url.protocol !== "redis:" && url.protocol !== "rediss:") {
+    throw new Error("REDIS_URL must use the redis:// or rediss:// scheme")
+  }
+  return value
 }
 
 function parseSessionTtl(raw: string | undefined): number {
@@ -278,6 +307,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     corsOrigin: parseCorsOrigin(env.CORS_ORIGIN, nodeEnv),
     nodeEnv,
     databaseUrl,
+    redisUrl: parseRedisUrl(env.REDIS_URL),
     sessionCookieName:
       env.SESSION_COOKIE_NAME?.trim() || DEFAULT_SESSION_COOKIE_NAME,
     sessionTtlSeconds: parseSessionTtl(env.SESSION_TTL),

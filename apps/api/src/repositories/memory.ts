@@ -327,6 +327,9 @@ export function createInMemoryRepositories(): Repositories {
     progress: progressRepo,
     scoring,
     environments: envRepo,
+    async checkHealth() {
+      return true
+    },
     async shutdown() {},
   }
 }
