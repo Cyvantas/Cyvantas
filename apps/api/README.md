@@ -117,7 +117,7 @@ value and belongs only in your local `.env`.
 | `HOST`                | `127.0.0.1`              | Loopback by default; not reachable off-host.      |
 | `CORS_ORIGIN`         | `http://localhost:5173`  | Comma-separated allow-list. `*` is rejected. Also the CSRF allow-list. **Production: mandatory, https-only, no loopback.** |
 | `DATABASE_URL`        | *(unset → in-memory)*    | PostgreSQL connection string (Prisma).            |
-| `REDIS_URL`           | *(unset → in-memory)*    | Optional `redis://`/`rediss://` shared-state URL. Required only for **multi-instance** rate-limit correctness; validated but not connected until an adapter ships. Never logged. |
+| `REDIS_URL`           | *(unset → in-memory)*    | Optional `redis://`/`rediss://` shared-state URL. Required only for **multi-instance** rate-limit correctness; validated on boot. A deployment builds a `RedisLikeClient` from it and injects the Redis-backed `SharedStateStore` (`src/infra/redisSharedStateStore.ts`). Never logged. |
 | `SESSION_COOKIE_NAME` | `cyv_session`            | Session cookie name.                              |
 | `SESSION_TTL`         | `604800` (7 days)        | Seconds, range 60..7776000.                       |
 | `SECURITY_EVENT_LOG`  | `true` (except test)     | Emit security events as JSON lines to stdout.     |
@@ -230,8 +230,9 @@ service still does **not** implement — and never performs — any of the follo
 - flag validation or scoring (submissions are never marked "correct")
 - outbound network requests, URL proxying, or SSRF primitives
 - a scheduler/cron — `cleanupExpiredEnvironments` is a plain function invoked on
-  demand; the idempotency store and rate limiter are per-process and **not**
-  horizontally scalable
+  demand; the idempotency store is per-process and **not** horizontally scalable
+  (the rate limiter/detection counters, by contrast, go through a
+  `SharedStateStore` and become global once the Redis-backed store is injected)
 - a frontend login UI (the Lab frontend remains backend-disabled)
 - secrets in git (`DATABASE_URL` lives only in your local `.env`)
 
@@ -276,6 +277,19 @@ Redis adapter contract documented); an optional validated `REDIS_URL`; and a ful
 provider-neutral deployment/backup/rollback runbook in
 [`docs/PRODUCTION-INFRASTRUCTURE.md`](docs/PRODUCTION-INFRASTRUCTURE.md). Nothing
 is deployed or provisioned and no provider is selected.
+
+Phase 16 makes the rate limiter and abuse-detection counters **distributed-ready**
+(no new runtime capability, no new endpoints or env vars): `RateLimiter.check`
+and `DetectionTracker.record` now read/write through the Phase 15
+`SharedStateStore` (fixed-window `INCR`+`EXPIRE` bucket keyed by the window
+start), so the default in-memory store preserves exact single-instance behaviour
+while a shared store makes the same limits global across replicas. A
+provider-neutral Redis adapter (`src/infra/redisSharedStateStore.ts`) maps the
+store contract onto any injected `RedisLikeClient` (atomic `SET … EX`,
+`INCRBY`/`EXPIRE`/`DEL`, bounded fail-closed `ping()`) — no Redis client package
+is installed and no provider is selected; a deployment constructs the client from
+`REDIS_URL` and injects the Redis-backed store. The abuse guard remains
+fail-closed (a store error is a denial, never an allow).
 
 The API binds to `127.0.0.1` by default and uses an explicit, non-wildcard CORS
 allow-list. See `docs/API.md` and `apps/lab/docs/LAB-BACKEND-ARCHITECTURE.md` for

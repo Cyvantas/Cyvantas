@@ -70,9 +70,9 @@ function enforceChallengeLimit(
   scope: string,
   userRule: AbuseCheck["rule"],
   ipRule: AbuseCheck["rule"],
-): void {
+): Promise<void> {
   const userId = request.authUser!.id
-  enforceAbuseControls(
+  return enforceAbuseControls(
     { limiter: app.rateLimiter, monitor: app.securityMonitor },
     monitorCtx(request),
     [
@@ -109,7 +109,7 @@ export async function challengeRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest<{ Params: { slug: string } }>, reply: FastifyReply) => {
       assertTrustedOrigin(app, request)
-      enforceChallengeLimit(
+      await enforceChallengeLimit(
         app,
         request,
         "challenge-env-create",
@@ -139,7 +139,7 @@ export async function challengeRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest<{ Params: { slug: string; environmentId: string } }>) => {
       assertTrustedOrigin(app, request)
-      enforceChallengeLimit(
+      await enforceChallengeLimit(
         app,
         request,
         "challenge-env-reset",
@@ -162,7 +162,7 @@ export async function challengeRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest<{ Params: { slug: string } }>) => {
       assertTrustedOrigin(app, request)
-      enforceChallengeLimit(
+      await enforceChallengeLimit(
         app,
         request,
         "challenge-submit",

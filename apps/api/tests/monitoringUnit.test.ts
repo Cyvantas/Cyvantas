@@ -14,7 +14,8 @@ import {
   sanitizeUserAgent,
   REDACTED,
 } from "../src/monitoring/redaction.ts"
-import { createDetectionTracker } from "../src/monitoring/detection.ts"
+import { createSharedStateDetectionTracker } from "../src/monitoring/detection.ts"
+import { createInMemorySharedStateStore } from "../src/infra/sharedState.ts"
 import { createSecurityMonitor } from "../src/monitoring/securityMonitor.ts"
 import { createMemorySink } from "../src/monitoring/sink.ts"
 import type { SecurityDetectionConfig } from "../src/monitoring/securityMonitor.ts"
@@ -80,26 +81,28 @@ describe("redaction", () => {
 })
 
 describe("detection tracker", () => {
-  it("trips exactly on the occurrence reaching the threshold, once per window", () => {
+  it("trips exactly on the occurrence reaching the threshold, once per window", async () => {
     const t = 0
-    const tracker = createDetectionTracker(() => t)
+    const store = createInMemorySharedStateStore(() => t)
+    const tracker = createSharedStateDetectionTracker(store, () => t)
     const rule = { threshold: 3, windowMs: 1000 }
-    expect(tracker.record("k", rule).tripped).toBe(false) // 1
-    expect(tracker.record("k", rule).tripped).toBe(false) // 2
-    const third = tracker.record("k", rule) // 3 → trips
+    expect((await tracker.record("k", rule)).tripped).toBe(false) // 1
+    expect((await tracker.record("k", rule)).tripped).toBe(false) // 2
+    const third = await tracker.record("k", rule) // 3 → trips
     expect(third.tripped).toBe(true)
     expect(third.count).toBe(3)
-    expect(tracker.record("k", rule).tripped).toBe(false) // 4, no re-trip
+    expect((await tracker.record("k", rule)).tripped).toBe(false) // 4, no re-trip
   })
 
-  it("resets when the window elapses", () => {
+  it("resets when the window elapses", async () => {
     let t = 0
-    const tracker = createDetectionTracker(() => t)
+    const store = createInMemorySharedStateStore(() => t)
+    const tracker = createSharedStateDetectionTracker(store, () => t)
     const rule = { threshold: 2, windowMs: 1000 }
-    tracker.record("k", rule)
-    expect(tracker.record("k", rule).tripped).toBe(true)
+    await tracker.record("k", rule)
+    expect((await tracker.record("k", rule)).tripped).toBe(true)
     t = 1001
-    expect(tracker.record("k", rule).tripped).toBe(false) // fresh window
+    expect((await tracker.record("k", rule)).tripped).toBe(false) // fresh window
   })
 })
 
@@ -113,9 +116,10 @@ const CONFIG: SecurityDetectionConfig = {
 
 function monitorWith(now: () => Date) {
   const sink = createMemorySink()
+  const store = createInMemorySharedStateStore(() => now().getTime())
   const monitor = createSecurityMonitor({
     sink,
-    detection: createDetectionTracker(() => now().getTime()),
+    detection: createSharedStateDetectionTracker(store, () => now().getTime()),
     config: CONFIG,
     now,
   })
@@ -123,9 +127,9 @@ function monitorWith(now: () => Date) {
 }
 
 describe("security monitor", () => {
-  it("translates an audit event into a structured, categorized event", () => {
+  it("translates an audit event into a structured, categorized event", async () => {
     const { sink, monitor } = monitorWith(() => new Date(0))
-    monitor.fromAudit({ event: "LOGIN_SUCCESS", userId: "u1", ip: "1.2.3.4", userAgent: "UA" })
+    await monitor.fromAudit({ event: "LOGIN_SUCCESS", userId: "u1", ip: "1.2.3.4", userAgent: "UA" })
     expect(sink.events).toHaveLength(1)
     const e = sink.events[0]!
     expect(e.name).toBe("LOGIN_SUCCESS")
@@ -135,10 +139,10 @@ describe("security monitor", () => {
     expect(e.ip).toBe("1.2.3.4")
   })
 
-  it("escalates AUTH_ABUSE_SUSPECTED after repeated failed auth (per ip)", () => {
+  it("escalates AUTH_ABUSE_SUSPECTED after repeated failed auth (per ip)", async () => {
     const { sink, monitor } = monitorWith(() => new Date(0))
     for (let i = 0; i < 3; i++) {
-      monitor.fromAudit({ event: "LOGIN_FAILURE", userId: null, ip: "9.9.9.9", userAgent: null })
+      await monitor.fromAudit({ event: "LOGIN_FAILURE", userId: null, ip: "9.9.9.9", userAgent: null })
     }
     const escalations = sink.events.filter((e) => e.name === "AUTH_ABUSE_SUSPECTED")
     expect(escalations.length).toBeGreaterThanOrEqual(1)
@@ -148,34 +152,34 @@ describe("security monitor", () => {
     expect(first.outcome).toBe("detected")
   })
 
-  it("escalates CHALLENGE_SUBMISSION_ABUSE_SUSPECTED after repeated submissions (per user)", () => {
+  it("escalates CHALLENGE_SUBMISSION_ABUSE_SUSPECTED after repeated submissions (per user)", async () => {
     const { sink, monitor } = monitorWith(() => new Date(0))
     for (let i = 0; i < 3; i++) {
-      monitor.fromAudit({ event: "CHALLENGE_SUBMISSION_REJECTED", userId: "u2", ip: "1.1.1.1", userAgent: null })
+      await monitor.fromAudit({ event: "CHALLENGE_SUBMISSION_REJECTED", userId: "u2", ip: "1.1.1.1", userAgent: null })
     }
     expect(sink.events.some((e) => e.name === "CHALLENGE_SUBMISSION_ABUSE_SUSPECTED")).toBe(true)
   })
 
-  it("escalates ENVIRONMENT_ABUSE_SUSPECTED after repeated env activity (per user)", () => {
+  it("escalates ENVIRONMENT_ABUSE_SUSPECTED after repeated env activity (per user)", async () => {
     const { sink, monitor } = monitorWith(() => new Date(0))
     for (let i = 0; i < 3; i++) {
-      monitor.fromAudit({ event: "ENVIRONMENT_CREATED", userId: "u3", ip: "1.1.1.1", userAgent: null })
+      await monitor.fromAudit({ event: "ENVIRONMENT_CREATED", userId: "u3", ip: "1.1.1.1", userAgent: null })
     }
     expect(sink.events.some((e) => e.name === "ENVIRONMENT_ABUSE_SUSPECTED")).toBe(true)
   })
 
-  it("emits INVALID_SESSION_PRESENTED and escalates after repeats", () => {
+  it("emits INVALID_SESSION_PRESENTED and escalates after repeats", async () => {
     const { sink, monitor } = monitorWith(() => new Date(0))
     const ctx = { ip: "5.5.5.5", requestId: "r", actorId: null }
-    for (let i = 0; i < 3; i++) monitor.invalidSession(ctx)
+    for (let i = 0; i < 3; i++) await monitor.invalidSession(ctx)
     expect(sink.events.filter((e) => e.name === "INVALID_SESSION_PRESENTED")).toHaveLength(3)
     expect(sink.events.some((e) => e.name === "INVALID_SESSION_ABUSE_SUSPECTED")).toBe(true)
   })
 
-  it("emits REQUEST_BURST_SUSPECTED once the request burst threshold is crossed", () => {
+  it("emits REQUEST_BURST_SUSPECTED once the request burst threshold is crossed", async () => {
     const { sink, monitor } = monitorWith(() => new Date(0))
     const ctx = { ip: "7.7.7.7", requestId: "r", actorId: null }
-    for (let i = 0; i < 3; i++) monitor.requestObserved(ctx)
+    for (let i = 0; i < 3; i++) await monitor.requestObserved(ctx)
     expect(sink.events.some((e) => e.name === "REQUEST_BURST_SUSPECTED")).toBe(true)
   })
 

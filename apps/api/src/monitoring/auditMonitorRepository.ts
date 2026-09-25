@@ -18,9 +18,10 @@ export function createMonitoringAuditRepository(
   return {
     async record(input: AuditRecordInput): Promise<void> {
       await inner.record(input)
-      // Best-effort observability: an emit failure must not fail the request.
+      // Best-effort observability: an emit/detection failure (including a
+      // shared-store outage behind detection) must not fail the request.
       try {
-        monitor.fromAudit(input)
+        await monitor.fromAudit(input)
       } catch {
         // swallow — monitoring is never allowed to break a security operation
       }

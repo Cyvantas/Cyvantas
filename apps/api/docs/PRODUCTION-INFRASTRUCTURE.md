@@ -71,26 +71,33 @@ per-feature docs (`AUTH.md`, `ENVIRONMENTS.md`, `SANDBOX.md`, `SCORING.md`,
 
 ## 4. Redis requirements
 
-The rate limiter and abuse-detection counters are **per-process/in-memory**
-today (`src/security/rateLimiter.ts`, `src/monitoring/detection.ts`).
+The rate limiter and abuse-detection counters read and write their state
+through a `SharedStateStore` (`src/security/rateLimiter.ts`,
+`src/monitoring/detection.ts`). They hold no state of their own, so the store
+implementation decides whether limits are per-process or global.
 
-- **Single instance:** in-memory is correct and sufficient. No Redis needed.
-- **Multi-instance:** in-memory counters are per-replica, so a global limit is
-  NOT enforced across instances. A **Redis-compatible shared store is required**
-  before the limits can be treated as global.
+- **Single instance:** the default in-memory store is correct and sufficient.
+  No Redis needed.
+- **Multi-instance:** an in-memory store would keep per-replica counters, so a
+  global limit would NOT be enforced across instances. A **Redis-compatible
+  shared store is required** for the limits to be global.
 
 `src/infra/sharedState.ts` defines the provider-neutral `SharedStateStore`
-interface (`get`/`set`/`increment`/`expire`/`delete`/`ping`) and ships only an
-in-memory implementation. This repo installs **no** Redis client and assumes
-**no** provider. A production deployment supplies an adapter implementing that
-interface (the adapter contract is documented at the top of the file). Setting
-`REDIS_URL` validates the URL and records intent, but until an adapter is wired
-the in-memory store is still used — this is called out so the value is never a
-silent no-op that looks like shared state.
+interface (`get`/`set`/`increment`/`expire`/`delete`/`ping`) and ships an
+in-memory implementation as the default. `src/infra/redisSharedStateStore.ts`
+adapts that interface onto any Redis-compatible client via an injected
+`RedisLikeClient` (atomic `SET … EX` on write, `INCRBY`/`EXPIRE` for windowed
+counters, bounded fail-closed `ping()`). This repo installs **no** Redis client
+package and assumes **no** provider: a deployment injects a concrete client
+(e.g. `ioredis`/`redis`) that satisfies `RedisLikeClient`. Setting `REDIS_URL`
+validates the URL and records intent; the deployment is responsible for
+constructing the client from it and passing the Redis-backed store to the app.
 
-> **Honesty note:** the API is not horizontally scalable *for the rate limits*
-> until the Redis adapter is wired. Sessions and all durable state already live
-> in PostgreSQL, so instances are otherwise stateless and safe to scale.
+> **Honesty note:** the API is horizontally scalable *for the rate limits* once
+> a Redis-backed `SharedStateStore` is injected (the adapter is now shipped;
+> only the concrete client construction is deployment-supplied). Sessions and
+> all durable state already live in PostgreSQL, so instances are otherwise
+> stateless and safe to scale.
 
 ## 5. Health vs readiness
 
@@ -154,8 +161,8 @@ Full descriptions live in the README table; the production-relevant contract:
 
 **Optional / infrastructure**
 - `REDIS_URL` — `redis://` or `rediss://` shared-state URL. Required only for
-  multi-instance rate-limit correctness (§4). Validated but not connected until
-  an adapter ships.
+  multi-instance rate-limit correctness (§4). Validated on boot; the deployment
+  constructs a `RedisLikeClient` from it and injects the Redis-backed store.
 - `SESSION_TTL`, `SESSION_COOKIE_NAME`, environment-policy limits, and the
   `SECURITY_*` detection thresholds — see README.
 
@@ -287,8 +294,9 @@ The build host is Termux / Android / aarch64, where:
 
 - [ ] PostgreSQL provisioned, TLS enforced, reachable only from the API network.
 - [ ] `prisma migrate deploy` applied and reviewed (§6).
-- [ ] Redis-compatible store provisioned **iff** running >1 instance, and an
-      adapter implementing `SharedStateStore` wired (§4).
+- [ ] Redis-compatible store provisioned **iff** running >1 instance, a
+      `RedisLikeClient` constructed from `REDIS_URL`, and the Redis-backed
+      `SharedStateStore` injected (§4).
 - [ ] `NODE_ENV=production`, `DATABASE_URL`, `CORS_ORIGIN` (https, exact) set via
       the secret manager; boot succeeds (fail-closed config).
 - [ ] LB liveness → `GET /health`; readiness gate → `GET /ready`.

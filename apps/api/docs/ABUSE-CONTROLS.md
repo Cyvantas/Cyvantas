@@ -32,9 +32,11 @@ Defined in `src/security/rateLimiter.ts` (`RATE_RULES`), all server-authoritativ
 | `POST /environments/:id/{start,touch,reset,stop}`, `DELETE`, `sandbox/provision` | 60 / min | 180 / min |
 
 Submission is the tightest per-user rule to blunt flag brute-forcing. The
-existing fixed-window limiter is single-process/in-memory; the interface is
-narrow so a shared-store (e.g. Redis) implementation can replace it without
-touching callers.
+fixed-window limiter holds no state of its own — it reads and writes counters
+through a `SharedStateStore`. The default in-memory store makes it
+single-process; injecting the Redis-backed store
+(`src/infra/redisSharedStateStore.ts`) makes the same limits global across
+instances, with no change to callers.
 
 ## The abuse guard — fail-closed
 

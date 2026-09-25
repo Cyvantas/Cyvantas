@@ -93,9 +93,10 @@ the exact occurrence that first crosses a threshold, so the monitor emits **one*
 
 Thresholds are env-overridable (see `.env.example`) and sit **above** the
 per-user rate limits, so a single well-behaved user never trips a detection
-alert. State is per-process (matching the rate limiter) and resets on restart; a
-multi-instance deployment would back it with a shared store behind the same
-narrow interface.
+alert. Detection counters read/write through the same `SharedStateStore` as the
+rate limiter: with the default in-memory store they are per-process and reset on
+restart; injecting the Redis-backed store makes detection global across
+instances behind the same narrow interface.
 
 ## Sinks
 

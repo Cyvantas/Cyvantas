@@ -35,15 +35,17 @@ export interface AbuseGuardDeps {
 
 /**
  * Returns the first check that denies the request, or null if all pass.
- * Fail-closed: a throwing limiter denies (returns the offending check).
+ * Fail-closed: a throwing/rejecting limiter denies (returns the offending
+ * check). The limiter is async because its backing store may be remote (Redis);
+ * a store outage must therefore DENY, never fall open.
  */
-export function evaluateAbuseChecks(
+export async function evaluateAbuseChecks(
   limiter: RateLimiter,
   checks: readonly AbuseCheck[],
-): AbuseCheck | null {
+): Promise<AbuseCheck | null> {
   for (const check of checks) {
     try {
-      const outcome = limiter.check(check.key, check.rule)
+      const outcome = await limiter.check(check.key, check.rule)
       if (!outcome.allowed) return check
     } catch {
       // Fail closed: if we cannot confirm the request is under the limit, deny.
@@ -57,12 +59,12 @@ export function evaluateAbuseChecks(
  * Enforce all checks. On denial: emit a security event and throw 429. The
  * thrown error intentionally reveals nothing about which limit was hit.
  */
-export function enforceAbuseControls(
+export async function enforceAbuseControls(
   deps: AbuseGuardDeps,
   ctx: RequestContext,
   checks: readonly AbuseCheck[],
-): void {
-  const denied = evaluateAbuseChecks(deps.limiter, checks)
+): Promise<void> {
+  const denied = await evaluateAbuseChecks(deps.limiter, checks)
   if (denied) {
     deps.monitor.rateLimited(denied.scope, ctx)
     throw new ApiError(

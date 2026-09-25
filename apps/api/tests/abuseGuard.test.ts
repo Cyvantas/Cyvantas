@@ -13,7 +13,8 @@ import { evaluateAbuseChecks, enforceAbuseControls } from "../src/security/abuse
 import type { AbuseCheck } from "../src/security/abuseGuard.ts"
 import type { RateLimiter, RateLimitResult } from "../src/security/rateLimiter.ts"
 import { createSecurityMonitor } from "../src/monitoring/securityMonitor.ts"
-import { createDetectionTracker } from "../src/monitoring/detection.ts"
+import { createSharedStateDetectionTracker } from "../src/monitoring/detection.ts"
+import { createInMemorySharedStateStore } from "../src/infra/sharedState.ts"
 import { createMemorySink } from "../src/monitoring/sink.ts"
 import { ApiError } from "../src/types/api.ts"
 import type { SecurityDetectionConfig } from "../src/monitoring/securityMonitor.ts"
@@ -30,7 +31,7 @@ function monitor() {
   const sink = createMemorySink()
   const m = createSecurityMonitor({
     sink,
-    detection: createDetectionTracker(() => 0),
+    detection: createSharedStateDetectionTracker(createInMemorySharedStateStore(() => 0), () => 0),
     config: CONFIG,
     now: () => new Date(0),
   })
@@ -43,8 +44,7 @@ const deny: RateLimitResult = { allowed: false, remaining: 0, resetAt: 1000 }
 
 function limiterReturning(map: Record<string, RateLimitResult>): RateLimiter {
   return {
-    check: (key) => map[key] ?? allow,
-    reset: () => {},
+    check: async (key) => map[key] ?? allow,
   }
 }
 
@@ -54,24 +54,23 @@ const checks: AbuseCheck[] = [
 ]
 
 describe("evaluateAbuseChecks", () => {
-  it("returns null when every check is under the limit", () => {
+  it("returns null when every check is under the limit", async () => {
     const limiter = limiterReturning({})
-    expect(evaluateAbuseChecks(limiter, checks)).toBeNull()
+    expect(await evaluateAbuseChecks(limiter, checks)).toBeNull()
   })
 
-  it("returns the first tripped check (order matters)", () => {
+  it("returns the first tripped check (order matters)", async () => {
     const limiter = limiterReturning({ "submit:user:u1": deny, "submit:ip:1.2.3.4": deny })
-    expect(evaluateAbuseChecks(limiter, checks)!.scope).toBe("submit:user")
+    expect((await evaluateAbuseChecks(limiter, checks))!.scope).toBe("submit:user")
   })
 
-  it("is FAIL-CLOSED: a throwing limiter denies the request", () => {
+  it("is FAIL-CLOSED: a throwing limiter denies the request", async () => {
     const throwing: RateLimiter = {
-      check: () => {
+      check: async () => {
         throw new Error("limiter store unavailable")
       },
-      reset: () => {},
     }
-    const denied = evaluateAbuseChecks(throwing, checks)
+    const denied = await evaluateAbuseChecks(throwing, checks)
     expect(denied).not.toBeNull()
     expect(denied!.scope).toBe("submit:user")
   })
@@ -80,19 +79,19 @@ describe("evaluateAbuseChecks", () => {
 describe("enforceAbuseControls", () => {
   const ctx = { ip: "1.2.3.4", requestId: "r1", actorId: "u1" }
 
-  it("does nothing when all checks pass", () => {
+  it("does nothing when all checks pass", async () => {
     const { sink, monitor: m } = monitor()
     const limiter = limiterReturning({})
-    expect(() => enforceAbuseControls({ limiter, monitor: m }, ctx, checks)).not.toThrow()
+    await expect(enforceAbuseControls({ limiter, monitor: m }, ctx, checks)).resolves.toBeUndefined()
     expect(sink.events).toHaveLength(0)
   })
 
-  it("throws a uniform 429 and emits a scope-only event on denial", () => {
+  it("throws a uniform 429 and emits a scope-only event on denial", async () => {
     const { sink, monitor: m } = monitor()
     const limiter = limiterReturning({ "submit:ip:1.2.3.4": deny })
     let thrown: unknown
     try {
-      enforceAbuseControls({ limiter, monitor: m }, ctx, checks)
+      await enforceAbuseControls({ limiter, monitor: m }, ctx, checks)
     } catch (e) {
       thrown = e
     }

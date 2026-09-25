@@ -1,18 +1,24 @@
 /**
- * In-memory fixed-window rate limiter.
+ * Fixed-window rate limiter backed by a SharedStateStore.
  *
- * SCOPE / LIMITATION: this is a single-process, in-memory limiter intended for
- * local development and single-instance deployments. It is NOT horizontally
- * scalable — counters are per-process, so behind multiple replicas each replica
- * keeps its own window. A production multi-instance deployment must back this
- * with a shared store (e.g. Redis). This module intentionally exposes a narrow
- * interface so that a shared-store implementation can replace it without
- * touching callers. See docs/AUTH.md → Rate limiting.
+ * SCOPE: the limiter holds NO state of its own — every counter lives in the
+ * injected `SharedStateStore`. With the in-memory store (the default) this is a
+ * single-process limiter suitable for local dev, tests, and a genuine
+ * single-instance deployment. Injecting a Redis-backed store (see
+ * src/infra/redisSharedStateStore.ts) makes the SAME limiter correct across
+ * horizontally-scaled replicas — the counters are then shared. See
+ * docs/PRODUCTION-INFRASTRUCTURE.md → Redis and docs/ABUSE-CONTROLS.md.
+ *
+ * Algorithm: a fixed window keyed by `floor(now / windowMs) * windowMs`. Each
+ * check atomically INCRs the window bucket and, on the first hit, sets its TTL
+ * so buckets self-expire. This maps 1:1 onto Redis `INCR` + `EXPIRE`, and the
+ * in-memory store implements the same contract.
  */
+import type { SharedStateStore } from "../infra/sharedState.ts"
 
 export interface RateLimitResult {
   allowed: boolean
-  /** Requests remaining in the current window. */
+  /** Requests remaining in the current window (never negative). */
   remaining: number
   /** Epoch ms when the current window resets. */
   resetAt: number
@@ -25,47 +31,46 @@ export interface RateLimitRule {
   windowMs: number
 }
 
-interface WindowState {
-  count: number
-  resetAt: number
-}
-
 export interface RateLimiter {
-  check(key: string, rule: RateLimitRule): RateLimitResult
-  reset(key?: string): void
+  /**
+   * Record one hit against `key` and report whether it is within `rule`.
+   * Async because the backing store may be remote (Redis). Callers MUST treat a
+   * rejected promise as a denial (fail-closed) — see abuseGuard.ts.
+   */
+  check(key: string, rule: RateLimitRule): Promise<RateLimitResult>
 }
 
-export function createInMemoryRateLimiter(
+// One extra second of TTL headroom so a bucket never expires a hair before its
+// logical window boundary under clock jitter.
+const TTL_HEADROOM_SECONDS = 1
+
+/**
+ * Create a rate limiter over a SharedStateStore. `now` is injectable so tests
+ * can drive windows deterministically; it MUST share the clock used to build
+ * the in-memory store so TTL expiry and window math agree.
+ */
+export function createSharedStateRateLimiter(
+  store: SharedStateStore,
   now: () => number = Date.now,
 ): RateLimiter {
-  const windows = new Map<string, WindowState>()
-
   return {
-    check(key, rule): RateLimitResult {
+    async check(key, rule): Promise<RateLimitResult> {
       const t = now()
-      const existing = windows.get(key)
-
-      if (!existing || existing.resetAt <= t) {
-        const state: WindowState = { count: 1, resetAt: t + rule.windowMs }
-        windows.set(key, state)
-        return { allowed: true, remaining: rule.limit - 1, resetAt: state.resetAt }
+      const windowStart = Math.floor(t / rule.windowMs) * rule.windowMs
+      const bucket = `rl:${key}:${windowStart}`
+      const count = await store.increment(bucket, 1)
+      if (count === 1) {
+        await store.expire(
+          bucket,
+          Math.ceil(rule.windowMs / 1000) + TTL_HEADROOM_SECONDS,
+        )
       }
-
-      if (existing.count >= rule.limit) {
-        return { allowed: false, remaining: 0, resetAt: existing.resetAt }
-      }
-
-      existing.count += 1
+      const resetAt = windowStart + rule.windowMs
       return {
-        allowed: true,
-        remaining: rule.limit - existing.count,
-        resetAt: existing.resetAt,
+        allowed: count <= rule.limit,
+        remaining: Math.max(0, rule.limit - count),
+        resetAt,
       }
-    },
-
-    reset(key): void {
-      if (key === undefined) windows.clear()
-      else windows.delete(key)
     },
   }
 }

@@ -13,9 +13,10 @@ import {
 } from "../src/security/tokens.ts"
 import { toUserDTO, type AuthUser } from "../src/domain/user.ts"
 import {
-  createInMemoryRateLimiter,
+  createSharedStateRateLimiter,
   RATE_RULES,
 } from "../src/security/rateLimiter.ts"
+import { createInMemorySharedStateStore } from "../src/infra/sharedState.ts"
 import { isTrustedOrigin } from "../src/security/csrf.ts"
 import { requireAuth, requireRole, requireAnyRole } from "../src/plugins/auth.ts"
 import { createAuthService } from "../src/services/authService.ts"
@@ -82,17 +83,18 @@ describe("user DTO", () => {
   })
 })
 
-describe("in-memory rate limiter", () => {
-  it("blocks after the limit within the window", () => {
+describe("shared-state rate limiter", () => {
+  it("blocks after the limit within the window", async () => {
     let t = 0
-    const rl = createInMemoryRateLimiter(() => t)
+    const store = createInMemorySharedStateStore(() => t)
+    const rl = createSharedStateRateLimiter(store, () => t)
     const rule = { limit: 3, windowMs: 1000 }
-    expect(rl.check("k", rule).allowed).toBe(true)
-    expect(rl.check("k", rule).allowed).toBe(true)
-    expect(rl.check("k", rule).allowed).toBe(true)
-    expect(rl.check("k", rule).allowed).toBe(false)
+    expect((await rl.check("k", rule)).allowed).toBe(true)
+    expect((await rl.check("k", rule)).allowed).toBe(true)
+    expect((await rl.check("k", rule)).allowed).toBe(true)
+    expect((await rl.check("k", rule)).allowed).toBe(false)
     t = 1001
-    expect(rl.check("k", rule).allowed).toBe(true)
+    expect((await rl.check("k", rule)).allowed).toBe(true)
   })
   it("has stricter auth rules than the general API rule", () => {
     expect(RATE_RULES.login.limit).toBeLessThan(RATE_RULES.authApi.limit)

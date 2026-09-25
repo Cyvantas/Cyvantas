@@ -137,9 +137,9 @@ function enforceEnvLimit(
   scope: string,
   userRule: RateLimitRule,
   ipRule: RateLimitRule,
-): void {
+): Promise<void> {
   const userId = request.authUser!.id
-  enforceAbuseControls(
+  return enforceAbuseControls(
     { limiter: app.rateLimiter, monitor: app.securityMonitor },
     monitorCtx(request),
     [
@@ -158,7 +158,7 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest, reply: FastifyReply) => {
       assertTrustedOrigin(app, request)
-      enforceEnvLimit(
+      await enforceEnvLimit(
         app,
         request,
         "environment-create",
@@ -205,7 +205,7 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
-      enforceEnvLimit(
+      await enforceEnvLimit(
         app,
         request,
         "environment-mutate",
@@ -227,7 +227,7 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
-      enforceEnvLimit(
+      await enforceEnvLimit(
         app,
         request,
         "environment-mutate",
@@ -245,7 +245,7 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
-      enforceEnvLimit(
+      await enforceEnvLimit(
         app,
         request,
         "environment-mutate",
@@ -267,7 +267,7 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
-      enforceEnvLimit(
+      await enforceEnvLimit(
         app,
         request,
         "environment-mutate",
@@ -289,7 +289,7 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
-      enforceEnvLimit(
+      await enforceEnvLimit(
         app,
         request,
         "environment-mutate",
@@ -328,7 +328,7 @@ export async function environmentRoutes(app: FastifyInstance): Promise<void> {
     { preHandler: requireAuth },
     async (request: FastifyRequest) => {
       assertTrustedOrigin(app, request)
-      enforceEnvLimit(
+      await enforceEnvLimit(
         app,
         request,
         "environment-mutate",

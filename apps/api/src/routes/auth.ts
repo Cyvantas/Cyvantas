@@ -58,8 +58,8 @@ function enforceAuthLimit(
   app: FastifyInstance,
   request: FastifyRequest,
   checks: readonly AbuseCheck[],
-): void {
-  enforceAbuseControls(
+): Promise<void> {
+  return enforceAbuseControls(
     { limiter: app.rateLimiter, monitor: app.securityMonitor },
     monitorCtx(request),
     checks,
@@ -90,7 +90,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     "/register",
     async (request: FastifyRequest, reply: FastifyReply) => {
       assertTrustedOrigin(app, request)
-      enforceAuthLimit(app, request, [
+      await enforceAuthLimit(app, request, [
         { scope: "register:ip", key: `register:${request.ip}`, rule: RATE_RULES.register },
       ])
 
@@ -107,7 +107,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   app.post("/login", async (request: FastifyRequest, reply: FastifyReply) => {
     assertTrustedOrigin(app, request)
     const body = parseBody(loginSchema, request.body)
-    enforceAuthLimit(app, request, [
+    await enforceAuthLimit(app, request, [
       {
         scope: "login:ip-email",
         key: `login:${request.ip}:${body.email}`,

@@ -27,6 +27,11 @@ function phase13Sources(): Array<{ file: string; text: string }> {
     .map((f) => join(monitoringDir, f))
   files.push(join(srcDir, "security", "abuseGuard.ts"))
   files.push(join(srcDir, "security", "rateLimiter.ts"))
+  // Phase 16: the shared-state seam + Redis adapter must remain pure. The
+  // adapter delegates all I/O to an injected client and imports no Node
+  // networking/socket module of its own.
+  files.push(join(srcDir, "infra", "sharedState.ts"))
+  files.push(join(srcDir, "infra", "redisSharedStateStore.ts"))
   return files.map((path) => ({ file: path, text: readFileSync(path, "utf8") }))
 }
 

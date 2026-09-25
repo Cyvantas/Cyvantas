@@ -64,14 +64,18 @@ export interface EmitInput {
 export interface SecurityMonitor {
   /** Emit an arbitrary (already-classified) event. Redacted before it leaves. */
   emit(input: EmitInput): void
-  /** Instrument a persisted audit event + feed detection. */
-  fromAudit(input: AuditRecordInput): void
+  /**
+   * Instrument a persisted audit event + feed detection. Async because
+   * detection now runs over a (possibly remote) shared store. Never throws to
+   * its caller — the audit seam wraps it best-effort.
+   */
+  fromAudit(input: AuditRecordInput): Promise<void>
   /** A request was denied by the abuse guard. */
   rateLimited(signal: string, ctx: RequestContext, detail?: Record<string, unknown>): void
   /** A session cookie was presented but did not resolve to a valid session. */
-  invalidSession(ctx: RequestContext): void
+  invalidSession(ctx: RequestContext): Promise<void>
   /** Observe a request for burst detection (no per-request emit unless tripped). */
-  requestObserved(ctx: RequestContext): void
+  requestObserved(ctx: RequestContext): Promise<void>
 }
 
 const UNKNOWN = "unknown"
@@ -108,7 +112,7 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
   return {
     emit,
 
-    fromAudit(input: AuditRecordInput): void {
+    async fromAudit(input: AuditRecordInput): Promise<void> {
       const meta = auditEventMeta(input.event)
       const ctx: RequestContext = {
         ip: input.ip ?? null,
@@ -126,7 +130,7 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
       // Detection: escalate on threshold crossings derived from audit signals.
       if (input.event === "LOGIN_FAILURE") {
         const ip = sanitizeIp(input.ip) ?? UNKNOWN
-        const byIp = detection.record(`failed-auth:ip:${ip}`, config.failedAuth)
+        const byIp = await detection.record(`failed-auth:ip:${ip}`, config.failedAuth)
         if (byIp.tripped) {
           escalate("AUTH_ABUSE_SUSPECTED", ctx, {
             scope: "ip",
@@ -135,7 +139,7 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
           })
         }
         if (input.userId) {
-          const byUser = detection.record(`failed-auth:user:${input.userId}`, config.failedAuth)
+          const byUser = await detection.record(`failed-auth:user:${input.userId}`, config.failedAuth)
           if (byUser.tripped) {
             escalate("AUTH_ABUSE_SUSPECTED", ctx, {
               scope: "user",
@@ -149,7 +153,7 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
         input.event === "CHALLENGE_SUBMISSION_REJECTED"
       ) {
         if (input.userId) {
-          const r = detection.record(`submission:user:${input.userId}`, config.challengeSubmission)
+          const r = await detection.record(`submission:user:${input.userId}`, config.challengeSubmission)
           if (r.tripped) {
             escalate("CHALLENGE_SUBMISSION_ABUSE_SUSPECTED", ctx, {
               scope: "user",
@@ -165,7 +169,7 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
         input.event === "CHALLENGE_ENVIRONMENT_RESET"
       ) {
         if (input.userId) {
-          const r = detection.record(`env-activity:user:${input.userId}`, config.environmentActivity)
+          const r = await detection.record(`env-activity:user:${input.userId}`, config.environmentActivity)
           if (r.tripped) {
             escalate("ENVIRONMENT_ABUSE_SUSPECTED", ctx, {
               scope: "user",
@@ -188,7 +192,7 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
       })
     },
 
-    invalidSession(ctx): void {
+    async invalidSession(ctx): Promise<void> {
       emit({
         name: "INVALID_SESSION_PRESENTED",
         category: "SESSION",
@@ -197,7 +201,7 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
         ctx,
       })
       const ip = sanitizeIp(ctx.ip) ?? UNKNOWN
-      const r = detection.record(`invalid-session:ip:${ip}`, config.invalidSession)
+      const r = await detection.record(`invalid-session:ip:${ip}`, config.invalidSession)
       if (r.tripped) {
         escalate("INVALID_SESSION_ABUSE_SUSPECTED", ctx, {
           scope: "ip",
@@ -207,9 +211,9 @@ export function createSecurityMonitor(deps: SecurityMonitorDeps): SecurityMonito
       }
     },
 
-    requestObserved(ctx): void {
+    async requestObserved(ctx): Promise<void> {
       const ip = sanitizeIp(ctx.ip) ?? UNKNOWN
-      const r = detection.record(`request-burst:ip:${ip}`, config.requestBurst)
+      const r = await detection.record(`request-burst:ip:${ip}`, config.requestBurst)
       if (r.tripped) {
         escalate("REQUEST_BURST_SUSPECTED", ctx, {
           scope: "ip",

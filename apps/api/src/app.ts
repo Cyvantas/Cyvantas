@@ -25,10 +25,10 @@ import { notConfiguredRuntimeProvider } from "./services/runtime/environmentRunt
 import { createInMemoryIdempotencyStore } from "./services/idempotencyStore.ts"
 import { createSandboxOrchestrator } from "./orchestration/index.ts"
 import { registerAuth } from "./plugins/auth.ts"
-import { createInMemoryRateLimiter } from "./security/rateLimiter.ts"
+import { createSharedStateRateLimiter } from "./security/rateLimiter.ts"
 import {
   createConsoleSink,
-  createDetectionTracker,
+  createSharedStateDetectionTracker,
   createMonitoringAuditRepository,
   createNoopSink,
   createSecurityMonitor,
@@ -112,16 +112,25 @@ export async function buildApp(
 
   await app.register(cookie)
 
+  // Shared-state store (provider-neutral). In-memory by default and thus
+  // single-instance only; a multi-instance deployment injects a Redis-backed
+  // adapter (src/infra/redisSharedStateStore.ts). It backs BOTH the readiness
+  // ping and the rate limiter / detection counters below, so swapping in Redis
+  // makes those controls cross-instance-correct without touching callers.
+  const sharedState = options.sharedState ?? createInMemorySharedStateStore()
+  app.decorate("sharedState", sharedState)
+
   // Security monitor (Phase 13): the single funnel for structured security
   // events + detection. The sink is a console (JSON-lines) sink in normal runs
-  // and a noop under test unless a memory sink is injected. Detection state is
-  // per-process (matching the rate limiter) and resets when the app restarts.
+  // and a noop under test unless a memory sink is injected. Detection counters
+  // live in the shared-state store: per-process with the in-memory store,
+  // shared across replicas with a Redis-backed one.
   const sink =
     options.sink ??
     (config.security.logSecurityEvents ? createConsoleSink() : createNoopSink())
   const securityMonitor = createSecurityMonitor({
     sink,
-    detection: createDetectionTracker(),
+    detection: createSharedStateDetectionTracker(sharedState),
     config: config.security.detection,
   })
   app.decorate("securityMonitor", securityMonitor)
@@ -147,12 +156,14 @@ export async function buildApp(
   registerAuth(app, {
     authService,
     config,
-    rateLimiter: createInMemoryRateLimiter(),
+    rateLimiter: createSharedStateRateLimiter(sharedState),
   })
 
   // After auth context is populated: detect a presented-but-invalid session and
   // observe the request for burst detection. Both are OBSERVE-ONLY (they never
   // block a request); enforcement is the abuse guard's job at the route level.
+  // Detection now awaits a (possibly remote) shared store, so any failure is
+  // swallowed — observability must never break a request.
   const sessionCookieName = config.sessionCookieName
   app.addHook("onRequest", async (request: FastifyRequest) => {
     const ctx = {
@@ -161,10 +172,14 @@ export async function buildApp(
       requestId: request.requestId,
       actorId: request.authUser?.id ?? null,
     }
-    securityMonitor.requestObserved(ctx)
-    const token = request.cookies?.[sessionCookieName]
-    if (token && !request.authUser) {
-      securityMonitor.invalidSession(ctx)
+    try {
+      await securityMonitor.requestObserved(ctx)
+      const token = request.cookies?.[sessionCookieName]
+      if (token && !request.authUser) {
+        await securityMonitor.invalidSession(ctx)
+      }
+    } catch {
+      // swallow — observe-only detection must not fail a request
     }
   })
 
@@ -206,13 +221,6 @@ export async function buildApp(
   app.addHook("onClose", async () => {
     await repositories.shutdown()
   })
-
-  // Shared-state store (provider-neutral). In-memory by default and thus
-  // single-instance only; a multi-instance deployment injects a Redis-backed
-  // adapter. Exposed as a decoration so future callers (e.g. a shared rate
-  // limiter) resolve it from the app.
-  const sharedState = options.sharedState ?? createInMemorySharedStateStore()
-  app.decorate("sharedState", sharedState)
 
   // Readiness: probes the dependencies required to serve traffic. Bounded and
   // fail-closed; the report exposes only coarse per-check statuses. The DB probe
