@@ -1,0 +1,115 @@
+name: api-integration
+
+# Live-infrastructure validation for apps/api (Phase 18).
+#
+# Provisions a REAL PostgreSQL + Redis as service containers, applies the Prisma
+# migrations to a clean database, then runs the unit suite and the live
+# integration suites (tests/integration/**). This proves the production code
+# paths — Prisma/PostgreSQL repositories and the Redis-backed SharedStateStore —
+# against real backends, WITHOUT selecting a hosting provider.
+#
+# The DATABASE_URL / REDIS_URL below point ONLY at ephemeral, job-local service
+# containers on the runner's loopback interface. They are throwaway CI test
+# credentials, not production secrets, and are never echoed. Production wires its
+# own hardened, TLS-enabled connection strings at the deployment boundary; the
+# provider remains intentionally undecided (see apps/api/docs/CI.md).
+
+on:
+  push:
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/api-integration.yml"
+  pull_request:
+    paths:
+      - "apps/api/**"
+      - ".github/workflows/api-integration.yml"
+
+# Cancel superseded runs on the same ref to save runner minutes.
+concurrency:
+  group: api-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: apps/api
+
+    # NODE_ENV=test keeps cookies non-Secure and applies the localhost CORS
+    # default (the job terminates no TLS), while DATABASE_URL / REDIS_URL still
+    # select the REAL Prisma/PostgreSQL and Redis-backed paths — the same seam
+    # the deployment boundary uses. This isolates "does the live infra path work"
+    # from the production-mode fail-close config checks (productionHardening).
+    env:
+      NODE_ENV: test
+      CORS_ORIGIN: http://localhost:5173
+      DATABASE_URL: postgresql://cyvantas:cyvantas@localhost:5432/cyvantas_test?schema=public
+      REDIS_URL: redis://localhost:6379
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: cyvantas
+          POSTGRES_PASSWORD: cyvantas
+          POSTGRES_DB: cyvantas_test
+        ports:
+          - 5432:5432
+        # Gate the job on a genuinely ready database before any step runs.
+        options: >-
+          --health-cmd "pg_isready -U cyvantas -d cyvantas_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/api/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate Prisma client
+        run: npm run prisma:generate
+
+      # Apply migrations to the CLEAN service database. Must precede any step
+      # that touches the schema (build/tests) so the app runs on the migrated DB.
+      - name: Apply database migrations (migrate deploy)
+        run: npm run prisma:migrate:deploy
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build (typecheck + bundle)
+        run: npm run build
+
+      # Unit suite — dependency-free; excludes tests/integration via vitest.config.ts.
+      - name: Unit tests
+        run: npm test
+
+      # Live suites — DATABASE_URL + REDIS_URL are set, so describe.skipIf gates
+      # activate and the tests exercise the real PostgreSQL + Redis.
+      - name: Live integration tests
+        run: npm run test:integration

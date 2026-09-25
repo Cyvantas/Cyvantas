@@ -338,3 +338,25 @@ No provider is chosen. When selecting one, verify it offers:
 Keep the API code provider-neutral — selection changes only configuration and
 the injected adapters, never the application code.
 
+## 20. CI live-infrastructure validation (Phase 18)
+
+The real PostgreSQL + Redis code paths are validated in CI **without selecting a
+provider**. `.github/workflows/api-integration.yml` provisions *ephemeral*
+`postgres:16` + `redis:7` service containers on a GitHub-hosted runner, applies
+`prisma migrate deploy` to a clean database, then runs lint, build, the unit
+suite, and the live integration suites (`tests/integration/**`). Those suites
+prove: `migrate deploy` succeeds on a clean schema; `DATABASE_URL` selects the
+real Prisma/PostgreSQL repository (a register writes an observable row);
+`REDIS_URL` selects the Redis-backed `SharedStateStore` via the Phase 17 factory;
+the store contract holds against a real broker; and two logical instances enforce
+**one global** rate-limit / abuse-detection state. `/ready` reports the real DB +
+shared-state probes and leaks no secret.
+
+CI runs in `NODE_ENV=test` (cookies non-Secure, localhost CORS) so the live-infra
+path is isolated from the production-mode fail-close config checks; the CI DB/Redis
+credentials are throwaway, job-local, plaintext-`redis://` test values — production
+still requires `rediss://` + `sslmode=require` and a hardened client wired at the
+deployment boundary (§3–§4). **Nothing is deployed and no provider is selected.**
+Full CI architecture, required variables, and local-vs-CI limits are in
+[`CI.md`](CI.md).
+

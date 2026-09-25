@@ -151,6 +151,18 @@ Tests exercise the app in-process via Fastify's `inject()` — no real sockets a
 opened. A dedicated test spies on `globalThis.fetch` and asserts the catalog path
 performs **no outbound network request**.
 
+`npm test` runs the fast **unit** suite (it excludes `tests/integration/**` via
+`vitest.config.ts`) and needs no database — it runs on Termux. The **live**
+integration suites run separately:
+
+```bash
+npm run test:integration   # vitest.integration.config.ts — tests/integration/**
+```
+
+These `skipIf` when `DATABASE_URL` / `REDIS_URL` are unset, so the command is a
+no-op pass locally and only does real work in CI (or against your own reachable
+PostgreSQL + Redis). See [`docs/CI.md`](docs/CI.md).
+
 ## Production build
 
 ```bash
@@ -303,6 +315,19 @@ the operator supplies the client. The enforcement path is async end-to-end and
 fail-closed (verified, unchanged from Phase 16). Multi-instance deployment still
 requires a real Redis-compatible backend, and Prisma migrations still require a
 supported host — this phase provisions **no** infrastructure.
+
+Phase 18 adds **CI-based live-infrastructure validation** (no new runtime
+capability, no new endpoints or env vars, no provider selected). A GitHub Actions
+workflow (`.github/workflows/api-integration.yml`) provisions **ephemeral**
+PostgreSQL + Redis service containers, applies the Prisma migrations to a clean
+database (`prisma migrate deploy`), then runs lint, build, the unit suite, and
+new **live** integration suites (`tests/integration/**`) that exercise the real
+Prisma/PostgreSQL repository path and the Redis-backed `SharedStateStore` —
+including two logical instances enforcing one global rate limit. These suites
+`skipIf` off-CI (Termux has no Prisma engine / live services) and activate in CI
+where `DATABASE_URL` / `REDIS_URL` are set. Nothing is deployed and no provider is
+chosen. Full CI architecture, required vars, and local-vs-CI limits are in
+[`docs/CI.md`](docs/CI.md).
 
 The API binds to `127.0.0.1` by default and uses an explicit, non-wildcard CORS
 allow-list. See `docs/API.md` and `apps/lab/docs/LAB-BACKEND-ARCHITECTURE.md` for
