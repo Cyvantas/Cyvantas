@@ -1,5 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="16" fill="#080b10"/>
-  <path d="M44 19a19 19 0 1 0 0 26" fill="none" stroke="#9df3d8" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="45" cy="32" r="4" fill="#9df3d8"/>
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="128 100 1280 1280">
+  <!-- Geometric trace of apps/main/public/cyvantas-icon-master.png. -->
+  <rect x="128" y="100" width="1280" height="1280" rx="128" fill="#060a10"/>
+  <g fill="#ffffff">
+    <path d="M224 461 766 151 1163 396 1025 479 760 319 478 472 739 658 737 826Z"/>
+    <path d="M235 777 343 855 346 906 560 1088 563 1255 244 948Z"/>
+  </g>
+  <g fill="#00bfe8">
+    <path d="M179 499 199 679 613 994 620 1361 1174 908 1178 700 751 1050 751 906Z"/>
+    <path d="M760 844 870 681 1190 530 1210 568 897 716 796 870Z"/>
+  </g>
+  <circle cx="1280" cy="520" r="68" fill="none" stroke="#00bfe8" stroke-width="44"/>
 </svg>
