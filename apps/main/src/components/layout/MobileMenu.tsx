@@ -5,7 +5,7 @@ import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 import { cn } from "../../lib/cn";
 import { duration, easing } from "../../lib/motion";
-import { PRIMARY_NAV, LAB_NAV } from "../../config/site";
+import { PRIMARY_NAV, LAB_NAV, FOUNDER_NAV } from "../../config/site";
 
 interface MobileMenuProps {
   open: boolean;
@@ -145,6 +145,19 @@ export function MobileMenu({ open, onClose, returnFocusRef }: MobileMenuProps) {
                     </NavLink>
                   </li>
                 ))}
+                <li>
+                  <a
+                    href={FOUNDER_NAV.href}
+                    rel="noopener noreferrer"
+                    onClick={onClose}
+                    className={itemClass}
+                  >
+                    {FOUNDER_NAV.label}
+                    <Icon size="sm">
+                      <ArrowUpRight />
+                    </Icon>
+                  </a>
+                </li>
                 <li>
                   <a
                     href={LAB_NAV.href}

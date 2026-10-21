@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Divider } from "../ui/Divider";
 import { Logo } from "./Logo";
-import { SITE, FOOTER_NAV, LEGAL_NAV, LAB_NAV, COMPANY_SOCIALS } from "../../config/site";
+import { SITE, FOOTER_NAV, LEGAL_NAV, LAB_NAV, FOUNDER_NAV, COMPANY_SOCIALS } from "../../config/site";
 import { RESEARCH } from "../../content/home";
 
 /** Site footer: brand, navigation / research / social / legal, and disclosure. */
@@ -42,6 +42,9 @@ export function Footer() {
                 {item.label}
               </Link>
             ))}
+            <a href={FOUNDER_NAV.href} rel="noopener noreferrer" className={linkClass}>
+              {FOUNDER_NAV.label}
+            </a>
             <a href={LAB_NAV.href} rel="noopener noreferrer" className={linkClass}>
               {LAB_NAV.label}
             </a>

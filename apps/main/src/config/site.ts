@@ -1,13 +1,14 @@
 /**
  * Site-wide constants and navigation model. Real, verified values only
- * (ARCHITECTURE.md §2/§3). The Security Lab lives on a separate deployable;
- * `labUrl` is centralized here so it can be repointed without touching UI.
+ * (ARCHITECTURE.md §2/§3). External site URLs are centralized here so they can
+ * be repointed without touching UI.
  */
 export const SITE = {
   name: "CYVANTAS",
   url: "https://cyvantas.in",
   /** Separate lab app (apps/lab → lab.cyvantas.in). Change here to repoint. */
   labUrl: "https://lab.cyvantas.in",
+  founderUrl: "https://founder.cyvantas.in/",
   contactEmail: "cyvantas@gmail.com",
   tagline: "Security beyond the surface.",
   locale: "en_IN",
@@ -52,6 +53,12 @@ export const PRIMARY_NAV: NavItem[] = [
 export const LAB_NAV = {
   label: "Security Lab",
   href: SITE.labUrl,
+} as const;
+
+/** External link to the founder's website. */
+export const FOUNDER_NAV = {
+  label: "FOUNDER",
+  href: SITE.founderUrl,
 } as const;
 
 export interface FooterLink {

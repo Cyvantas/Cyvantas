@@ -1,7 +1,10 @@
 import { Section } from "../ui/Section";
 import { SectionTitle, Eyebrow } from "../ui/SectionTitle";
+import { Icon } from "../ui/Icon";
+import { ArrowUpRightIcon } from "../ui/icons";
 import { Reveal, Stagger, StaggerItem } from "../motion/Reveal";
 import { ABOUT, PRINCIPLES, FOUNDER } from "../../content/home";
+import { FOUNDER_NAV } from "../../config/site";
 
 export function About() {
   return (
@@ -112,6 +115,19 @@ export function About() {
               </li>
             ))}
           </ul>
+
+          <a
+            href={FOUNDER_NAV.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border px-5 text-sm font-medium text-foreground transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          >
+            Meet the Founder
+            <Icon size="sm">
+              <ArrowUpRightIcon />
+            </Icon>
+            <span className="sr-only"> (opens in a new tab)</span>
+          </a>
 
           <div className="mt-6 flex flex-wrap gap-4">
             {FOUNDER.socials.map((social) => (

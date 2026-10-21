@@ -3,7 +3,7 @@ import { useLocation, NavLink } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
 import { cn } from "../../lib/cn";
-import { PRIMARY_NAV, LAB_NAV } from "../../config/site";
+import { PRIMARY_NAV, LAB_NAV, FOUNDER_NAV } from "../../config/site";
 import { Logo } from "./Logo";
 import { MobileMenu } from "./MobileMenu";
 
@@ -12,7 +12,7 @@ const linkBase =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent " +
   "focus-visible:ring-offset-2 focus-visible:ring-offset-background rounded-sm";
 
-/** External-link arrow used to signal the Security Lab lives elsewhere. */
+/** External-link arrow used to signal a separate website. */
 function ArrowUpRight() {
   return (
     <svg viewBox="0 0 16 16" fill="none" strokeWidth="1.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
@@ -60,7 +60,7 @@ export function Navbar() {
         </NavLink>
 
         {/* Desktop navigation */}
-        <ul className="hidden items-center gap-7 md:flex">
+        <ul className="hidden items-center gap-4 md:flex lg:gap-7">
           {PRIMARY_NAV.map((item) => (
             <li key={item.to}>
               <NavLink
@@ -72,6 +72,18 @@ export function Navbar() {
               </NavLink>
             </li>
           ))}
+          <li>
+            <a
+              href={FOUNDER_NAV.href}
+              rel="noopener noreferrer"
+              className={cn(linkBase, "inline-flex items-center gap-1.5")}
+            >
+              {FOUNDER_NAV.label}
+              <Icon size="sm">
+                <ArrowUpRight />
+              </Icon>
+            </a>
+          </li>
           <li>
             <a
               href={LAB_NAV.href}
