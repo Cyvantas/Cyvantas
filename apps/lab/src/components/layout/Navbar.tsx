@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, NavLink } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
@@ -26,6 +26,15 @@ export function Navbar() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const { pathname } = useLocation();
 
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 64rem)");
+    const closeOnDesktop = () => {
+      if (desktop.matches) setOpen(false);
+    };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
+  }, []);
+
   // Close the mobile menu on route change by adjusting state during render
   // instead of in an effect, avoiding a cascading re-render.
   const [prevPathname, setPrevPathname] = useState(pathname);
@@ -37,7 +46,7 @@ export function Navbar() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-[var(--z-header)] h-[var(--header-height)]",
+        "sticky top-0 z-[var(--z-header)] h-[var(--header-height)] shrink-0",
         "border-b border-border bg-background/80 backdrop-blur-md",
         "supports-[not(backdrop-filter:blur(0))]:bg-background",
       )}
@@ -45,7 +54,7 @@ export function Navbar() {
       <Container as="nav" aria-label="Primary" className="flex h-full items-center justify-between gap-4">
         <NavLink
           to="/"
-          className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          className="inline-flex min-h-11 shrink-0 items-center rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           aria-label="CYVANTAS Security Lab — dashboard"
         >
           <Logo />
@@ -92,11 +101,12 @@ export function Navbar() {
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
           aria-controls="mobile-menu"
+          aria-haspopup="dialog"
           aria-label={open ? "Close menu" : "Open menu"}
           className={cn(
-            "inline-flex size-11 items-center justify-center rounded-md border border-border lg:hidden",
-            "text-foreground transition-colors hover:border-accent-line",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+            "inline-flex size-11 shrink-0 items-center justify-center rounded-md border border-border bg-surface lg:hidden",
+            "text-accent transition-colors hover:border-accent-line hover:bg-surface-elevated",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background",
           )}
         >
           <Icon>

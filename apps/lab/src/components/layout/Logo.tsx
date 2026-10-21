@@ -1,35 +1,19 @@
 import { cn } from "../../lib/cn";
 
-/** CYVANTAS hexagon mark + wordmark with "Security Lab" sublabel. */
+/** Official main-site wordmark, with a compact Security Lab sublabel. */
 export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <svg
-        viewBox="0 0 32 32"
-        className="size-7 shrink-0"
-        role="img"
-        aria-label="CYVANTAS Security Lab"
-        fill="none"
-      >
-        <path
-          d="M16 2 28 9v14L16 30 4 23V9L16 2Z"
-          stroke="var(--color-accent)"
-          strokeWidth="1.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="m11 12 5 8 5-8"
-          stroke="var(--color-foreground)"
-          strokeWidth="1.75"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      <span className="flex flex-col leading-none">
-        <span className="font-display text-base font-semibold tracking-wide text-foreground">
-          CYVANTAS
-        </span>
-        <span className="text-technical text-dim">Security Lab</span>
+    <span className={cn("inline-flex shrink-0 flex-col gap-1 leading-none", className)}>
+      <img
+        src="/cyvantas-logo-light.png"
+        alt="CYVANTAS"
+        width={1200}
+        height={284}
+        className="block h-auto w-32 sm:w-36 lg:w-32"
+        decoding="async"
+      />
+      <span className="text-technical self-end text-[10px] leading-3 tracking-[0.16em] text-muted">
+        SECURITY LAB
       </span>
     </span>
   );
