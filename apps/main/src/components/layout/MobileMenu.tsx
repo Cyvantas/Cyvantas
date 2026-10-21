@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { Fragment, useEffect, useRef, type RefObject } from "react";
 import { NavLink } from "react-router-dom";
 import { AnimatePresence, motion } from "motion/react";
 import { Container } from "../ui/Container";
@@ -133,31 +133,30 @@ export function MobileMenu({ open, onClose, returnFocusRef }: MobileMenuProps) {
             <Container className="py-4">
               <ul className="flex flex-col gap-1">
                 {PRIMARY_NAV.map((item, i) => (
-                  <li key={item.to}>
-                    <NavLink
-                      ref={i === 0 ? firstLinkRef : undefined}
-                      to={item.to}
-                      end={item.to === "/"}
-                      onClick={onClose}
-                      className={({ isActive }) => cn(itemClass, isActive && "text-accent")}
-                    >
-                      {item.label}
-                    </NavLink>
-                  </li>
+                  <Fragment key={item.to}>
+                    <li>
+                      <NavLink
+                        ref={i === 0 ? firstLinkRef : undefined}
+                        to={item.to}
+                        end={item.to === "/"}
+                        onClick={onClose}
+                        className={({ isActive }) => cn(itemClass, isActive && "text-accent")}
+                      >
+                        {item.label}
+                      </NavLink>
+                    </li>
+                    {item.to === "/about" && (
+                      <li>
+                        <a href={FOUNDER_NAV.href} onClick={onClose} className={itemClass}>
+                          {FOUNDER_NAV.label}
+                          <Icon size="sm">
+                            <ArrowUpRight />
+                          </Icon>
+                        </a>
+                      </li>
+                    )}
+                  </Fragment>
                 ))}
-                <li>
-                  <a
-                    href={FOUNDER_NAV.href}
-                    rel="noopener noreferrer"
-                    onClick={onClose}
-                    className={itemClass}
-                  >
-                    {FOUNDER_NAV.label}
-                    <Icon size="sm">
-                      <ArrowUpRight />
-                    </Icon>
-                  </a>
-                </li>
                 <li>
                   <a
                     href={LAB_NAV.href}

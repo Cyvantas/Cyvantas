@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useLocation, NavLink } from "react-router-dom";
 import { Container } from "../ui/Container";
 import { Icon } from "../ui/Icon";
@@ -62,28 +62,31 @@ export function Navbar() {
         {/* Desktop navigation */}
         <ul className="hidden items-center gap-4 md:flex lg:gap-7">
           {PRIMARY_NAV.map((item) => (
-            <li key={item.to}>
-              <NavLink
-                to={item.to}
-                end={item.to === "/"}
-                className={({ isActive }) => cn(linkBase, isActive && "text-accent")}
-              >
-                {item.label}
-              </NavLink>
-            </li>
+            <Fragment key={item.to}>
+              <li>
+                <NavLink
+                  to={item.to}
+                  end={item.to === "/"}
+                  className={({ isActive }) => cn(linkBase, isActive && "text-accent")}
+                >
+                  {item.label}
+                </NavLink>
+              </li>
+              {item.to === "/about" && (
+                <li>
+                  <a
+                    href={FOUNDER_NAV.href}
+                    className={cn(linkBase, "inline-flex items-center gap-1.5")}
+                  >
+                    {FOUNDER_NAV.label}
+                    <Icon size="sm">
+                      <ArrowUpRight />
+                    </Icon>
+                  </a>
+                </li>
+              )}
+            </Fragment>
           ))}
-          <li>
-            <a
-              href={FOUNDER_NAV.href}
-              rel="noopener noreferrer"
-              className={cn(linkBase, "inline-flex items-center gap-1.5")}
-            >
-              {FOUNDER_NAV.label}
-              <Icon size="sm">
-                <ArrowUpRight />
-              </Icon>
-            </a>
-          </li>
           <li>
             <a
               href={LAB_NAV.href}

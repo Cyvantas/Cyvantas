@@ -118,15 +118,12 @@ export function About() {
 
           <a
             href={FOUNDER_NAV.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-border px-5 text-sm font-medium text-foreground transition-colors hover:border-accent hover:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-md border border-accent-line px-5 text-sm font-medium text-accent transition-colors hover:border-accent hover:bg-accent-soft focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           >
             Meet the Founder
             <Icon size="sm">
               <ArrowUpRightIcon />
             </Icon>
-            <span className="sr-only"> (opens in a new tab)</span>
           </a>
 
           <div className="mt-6 flex flex-wrap gap-4">

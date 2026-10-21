@@ -57,7 +57,7 @@ export const LAB_NAV = {
 
 /** External link to the founder's website. */
 export const FOUNDER_NAV = {
-  label: "FOUNDER",
+  label: "Founder",
   href: SITE.founderUrl,
 } as const;
 
