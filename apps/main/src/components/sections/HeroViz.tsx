@@ -1,121 +1,122 @@
-/**
- * Decorative radial attack-surface model for the hero. Recreated from the
- * Blogger theme's illustrative SVG using design tokens. Labelled for screen
- * readers; the animated flow lines are gated by prefers-reduced-motion via
- * the global CSS in index.css.
- */
+import { useId, useState } from "react";
+import "./HeroViz.css";
+
+// Archive topology; descriptions explain scope, never simulated scan results.
 const NODES = [
-  { label: "WEB", x: 220, y: 58, anchor: "middle" as const, dx: 0, dy: -14, entry: false },
-  { label: "API", x: 352, y: 112, anchor: "start" as const, dx: 16, dy: 4, entry: false },
-  { label: "CLOUD", x: 384, y: 244, anchor: "start" as const, dx: 16, dy: 4, entry: false },
-  { label: "NETWORK", x: 296, y: 346, anchor: "start" as const, dx: 16, dy: 4, entry: false },
-  { label: "MOBILE", x: 144, y: 346, anchor: "end" as const, dx: -16, dy: 4, entry: false },
-  { label: "IDENTITY", x: 56, y: 244, anchor: "end" as const, dx: -16, dy: 4, entry: true },
-  { label: "OSINT", x: 88, y: 112, anchor: "end" as const, dx: -16, dy: 4, entry: false },
+  { id: "web", label: "WEB", x: 240, y: 64, entry: false, flow: false,
+    title: "Public applications", description: "Websites, browser sessions and client-side exposure." },
+  { id: "osint", label: "OSINT", x: 112, y: 130, entry: false, flow: false,
+    title: "Public intelligence", description: "Public records, repositories and organizational footprint." },
+  { id: "api", label: "API", x: 368, y: 130, entry: true, flow: true,
+    title: "Application interfaces", description: "Endpoints, authorization boundaries and data exposure." },
+  { id: "identity", label: "IDENTITY", x: 92, y: 232, entry: true, flow: true,
+    title: "Identity and access", description: "Sign-in flows, federation and access privileges." },
+  { id: "cloud", label: "CLOUD", x: 388, y: 232, entry: false, flow: true,
+    title: "Cloud infrastructure", description: "Cloud resources, storage permissions and service configuration." },
+  { id: "mobile", label: "MOBILE", x: 160, y: 320, entry: false, flow: false,
+    title: "Mobile applications", description: "App storage, platform permissions and backend connections." },
+  { id: "network", label: "NETWORK", x: 320, y: 320, entry: false, flow: false,
+    title: "Network perimeter", description: "Exposed services, gateways and trust boundaries." },
 ];
 
-// Which spokes render as "active" cyan flow lines (vs. neutral cross-links).
-const FLOW = [1, 2, 5];
-
+/** Archive-led, illustrative radar with native keyboard and touch controls. */
 export function HeroViz() {
+  const uid = useId();
+  const [selectedId, setSelectedId] = useState<string | null>("web");
+  const [paused, setPaused] = useState(false);
+  const selected = NODES.find((node) => node.id === selectedId);
+  const captionId = `${uid}-caption`;
+  const briefingId = `${uid}-briefing`;
+  const sweepGradientId = `${uid}-sweep`;
+
   return (
-    <figure className="m-0 rounded-lg border border-border bg-surface/60 p-4 backdrop-blur-sm">
-      <figcaption className="mb-2 flex items-center justify-between">
-        <span className="text-technical text-muted">Attack-surface model</span>
-        <span className="text-technical text-dim">Illustrative</span>
+    <figure
+      className={`hero-model${paused ? " hero-model--paused" : ""}`}
+      aria-labelledby={captionId}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") setSelectedId(null);
+      }}
+    >
+      <figcaption className="hero-model__header" id={captionId}>
+        <span className="hero-model__heading">
+          <span aria-hidden="true" className="hero-model__beacon" />
+          Attack-surface model
+        </span>
+        <span className="hero-model__status">Illustrative</span>
       </figcaption>
 
-      <svg
-        viewBox="-40 0 520 400"
-        role="img"
-        aria-labelledby="hero-viz-title"
-        className="h-auto w-full"
-      >
-        <title id="hero-viz-title">
-          Illustrative model of an organization&rsquo;s attack surface: web, API, cloud,
-          network, mobile, identity and OSINT nodes connected to a central target.
-        </title>
-
-        <circle cx="220" cy="200" r="150" fill="none" stroke="var(--color-border)" strokeDasharray="2 6" />
-        <circle cx="220" cy="200" r="96" fill="none" stroke="var(--color-border-subtle)" />
-
-        {NODES.map((n, i) => (
-          <line
-            key={`spoke-${n.label}`}
-            x1="220"
-            y1="200"
-            x2={n.x}
-            y2={n.y}
-            stroke={FLOW.includes(i) ? "var(--color-accent)" : "#2A3A4D"}
-            strokeWidth={FLOW.includes(i) ? 1.5 : 1}
-            className={FLOW.includes(i) ? "hero-flow" : undefined}
-          />
-        ))}
-
-        {/* Central target hexagon + chevron mark */}
-        <polygon
-          points="220,166 249.4,183 249.4,217 220,234 190.6,217 190.6,183"
-          fill="var(--color-surface)"
-          stroke="var(--color-accent)"
-          strokeWidth="1.5"
-        />
-        <path
-          d="M206 192 L220 214 L234 192"
-          fill="none"
-          stroke="var(--color-foreground)"
-          strokeWidth="3"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="220" cy="180" r="3" fill="var(--color-accent)" />
-        <text
-          x="220"
-          y="252"
-          textAnchor="middle"
-          fill="var(--color-muted)"
-          fontFamily="var(--font-mono)"
-          fontSize="10"
-          letterSpacing="1.4"
-        >
-          TARGET ORG
-        </text>
-
-        {NODES.map((n) => (
-          <g key={`node-${n.label}`}>
-            <circle cx={n.x} cy={n.y} r="6" fill="var(--color-background)" stroke="var(--color-accent)" strokeWidth="1.5" />
-            <circle
-              cx={n.x}
-              cy={n.y}
-              r={n.entry ? 3 : 2}
-              fill={n.entry ? "var(--color-accent-secondary)" : "var(--color-dim)"}
-              className={n.entry ? "hero-pulse" : undefined}
-            />
-            <text
-              x={n.x + n.dx}
-              y={n.y + n.dy}
-              textAnchor={n.anchor}
-              fill="var(--color-foreground)"
-              fontFamily="var(--font-mono)"
-              fontSize="11.5"
-              letterSpacing="1"
-            >
-              {n.label}
-            </text>
+      <div className="hero-model__radar" role="group" aria-label="Explore attack-surface domains">
+        <svg viewBox="0 0 480 400" aria-hidden="true" focusable="false" className="hero-model__graphic">
+          <defs>
+            <linearGradient id={sweepGradientId} x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="var(--color-accent)" stopOpacity="0.18" />
+              <stop offset="1" stopColor="var(--color-accent)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <circle cx="240" cy="200" r="88" className="hero-model__aura" />
+          <g className="hero-model__grid" fill="none">
+            <path d="M240 20V380 M40 200H440" strokeDasharray="2 6" />
+            {[50, 100, 144, 180].map((radius, index) => (
+              <circle key={radius} cx="240" cy="200" r={radius} strokeDasharray={index % 2 ? "2 6" : undefined} />
+            ))}
           </g>
+          <g className="hero-model__sweep">
+            <path d="M240 200 L240 20 A180 180 0 0 1 390 100 Z" fill={`url(#${sweepGradientId})`} />
+            <path d="M240 200 L390 100" className="hero-model__beam" />
+          </g>
+          <path
+            d="M112 130 Q150 50 240 64 Q330 50 368 130 Q415 174 388 232 Q376 300 320 320 M92 232 Q110 302 160 320"
+            fill="none" className="hero-model__cross-link"
+          />
+          {NODES.map((node) => (
+            <line
+              key={node.id} x1="240" y1="200" x2={node.x} y2={node.y}
+              className={`hero-model__spoke${node.flow ? " hero-model__flow" : ""}${node.id === selectedId ? " hero-model__spoke--selected" : ""}`}
+            />
+          ))}
+        </svg>
+        <img
+          className="hero-model__logo"
+          src="/assets/attack-surface-radar/cyvantas-3d-logo-transparent.png"
+          alt="CYVANTAS" width="512" height="512" draggable={false}
+        />
+        <span className="hero-model__target" aria-hidden="true">Target org</span>
+        {NODES.map((node) => (
+          <button
+            key={node.id} type="button"
+            className={`hero-model__node${node.entry ? " hero-model__node--entry" : ""}`}
+            style={{ left: `${node.x / 480 * 100}%`, top: `${node.y / 400 * 100}%` }}
+            aria-label={`${node.label}: ${node.title}${node.entry ? ", illustrative entry point" : ""}`}
+            aria-pressed={node.id === selectedId} aria-controls={briefingId}
+            onPointerEnter={(event) => {
+              if (event.pointerType === "mouse") setSelectedId(node.id);
+            }}
+            onFocus={() => setSelectedId(node.id)}
+            onClick={() => setSelectedId(node.id)}
+          >
+            <span className="hero-model__node-dot" aria-hidden="true" />
+            <span>{node.label}</span>
+          </button>
         ))}
-      </svg>
-
-      <div className="mt-2 flex flex-wrap gap-x-5 gap-y-1">
-        {[
-          { c: "var(--color-accent)", t: "Asset" },
-          { c: "var(--color-accent-secondary)", t: "Entry point" },
-          { c: "var(--color-dim)", t: "Cross-link" },
-        ].map((l) => (
-          <span key={l.t} className="text-technical inline-flex items-center gap-1.5 text-dim">
-            <span className="inline-block size-2 rounded-full" style={{ background: l.c }} />
-            {l.t}
-          </span>
-        ))}
+      </div>
+      <div className="hero-model__briefing" id={briefingId} aria-live="polite" aria-atomic="true">
+        <span className="hero-model__briefing-label">{selected?.label ?? "Explore the model"}</span>
+        <strong>{selected?.title ?? "Connected exposure"}</strong>
+        <p>{selected?.description ?? "Select a domain to explore its role in an organization's attack surface."}</p>
+      </div>
+      <div className="hero-model__footer">
+        <ul className="hero-model__legend" aria-label="Model legend">
+          <li><span aria-hidden="true" className="hero-model__key" />Asset</li>
+          <li><span aria-hidden="true" className="hero-model__key hero-model__key--entry" />Entry point</li>
+          <li><span aria-hidden="true" className="hero-model__key hero-model__key--link" />Cross-link</li>
+        </ul>
+        <button
+          type="button" className="hero-model__motion" aria-label="Pause model animation"
+          aria-pressed={paused} onClick={() => setPaused((value) => !value)}
+        >
+          <span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span>
+          {paused ? "Resume motion" : "Pause motion"}
+        </button>
       </div>
     </figure>
   );
