@@ -1,87 +1,19 @@
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 import { founder, socials } from '../content/site'
 import { Icon } from './Icon'
 import { Navbar } from './Navbar'
 
-const motionQuery = '(prefers-reduced-motion: reduce)'
-
-function subscribeToMotionPreference(onChange: () => void) {
-  if (typeof window.matchMedia !== 'function') return () => {}
-
-  const preference = window.matchMedia(motionQuery)
-  preference.addEventListener('change', onChange)
-  return () => preference.removeEventListener('change', onChange)
-}
-
-function prefersReducedMotion() {
-  return typeof window.matchMedia !== 'function' || window.matchMedia(motionQuery).matches
-}
-
 function HeroBackground() {
-  // Subscribe directly so changing the OS preference also stops a running video.
-  const reducedMotion = useSyncExternalStore(subscribeToMotionPreference, prefersReducedMotion, () => true)
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [playbackFailed, setPlaybackFailed] = useState(false)
-  const canPlayVideo = !reducedMotion && !playbackFailed
-
-  useEffect(() => {
-    if (!canPlayVideo) return
-
-    const video = videoRef.current
-    if (!video) return
-
-    let active = true
-    video.muted = true
-    video.defaultMuted = true
-    video.volume = 0
-
-    const playback = video.play()
-    playback?.catch((error: unknown) => {
-      // React StrictMode can interrupt the initial play request during cleanup.
-      if (active && !(error instanceof DOMException && error.name === 'AbortError')) {
-        setPlaybackFailed(true)
-      }
-    })
-
-    return () => {
-      active = false
-      video.pause()
-    }
-  }, [canPlayVideo])
-
   return (
-    <div className="hero-media" aria-hidden="true">
+    <div className="hero-media">
       <img
         src={founder.portrait.src}
-        alt=""
+        alt={founder.portrait.alt}
         width={founder.portrait.width}
         height={founder.portrait.height}
         fetchPriority="high"
         decoding="async"
       />
-      {canPlayVideo && (
-        <video
-          ref={videoRef}
-          src="/videos/founder-hero.mp4"
-          poster={founder.portrait.src}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          tabIndex={-1}
-          disablePictureInPicture
-          onError={() => setPlaybackFailed(true)}
-          onVolumeChange={(event) => {
-            const video = event.currentTarget
-            if (!video.muted || video.volume !== 0) {
-              video.muted = true
-              video.volume = 0
-            }
-          }}
-        />
-      )}
     </div>
   )
 }

@@ -67,7 +67,7 @@
   .hero { position: relative; isolation: isolate; width: 100%; height: 100%; display: grid; grid-template-columns: minmax(0, 0.48fr) minmax(0, 0.52fr); grid-template-rows: minmax(0, 1fr); padding: calc(var(--inset-top) + var(--nav-padding) + 60px) var(--inset-right) calc(var(--inset-bottom) + 40px + var(--copy-social-gap)) var(--inset-left); }
   .hero:focus-visible { outline-offset: -3px; }
   .hero-media { position: absolute; z-index: 0; inset: 0; pointer-events: none; }
-  .hero-media img, .hero-media video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 15%; }
+  .hero-media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 15%; }
   .hero-shade { position: absolute; z-index: 0; inset: 0; pointer-events: none; background: linear-gradient(90deg, #05060855, #05060800 52%); }
   .hero-content { position: relative; z-index: 1; grid-column: 1; grid-row: 1; align-self: center; min-width: 0; width: 100%; max-width: 520px; }
   .eyebrow { color: var(--color-muted); font-size: 10px; line-height: 1.5; font-weight: 500; letter-spacing: 0.12em; }
@@ -87,7 +87,7 @@
      below the face, over a gentle shade on the lower part of the same hero. */
   @media (max-aspect-ratio: 1/1) {
     .hero { grid-template-columns: minmax(0, 1fr); }
-    .hero-media img, .hero-media video { object-position: 72% top; }
+    .hero-media img { object-position: 72% top; }
     .hero-shade { background: linear-gradient(180deg, #05060844, #05060800 16%, #05060800 44%, #050608b8 70%, #050608e0); }
     .hero-content { align-self: end; max-width: 360px; }
     .eyebrow { font-size: 10px; letter-spacing: 0.08em; }
@@ -106,7 +106,7 @@
   }
 
   @media (min-aspect-ratio: 19/10) {
-    .hero-media img, .hero-media video { object-position: center top; }
+    .hero-media img { object-position: center top; }
   }
 
   @media (max-height: 500px) and (orientation: landscape) {
