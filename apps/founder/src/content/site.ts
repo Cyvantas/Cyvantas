@@ -2,7 +2,7 @@ export const founder = {
   name: 'Prajeesh KC',
   url: 'https://founder.cyvantas.in/',
   companyUrl: 'https://cyvantas.in/',
-  contactUrl: 'mailto:cyvantas@gmail.com',
+  contactUrl: 'mailto:contact@cyvantas.in',
   logo: '/cyvantas-logo-light.png',
   portrait: {
     src: '/images/founder-hero.png',

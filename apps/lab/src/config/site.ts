@@ -10,7 +10,7 @@ export const SITE = {
   url: "https://lab.cyvantas.in",
   /** Main marketing site (apps/main → cyvantas.in). Change here to repoint. */
   mainUrl: "https://cyvantas.in",
-  contactEmail: "cyvantas@gmail.com",
+  contactEmail: "contact@cyvantas.in",
   tagline: "Learn. Break. Defend.",
   locale: "en_IN",
   basedIn: "India",

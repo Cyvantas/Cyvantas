@@ -9,7 +9,7 @@ export const SITE = {
   /** Separate lab app (apps/lab → lab.cyvantas.in). Change here to repoint. */
   labUrl: "https://lab.cyvantas.in",
   founderUrl: "https://founder.cyvantas.in/",
-  contactEmail: "cyvantas@gmail.com",
+  contactEmail: "contact@cyvantas.in",
   tagline: "Security beyond the surface.",
   locale: "en_IN",
   basedIn: "India",
