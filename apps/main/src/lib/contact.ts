@@ -4,14 +4,13 @@
  * The UI depends only on the `ContactProvider` interface, so the transport can
  * be swapped without touching the form.
  *
- * Production transport: the default provider POSTs JSON to a backend/serverless
- * endpoint configured via `VITE_CONTACT_ENDPOINT`. That URL is public by nature
+ * Production transport: the provider POSTs JSON to the same-origin
+ * Vercel function at `/api/contact`. That URL is public by nature
  * (the browser must call it) and is NOT a secret. All email-service secrets
  * (API keys, SMTP credentials, etc.) live server-side in the serverless
  * function's own environment and are never bundled into the client.
  *
- * When no endpoint is configured the provider reports `not-configured`, so the
- * form gracefully falls back to the email link.
+ * The server function uses Resend credentials configured only in Vercel.
  *
  * The legacy Blogger Apps Script endpoint is intentionally NOT used.
  *
@@ -44,7 +43,26 @@ export interface ContactResult {
 }
 
 export interface ContactProvider {
+  readonly configured: boolean;
   submit(data: ContactSubmission): Promise<ContactResult>;
+}
+
+/** Opens a draft only; the visitor must review and send it in their email app. */
+export function buildContactMailto(data: ContactSubmission, email: string): string {
+  const body = [
+    `Name: ${data.name}`,
+    `Business email: ${data.email}`,
+    ...(data.organization ? [`Organization: ${data.organization}`] : []),
+    ...(data.service ? [`Service: ${data.service}`] : []),
+    ...(data.timeline ? [`Timeline: ${data.timeline}`] : []),
+    "",
+    "Message & scope:",
+    data.message,
+  ].join("\n")
+    // URI encoding rejects isolated UTF-16 surrogates. Unicode mode leaves
+    // valid pairs (including emoji) intact and replaces only invalid units.
+    .replace(/[\uD800-\uDFFF]/gu, "\uFFFD");
+  return `mailto:${email}?subject=${encodeURIComponent("Security assessment enquiry — CYVANTAS")}&body=${encodeURIComponent(body)}`;
 }
 
 /**
@@ -53,6 +71,7 @@ export interface ContactProvider {
  */
 export function createEndpointProvider(endpoint: string): ContactProvider {
   return {
+    configured: true,
     async submit(data) {
       try {
         const res = await fetch(endpoint, {
@@ -90,14 +109,15 @@ export function createEndpointProvider(endpoint: string): ContactProvider {
   };
 }
 
-/** Provider used until a backend is wired up: reports that no endpoint exists. */
+/** Provider fallback for an explicitly empty endpoint override. */
 const notConfiguredProvider: ContactProvider = {
+  configured: false,
   async submit() {
     return { ok: false, code: "not-configured" };
   },
 };
 
-const endpoint = import.meta.env.VITE_CONTACT_ENDPOINT as string | undefined;
+const endpoint = "/api/contact";
 
 /** Active provider selected from environment configuration. */
 export const contactProvider: ContactProvider =

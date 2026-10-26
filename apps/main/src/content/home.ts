@@ -532,7 +532,7 @@ export const CONTACT = {
   ],
   /** Timeline dropdown options (ported from the live contact form). */
   timelines: ["Flexible", "Within 1 month", "1–3 months", "3+ months"],
-  email: SITE.contactEmail,
+  email: "support@cyvantas.in",
   privacy:
     "We only use the details you share here to respond to your inquiry. Your " +
     "information is never sold or shared with third parties.",

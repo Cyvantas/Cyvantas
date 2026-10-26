@@ -4,7 +4,7 @@ import { Textarea } from "../ui/Textarea";
 import { Select } from "../ui/Select";
 import { Button } from "../ui/Button";
 import { CONTACT } from "../../content/home";
-import { contactProvider, type ContactResult } from "../../lib/contact";
+import { buildContactMailto, contactProvider, type ContactResult } from "../../lib/contact";
 
 interface Errors {
   name?: string;
@@ -31,16 +31,21 @@ export function ContactForm() {
   const [errors, setErrors] = useState<Errors>({});
   const [status, setStatus] = useState<"idle" | "submitting" | "done">("idle");
   const [result, setResult] = useState<ContactResult | null>(null);
+  const [draftReady, setDraftReady] = useState(false);
 
   const set = (key: keyof typeof values) => (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-  ) => setValues((prev) => ({ ...prev, [key]: e.target.value }));
+  ) => {
+    setValues((prev) => ({ ...prev, [key]: e.target.value }));
+    setDraftReady(false);
+    setResult(null);
+  };
 
   const validate = (): boolean => {
     const next: Errors = {};
     if (!values.name.trim()) next.name = "Please enter your name.";
     if (!values.email.trim()) next.email = "Please enter your email.";
-    else if (!EMAIL_RE.test(values.email)) next.email = "Please enter a valid email.";
+    else if (!EMAIL_RE.test(values.email.trim())) next.email = "Please enter a valid email.";
     if (!values.message.trim()) next.message = "Please describe your scope.";
     setErrors(next);
     return Object.keys(next).length === 0;
@@ -50,12 +55,8 @@ export function ContactForm() {
     e.preventDefault();
     // Prevent duplicate submissions while a request is in flight.
     if (status === "submitting") return;
-    // Silently succeed if the honeypot is filled (likely a bot).
-    if (values.website) {
-      setStatus("done");
-      setResult({ ok: true, code: "sent" });
-      return;
-    }
+    // Silently discard honeypot submissions; never fabricate delivery.
+    if (values.website) return;
     if (!validate()) return;
 
     setStatus("submitting");
@@ -68,17 +69,33 @@ export function ContactForm() {
       message: values.message.trim(),
     });
     setResult(res);
+    setDraftReady(!res.ok);
     setStatus("done");
   };
 
-  const succeeded = status === "done" && result?.ok;
+  const succeeded = status === "done" && result?.ok && result.code === "sent";
+  const emailDraft = buildContactMailto({
+    name: values.name.trim(),
+    email: values.email.trim(),
+    organization: values.organization.trim(),
+    service: values.service,
+    timeline: values.timeline,
+    message: values.message.trim(),
+  }, CONTACT.email);
 
   return (
     <form noValidate onSubmit={onSubmit} className="flex flex-col gap-4">
+      {!contactProvider.configured && (
+        <p className="text-sm text-foreground">
+          Prepare an email draft with your assessment details. Review and send it from
+          your email app, or email <a className="text-accent underline underline-offset-2" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> directly.
+        </p>
+      )}
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
           label="Name"
           name="name"
+          disabled={status === "submitting"}
           autoComplete="name"
           maxLength={120}
           required
@@ -89,6 +106,7 @@ export function ContactForm() {
         <Input
           label="Business email"
           name="email"
+          disabled={status === "submitting"}
           type="email"
           autoComplete="email"
           maxLength={160}
@@ -103,6 +121,7 @@ export function ContactForm() {
         <Input
           label="Organization"
           name="organization"
+          disabled={status === "submitting"}
           autoComplete="organization"
           maxLength={120}
           value={values.organization}
@@ -111,6 +130,7 @@ export function ContactForm() {
         <Select
           label="Service"
           name="service"
+          disabled={status === "submitting"}
           options={toOptions(CONTACT.services)}
           value={values.service}
           onChange={set("service")}
@@ -120,6 +140,7 @@ export function ContactForm() {
       <Select
         label="Timeline"
         name="timeline"
+        disabled={status === "submitting"}
         options={toOptions(CONTACT.timelines)}
         value={values.timeline}
         onChange={set("timeline")}
@@ -128,6 +149,7 @@ export function ContactForm() {
       <Textarea
         label="Message & scope"
         name="message"
+        disabled={status === "submitting"}
         rows={5}
         maxLength={4000}
         required
@@ -152,7 +174,9 @@ export function ContactForm() {
 
       <div className="flex flex-col gap-3">
         <Button type="submit" disabled={status === "submitting"} className="self-start">
-          {status === "submitting" ? "Sending…" : "Request Security Assessment"}
+          {status === "submitting"
+            ? (contactProvider.configured ? "Sending…" : "Preparing draft…")
+            : (contactProvider.configured ? "Request Security Assessment" : "Prepare email draft")}
         </Button>
 
         <p role="status" aria-live="polite" className="text-sm">
@@ -163,14 +187,8 @@ export function ContactForm() {
           )}
           {status === "done" && !result?.ok && result?.code === "not-configured" && (
             <span className="text-muted">
-              Submissions aren&rsquo;t wired to a backend yet. Please email us at{" "}
-              <a
-                href={`mailto:${CONTACT.email}`}
-                className="text-accent underline underline-offset-2"
-              >
-                {CONTACT.email}
-              </a>
-              .
+              Your draft is ready. Nothing has been sent. Open it in your email app,
+              review the details and send it when you are ready.
             </span>
           )}
           {status === "done" && !result?.ok && result?.code === "error" && (
@@ -179,6 +197,11 @@ export function ContactForm() {
             </span>
           )}
         </p>
+        {draftReady && (
+          <a href={emailDraft} className="inline-flex min-h-11 self-start items-center rounded-md border border-accent px-5 font-medium text-accent hover:text-foreground">
+            Open email draft
+          </a>
+        )}
       </div>
     </form>
   );
